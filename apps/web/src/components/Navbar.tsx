@@ -48,6 +48,18 @@ export const Navbar: React.FC = () => {
   const megaMenuContentRef = useRef<HTMLDivElement>(null);
   const isOpenRef = useRef(false);
 
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (mobileMenuOpen && headerRef.current && !headerRef.current.contains(event.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [mobileMenuOpen]);
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 15);
@@ -559,10 +571,11 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* 3. FULL-WIDTH STRETCHED MEGA MENU (PERSISTENT ZERO-FLASH GSAP CONTAINER OPTIMIZED FOR PC & TABLET) */}
+        {/* Hidden on mobile; only visible on lg+ screens */}
         <div
           ref={megaMenuContainerRef}
           style={{ display: 'none', visibility: 'hidden', opacity: 0 }}
-          className="fixed left-0 right-0 w-full top-[98px] lg:top-[100px] z-30 pointer-events-none will-change-transform max-h-[calc(100vh-116px)] overflow-y-auto"
+          className="fixed left-0 right-0 top-[98px] lg:top-[100px] z-30 pointer-events-none will-change-transform max-h-[calc(100vh-116px)] overflow-y-auto lg:max-h-[none]"
           onMouseEnter={() => {
             if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
           }}
