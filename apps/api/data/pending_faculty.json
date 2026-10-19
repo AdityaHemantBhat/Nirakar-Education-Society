@@ -1,0 +1,23 @@
+[
+  {
+    "id": "fac-app-1792344026648-252",
+    "name": "Savitri Gaonkar",
+    "firstName": "Savitri",
+    "lastName": "Gaonkar",
+    "email": "savitri.gaonkar@nirakar.org",
+    "phone": "+91 94220 99881",
+    "employeeCode": "NES-FAC-1162",
+    "institutionCode": "TUDAL_HS",
+    "institutionName": "Tudal High School",
+    "department": "Social Sciences & Humanities",
+    "qualification": "M.A. History, B.Ed.",
+    "experienceYears": 8,
+    "experience": "8 Years",
+    "subjects": [
+      "Goan History",
+      "Civics"
+    ],
+    "appliedAt": "2026-10-18T17:20:26.648Z",
+    "status": "PENDING"
+  }
+]

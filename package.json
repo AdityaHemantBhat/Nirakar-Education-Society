@@ -1,0 +1,30 @@
+{
+  "name": "nirakar",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "tsx scripts/dev.ts",
+    "build": "npm run build --workspaces --if-present",
+    "start": "node apps/api/dist/server.js",
+    "test": "vitest run",
+    "db:migrate": "npx prisma migrate deploy --schema=packages/db/prisma/schema.prisma",
+    "db:seed": "tsx packages/db/src/seed.ts",
+    "db:import": "tsx scripts/import-legacy.ts",
+    "fb:sync": "tsx scripts/sync-facebook.ts",
+    "db:studio": "npx prisma studio --schema=packages/db/prisma/schema.prisma",
+    "check:banned": "tsx scripts/check-banned-words.ts",
+    "theme": "tsx scripts/brand-colors.ts"
+  },
+  "devDependencies": {
+    "cheerio": "^1.0.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vite": "^8.3.4",
+    "vitest": "^3.0.7"
+  }
+}

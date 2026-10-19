@@ -1,0 +1,995 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ----------------------------------------------------
+// IDENTITY & USERS
+// ----------------------------------------------------
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR
+  FACULTY
+  ALUMNI
+  READER
+}
+
+enum InstitutionCode {
+  NIRAKAR_HS
+  TUDAL_HS
+  ANGLE_HSS
+}
+
+enum VerificationLevel {
+  UNVERIFIED
+  EMAIL_VERIFIED
+  VERIFIED
+  TRUSTED
+}
+
+enum FacultyStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+}
+
+enum FacultyMessageSender {
+  VISITOR
+  ADMIN
+  FACULTY
+}
+
+model User {
+  id           String    @id @default(cuid()) @map("id")
+  email        String    @unique @map("email")
+  username     String    @unique @map("username")
+  passwordHash String    @map("password_hash")
+  role         Role      @default(READER) @map("role")
+  isSuspended  Boolean   @default(false) @map("is_suspended")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  refreshTokens   RefreshToken[]
+  alumniProfile   AlumniProfile?
+  facultyProfile  FacultyProfile?
+  supporterPasses SupporterPass[]
+  orders          Order[]
+  payments        Payment[]
+  readEvents      ReadEvent[]
+  auditLogs       AuditLog[]
+  posts           Post[]
+  vouchesGiven    AlumniVouch[]   @relation("VoucherRelation")
+  reportsFiled    ProfileReport[] @relation("ReporterRelation")
+
+  @@index([email])
+  @@index([username])
+  @@index([role])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid()) @map("id")
+  tokenHash String   @unique @map("token_hash")
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  revoked   Boolean  @default(false) @map("revoked")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("refresh_tokens")
+}
+
+model AlumniProfile {
+  id                 String            @id @default(cuid()) @map("id")
+  userId             String            @unique @map("user_id")
+  firstName          String            @map("first_name")
+  middleName         String?           @map("middle_name")
+  lastName           String            @map("last_name")
+  school             InstitutionCode   @map("school")
+  batchYear          Int               @map("batch_year")
+  photoUrl           String?           @map("photo_url")
+  bio                String?           @map("bio")
+  city               String?           @map("city")
+  occupation         String?           @map("occupation")
+  socialLinks        Json?             @default("[]") @map("social_links")
+  visibilitySettings Json?             @default("{}") @map("visibility_settings")
+  verificationLevel  VerificationLevel @default(UNVERIFIED) @map("verification_level")
+  adminNotes         String?           @map("admin_notes")
+  galleryPhotos      String[]          @default([]) @map("gallery_photos")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
+
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  familyMembers FamilyMember[]
+  vouches       AlumniVouch[]   @relation("TargetProfileRelation")
+  reports       ProfileReport[] @relation("ReportedProfileRelation")
+
+  @@index([school])
+  @@index([batchYear])
+  @@index([verificationLevel])
+  @@index([city])
+  @@index([occupation])
+  @@map("alumni_profiles")
+}
+
+model FamilyMember {
+  id              String   @id @default(cuid()) @map("id")
+  alumniProfileId String   @map("alumni_profile_id")
+  name            String   @map("name")
+  relation        String   @map("relation")
+  photoUrl        String?  @map("photo_url")
+  bio             String?  @map("bio")
+  order           Int      @default(0) @map("order")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  alumniProfile AlumniProfile @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
+
+  @@index([alumniProfileId])
+  @@map("family_members")
+}
+
+model AlumniVouch {
+  id              String   @id @default(cuid()) @map("id")
+  voucherId       String   @map("voucher_id")
+  targetProfileId String   @map("target_profile_id")
+  note            String?  @map("note")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  voucher       User          @relation("VoucherRelation", fields: [voucherId], references: [id], onDelete: Cascade)
+  targetProfile AlumniProfile @relation("TargetProfileRelation", fields: [targetProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([voucherId, targetProfileId])
+  @@index([targetProfileId])
+  @@map("alumni_vouches")
+}
+
+model ProfileReport {
+  id              String   @id @default(cuid()) @map("id")
+  reporterId      String   @map("reporter_id")
+  targetProfileId String   @map("target_profile_id")
+  reason          String   @map("reason")
+  status          String   @default("PENDING") @map("status") // PENDING, REVIEWED, DISMISSED
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  reporter      User          @relation("ReporterRelation", fields: [reporterId], references: [id], onDelete: Cascade)
+  targetProfile AlumniProfile @relation("ReportedProfileRelation", fields: [targetProfileId], references: [id], onDelete: Cascade)
+
+  @@index([targetProfileId])
+  @@index([status])
+  @@map("profile_reports")
+}
+
+// ----------------------------------------------------
+// INSTITUTIONS & FACULTY
+// ----------------------------------------------------
+
+model Institution {
+  id        String          @id @default(cuid()) @map("id")
+  code      InstitutionCode @unique @map("code")
+  name      String          @map("name")
+  slug      String          @unique @map("slug")
+  tagline   String          @map("tagline")
+  history   String?         @map("history")
+  vision    String?         @map("vision")
+  bannerUrl String?         @map("banner_url")
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+
+  facultyProfiles FacultyProfile[]
+  committees      Committee[]
+
+  @@map("institutions")
+}
+
+model FacultyProfile {
+  id                   String          @id @default(cuid()) @map("id")
+  userId               String?         @unique @map("user_id")
+  institutionId        String          @map("institution_id")
+  institutionCode      InstitutionCode @map("institution_code")
+  designation          String          @map("designation")
+  department           String          @map("department")
+  subjects             String[]        @default([]) @map("subjects")
+  qualification        String          @map("qualification")
+  experience           String          @map("experience")
+  bio                  String?         @map("bio")
+  achievements         String[]        @default([]) @map("achievements")
+  photoUrl             String?         @map("photo_url")
+  publicContactToggles Json?           @default("{\"showEmail\": false, \"showPhone\": false}") @map("public_contact_toggles")
+  order                Int             @default(0) @map("order")
+  status               FacultyStatus   @default(PUBLISHED) @map("status")
+  createdAt            DateTime        @default(now()) @map("created_at")
+  updatedAt            DateTime        @updatedAt @map("updated_at")
+
+  user          User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
+  institution   Institution           @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  conversations FacultyConversation[]
+
+  @@index([institutionCode])
+  @@index([status])
+  @@index([order])
+  @@map("faculty_profiles")
+}
+
+model FacultyConversation {
+  id               String   @id @default(cuid()) @map("id")
+  facultyProfileId String   @map("faculty_profile_id")
+  parentName       String   @map("parent_name")
+  studentName      String?  @map("student_name")
+  classGrade       String?  @map("class_grade")
+  phone            String?  @map("phone")
+  email            String?  @map("email")
+  visitorTokenHash String   @unique @map("visitor_token_hash")
+  lastMessageAt    DateTime @default(now()) @map("last_message_at")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  facultyProfile FacultyProfile               @relation(fields: [facultyProfileId], references: [id], onDelete: Cascade)
+  messages       FacultyConversationMessage[]
+
+  @@index([facultyProfileId, lastMessageAt])
+  @@map("faculty_conversations")
+}
+
+model FacultyConversationMessage {
+  id             String               @id @default(cuid()) @map("id")
+  conversationId String               @map("conversation_id")
+  sender         FacultyMessageSender
+  body           String
+  readAt         DateTime?            @map("read_at")
+  createdAt      DateTime             @default(now()) @map("created_at")
+
+  conversation FacultyConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  attachments  FacultyConversationAttachment[]
+
+  @@index([conversationId, createdAt])
+  @@index([conversationId, sender, readAt])
+  @@map("faculty_conversation_messages")
+}
+
+model FacultyConversationAttachment {
+  id           String   @id @default(cuid()) @map("id")
+  messageId    String   @map("message_id")
+  originalName String   @map("original_name")
+  storageName  String   @unique @map("storage_name")
+  mimeType     String   @map("mime_type")
+  size         Int      @map("size")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  message FacultyConversationMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@map("faculty_conversation_attachments")
+}
+
+enum FacultyMessageIdentityType {
+  VISITOR
+  FACULTY
+}
+
+model FacultyMessageModeration {
+  id                String                    @id @default(cuid()) @map("id")
+  identityType      FacultyMessageIdentityType @map("identity_type")
+  identityHash      String                    @map("identity_hash")
+  strikes           Int                       @default(0) @map("strikes")
+  lastViolationAt   DateTime?                 @map("last_violation_at")
+  cooldownUntil     DateTime?                 @map("cooldown_until")
+  blockedUntil      DateTime?                 @map("blocked_until")
+  manualBlockedAt   DateTime?                 @map("manual_blocked_at")
+  manualBlockedBy   String?                   @map("manual_blocked_by")
+  createdAt         DateTime                  @default(now()) @map("created_at")
+  updatedAt         DateTime                  @updatedAt @map("updated_at")
+
+  @@unique([identityType, identityHash])
+  @@index([blockedUntil])
+  @@map("faculty_message_moderation")
+}
+
+// ----------------------------------------------------
+// CONTENT & STRUCTURE
+// ----------------------------------------------------
+
+model Committee {
+  id            String   @id @default(cuid()) @map("id")
+  institutionId String?  @map("institution_id")
+  name          String   @map("name")
+  slug          String   @map("slug")
+  description   String?  @map("description")
+  order         Int      @default(0) @map("order")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  institution Institution?      @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  members     CommitteeMember[]
+
+  @@unique([slug, institutionId])
+  @@index([institutionId])
+  @@map("committees")
+}
+
+model CommitteeMember {
+  id          String   @id @default(cuid()) @map("id")
+  committeeId String   @map("committee_id")
+  name        String   @map("name")
+  designation String   @map("designation")
+  role        String   @default("Member") @map("role")
+  photoUrl    String?  @map("photo_url")
+  order       Int      @default(0) @map("order")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  committee Committee @relation(fields: [committeeId], references: [id], onDelete: Cascade)
+
+  @@index([committeeId])
+  @@map("committee_members")
+}
+
+model Founder {
+  id        String   @id @default(cuid()) @map("id")
+  name      String   @map("name")
+  title     String   @map("title")
+  bio       String?  @map("bio")
+  period    String?  @map("period")
+  photoUrl  String?  @map("photo_url")
+  order     Int      @default(0) @map("order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([order])
+  @@map("founders")
+}
+
+model Honour {
+  id          String   @id @default(cuid()) @map("id")
+  title       String   @map("title")
+  recipient   String   @map("recipient")
+  year        Int      @map("year")
+  description String?  @map("description")
+  photoUrl    String?  @map("photo_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([year])
+  @@map("honours")
+}
+
+model Notice {
+  id              String           @id @default(cuid()) @map("id")
+  institutionCode InstitutionCode? @map("institution_code")
+  title           String           @map("title")
+  content         String?          @map("content")
+  date            String           @map("date") // YYYY-MM-DD
+  pinned          Boolean          @default(false) @map("pinned")
+  pdfUrl          String?          @map("pdf_url")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@index([institutionCode])
+  @@index([date])
+  @@index([pinned])
+  @@map("notices")
+}
+
+model Activity {
+  id              String           @id @default(cuid()) @map("id")
+  institutionCode InstitutionCode? @map("institution_code")
+  title           String           @map("title")
+  description     String           @map("description")
+  category        String           @default("General") @map("category")
+  date            String           @map("date")
+  photos          String[]         @default([]) @map("photos")
+  createdAt       DateTime         @default(now()) @map("created_at")
+
+  @@index([institutionCode])
+  @@index([date])
+  @@map("activities")
+}
+
+model NewsEvent {
+  id              String           @id @default(cuid()) @map("id")
+  institutionCode InstitutionCode? @map("institution_code")
+  title           String           @map("title")
+  excerpt         String?          @map("excerpt")
+  content         String           @map("content")
+  date            String           @map("date")
+  coverUrl        String?          @map("cover_url")
+  createdAt       DateTime         @default(now()) @map("created_at")
+
+  @@index([institutionCode])
+  @@index([date])
+  @@map("news_events")
+}
+
+model Event {
+  id              String           @id @default(cuid()) @map("id")
+  institutionCode InstitutionCode? @map("institution_code")
+  title           String           @map("title")
+  description     String?          @map("description")
+  startDate       String           @map("start_date")
+  endDate         String?          @map("end_date")
+  location        String?          @map("location")
+  isUpcoming      Boolean          @default(true) @map("is_upcoming")
+  coverUrl        String?          @map("cover_url")
+  pdfUrl          String?          @map("pdf_url")
+  photos          Json?            @default("[]") @map("photos")
+  documents       Json?            @default("[]") @map("documents")
+  videoUrl        String?          @map("video_url")
+  createdAt       DateTime         @default(now()) @map("created_at")
+
+  @@index([institutionCode])
+  @@index([isUpcoming])
+  @@index([startDate])
+  @@map("events")
+}
+
+model GalleryAlbum {
+  id              String           @id @default(cuid()) @map("id")
+  institutionCode InstitutionCode? @map("institution_code")
+  title           String           @map("title")
+  description     String?          @map("description")
+  category        String           @default("Campus") @map("category")
+  coverUrl        String?          @map("cover_url")
+  createdAt       DateTime         @default(now()) @map("created_at")
+
+  items GalleryItem[]
+
+  @@index([institutionCode])
+  @@map("gallery_albums")
+}
+
+model GalleryItem {
+  id        String   @id @default(cuid()) @map("id")
+  albumId   String   @map("album_id")
+  title     String   @map("title")
+  mediaUrl  String   @map("media_url")
+  caption   String?  @map("caption")
+  order     Int      @default(0) @map("order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  album GalleryAlbum @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  @@index([albumId])
+  @@map("gallery_items")
+}
+
+model BatchPhoto {
+  id              String          @id @default(cuid()) @map("id")
+  institutionCode InstitutionCode @map("institution_code")
+  batchYear       Int             @map("batch_year")
+  title           String          @map("title")
+  photoUrl        String          @map("photo_url")
+  caption         String?         @map("caption")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  @@index([institutionCode, batchYear])
+  @@map("batch_photos")
+}
+
+model Blog {
+  id         String   @id @default(cuid()) @map("id")
+  authorName String   @map("author_name")
+  authorRole String   @default("Alumnus") @map("author_role")
+  school     String?  @map("school")
+  title      String   @map("title")
+  body       String   @map("body")
+  coverUrl   String?  @map("cover_url")
+  status     String   @default("PUBLISHED") @map("status")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("blogs")
+}
+
+model Comment {
+  id         String   @id @default(cuid()) @map("id")
+  authorName String   @map("author_name")
+  content    String   @map("content")
+  targetType String   @map("target_type") // BLOG, POST, GENERAL
+  targetId   String?  @map("target_id")
+  status     String   @default("APPROVED") @map("status") // PENDING, APPROVED, REJECTED
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([targetType, targetId])
+  @@index([status])
+  @@map("comments")
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid()) @map("id")
+  name      String   @map("name")
+  email     String   @map("email")
+  phone     String?  @map("phone")
+  subject   String   @map("subject")
+  message   String   @map("message")
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("contact_messages")
+}
+
+model Page {
+  id              String   @id @default(cuid()) @map("id")
+  slug            String   @unique @map("slug")
+  title           String   @map("title")
+  metaDescription String?  @map("meta_description")
+  published       Boolean  @default(true) @map("published")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  sections PageSection[]
+
+  @@index([slug])
+  @@map("pages")
+}
+
+model PageSection {
+  id       String  @id @default(cuid()) @map("id")
+  pageId   String  @map("page_id")
+  type     String  @map("type")
+  order    Int     @default(0) @map("order")
+  title    String? @map("title")
+  subtitle String? @map("subtitle")
+  content  Json    @map("content")
+  visible  Boolean @default(true) @map("visible")
+
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId])
+  @@index([order])
+  @@map("page_sections")
+}
+
+model Menu {
+  id        String   @id @default(cuid()) @map("id")
+  name      String   @unique @map("name")
+  location  String   @unique @map("location") // HEADER, FOOTER, UTILITY
+  createdAt DateTime @default(now()) @map("created_at")
+
+  items MenuItem[]
+
+  @@map("menus")
+}
+
+model MenuItem {
+  id        String   @id @default(cuid()) @map("id")
+  menuId    String   @map("menu_id")
+  parentId  String?  @map("parent_id")
+  label     String   @map("label")
+  url       String   @map("url")
+  order     Int      @default(0) @map("order")
+  target    String   @default("_self") @map("target")
+  icon      String?  @map("icon")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  menu     Menu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  parent   MenuItem?  @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children MenuItem[] @relation("MenuHierarchy")
+
+  @@index([menuId])
+  @@index([parentId])
+  @@index([order])
+  @@map("menu_items")
+}
+
+model Media {
+  id            String   @id @default(cuid()) @map("id")
+  filename      String   @unique @map("filename")
+  originalName  String   @map("original_name")
+  mimeType      String   @map("mime_type")
+  sizeBytes     Int      @map("size_bytes")
+  width         Int      @map("width")
+  height        Int      @map("height")
+  blurhash      String   @default("L6PZfSi_.AyE_3t7t7R**0o#DgR4") @map("blurhash")
+  dominantColor String   @default("#9b1e1e") @map("dominant_color")
+  focalPoint    Json?    @map("focal_point")
+  variants      Json     @map("variants")
+  altText       String?  @map("alt_text")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([mimeType])
+  @@map("media")
+}
+
+model SiteSetting {
+  id          String   @id @default(cuid()) @map("id")
+  key         String   @unique @map("key")
+  value       String   @map("value")
+  type        String   @default("STRING") @map("type") // STRING, JSON, BOOLEAN, NUMBER
+  description String?  @map("description")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([key])
+  @@map("site_settings")
+}
+
+model Stat {
+  id     String  @id @default(cuid()) @map("id")
+  key    String  @unique @map("key")
+  label  String  @map("label")
+  value  Int     @map("value")
+  prefix String? @map("prefix")
+  suffix String? @map("suffix")
+  order  Int     @default(0) @map("order")
+  icon   String? @map("icon")
+
+  @@index([order])
+  @@map("stats")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid()) @map("id")
+  userId    String?  @map("user_id")
+  action    String   @map("action")
+  entity    String   @map("entity")
+  entityId  String?  @map("entity_id")
+  details   Json?    @map("details")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ----------------------------------------------------
+// SOCIAL
+// ----------------------------------------------------
+
+enum SocialSource {
+  FACEBOOK
+  INSTAGRAM
+}
+
+enum SocialItemType {
+  POST
+  PHOTO
+  EVENT
+  ALBUM
+}
+
+model SocialItem {
+  id          String         @id @default(cuid()) @map("id")
+  source      SocialSource   @map("source")
+  externalId  String         @unique @map("external_id")
+  type        SocialItemType @map("type")
+  text        String?        @map("text")
+  mediaUrl    String?        @map("media_url")
+  permalink   String         @map("permalink")
+  publishedAt DateTime       @map("published_at")
+  eventStart  DateTime?      @map("event_start")
+  eventEnd    DateTime?      @map("event_end")
+  eventPlace  String?        @map("event_place")
+  createdAt   DateTime       @default(now()) @map("created_at")
+
+  @@index([source])
+  @@index([type])
+  @@index([publishedAt])
+  @@map("social_items")
+}
+
+model SocialSyncState {
+  id           String       @id @default(cuid()) @map("id")
+  source       SocialSource @unique @map("source")
+  lastSyncAt   DateTime?    @map("last_sync_at")
+  status       String       @default("IDLE") @map("status")
+  errorMessage String?      @map("error_message")
+  itemsCount   Int          @default(0) @map("items_count")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  @@map("social_sync_states")
+}
+
+// ----------------------------------------------------
+// MAGAZINE (DAILY PATRIKA)
+// ----------------------------------------------------
+
+enum MagazineStatus {
+  DRAFT
+  PROCESSING
+  PUBLISHED
+  ARCHIVED
+}
+
+model MagazineIssue {
+  id             String         @id @default(cuid()) @map("id")
+  publishDate    String         @unique @map("publish_date") // YYYY-MM-DD
+  title          String         @map("title")
+  status         MagazineStatus @default(PUBLISHED) @map("status")
+  coverUrl       String?        @map("cover_url")
+  pageCount      Int            @default(0) @map("page_count")
+  wordCount      Int            @default(0) @map("word_count")
+  readingMinutes Int            @default(5) @map("reading_minutes")
+  keywords       String[]       @default([]) @map("keywords")
+  excerpt        String?        @map("excerpt")
+  isLocked       Boolean        @default(true) @map("is_locked")
+  pdfPath        String?        @map("pdf_path")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  pages    MagazineIssuePage[]
+  articles MagazineArticle[]
+
+  @@index([publishDate])
+  @@index([status])
+  @@map("magazine_issues")
+}
+
+model MagazineIssuePage {
+  id            String   @id @default(cuid()) @map("id")
+  issueId       String   @map("issue_id")
+  pageNo        Int      @map("page_no")
+  text          String   @default("") @map("text")
+  textItems     Json?    @map("text_items") // [{ str, dir, transform, width, height }]
+  imageVariants Json     @map("image_variants") // { 640, 1024, 1600, zoom, thumb }
+  blurhash      String   @default("L6PZfSi_.AyE_3t7t7R**0o#DgR4") @map("blurhash")
+  hasOcr        Boolean  @default(false) @map("has_ocr")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  issue MagazineIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@unique([issueId, pageNo])
+  @@index([issueId])
+  @@map("magazine_issue_pages")
+}
+
+model MagazineArticle {
+  id        String   @id @default(cuid()) @map("id")
+  issueId   String   @map("issue_id")
+  title     String   @map("title")
+  startPage Int      @map("start_page")
+  author    String?  @map("author")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  issue MagazineIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@index([issueId])
+  @@map("magazine_articles")
+}
+
+// ----------------------------------------------------
+// ALUMNI POSTS
+// ----------------------------------------------------
+
+model Post {
+  id          String   @id @default(cuid()) @map("id")
+  authorId    String   @map("author_id")
+  title       String   @map("title")
+  body        String   @map("body")
+  excerpt     String?  @map("excerpt")
+  coverUrl    String?  @map("cover_url")
+  status      String   @default("PUBLISHED") @map("status") // DRAFT, PENDING, PUBLISHED
+  isLocked    Boolean  @default(true) @map("is_locked")
+  publishedAt DateTime @default(now()) @map("published_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId])
+  @@index([status])
+  @@index([publishedAt])
+  @@map("posts")
+}
+
+// ----------------------------------------------------
+// ACCESS & PAYMENTS (SUPPORTER PASS)
+// ----------------------------------------------------
+
+enum PassSource {
+  PAYMENT
+  MANUAL
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model AccessSettings {
+  id                     String   @id @default("singleton") @map("id")
+  minAmount              Int      @default(10) @map("min_amount")
+  maxAmount              Int      @default(1000) @map("max_amount")
+  defaultAmount          Int      @default(100) @map("default_amount")
+  snapStops              Json     @default("[10, 20, 50, 100, 250, 500, 1000]") @map("snap_stops")
+  freeReadPolicyMagazine String   @default("METERED_N") @map("free_read_policy_magazine")
+  freeReadCountMagazine  Int      @default(5) @map("free_read_count_magazine")
+  freeReadPolicyPosts    String   @default("METERED_N") @map("free_read_policy_posts")
+  freeReadCountPosts     Int      @default(5) @map("free_read_count_posts")
+  passDurationDays       Int?     @map("pass_duration_days")
+  passAppliesTo          String   @default("BOTH") @map("pass_applies_to") // MAGAZINE, POSTS, BOTH
+  purposeText            String   @default("Your voluntary contribution supports student scholarships, science lab upgrades, and library facilities at Shri Nirakar Vidhyalaya.") @map("purpose_text")
+  tierLabels             Json     @default("{\"10\": \"Student Supporter\", \"50\": \"Patron of Learning\", \"100\": \"Vidya Sahayak\", \"250\": \"Heritage Builder\", \"500\": \"Guardian Pillar\", \"1000\": \"Distinguished Benefactor\"}") @map("tier_labels")
+  thankYouMessages       Json     @default("{\"10\": \"Thank you for supporting our student library!\", \"50\": \"Your support fuels bright ambitions.\", \"100\": \"Warmest gratitude from the Nirakar family.\", \"250\": \"Your generosity strengthens our foundation.\", \"500\": \"You are a beacon of hope for our learners.\", \"1000\": \"Exceptional contribution towards rural Goan education.\"}") @map("thank_you_messages")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  @@map("access_settings")
+}
+
+model SupporterPass {
+  id        String     @id @default(cuid()) @map("id")
+  userId    String     @map("user_id")
+  amount    Int        @map("amount")
+  source    PassSource @default(PAYMENT) @map("source")
+  grantedAt DateTime   @default(now()) @map("granted_at")
+  expiresAt DateTime?  @map("expires_at")
+  paymentId String?    @map("payment_id")
+  orderId   String?    @map("order_id")
+  notes     String?    @map("notes")
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  receipt Receipt?
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("supporter_passes")
+}
+
+model Order {
+  id              String      @id @default(cuid()) @map("id")
+  orderId         String      @unique @map("order_id")
+  userId          String?     @map("user_id")
+  amount          Int         @map("amount")
+  currency        String      @default("INR") @map("currency")
+  status          OrderStatus @default(PENDING) @map("status")
+  razorpayOrderId String      @unique @map("razorpay_order_id")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  user     User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  payments Payment[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("orders")
+}
+
+model Payment {
+  id                String   @id @default(cuid()) @map("id")
+  paymentId         String   @unique @map("payment_id")
+  orderId           String   @map("order_id")
+  userId            String?  @map("user_id")
+  amount            Int      @map("amount")
+  currency          String   @default("INR") @map("currency")
+  method            String?  @map("method")
+  status            String   @map("status")
+  signature         String?  @map("signature")
+  razorpayPaymentId String   @unique @map("razorpay_payment_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([userId])
+  @@map("payments")
+}
+
+model WebhookEvent {
+  id          String   @id @default(cuid()) @map("id")
+  eventId     String   @unique @map("event_id")
+  eventType   String   @map("event_type")
+  payload     Json     @map("payload")
+  processedAt DateTime @default(now()) @map("processed_at")
+
+  @@index([eventId])
+  @@map("webhook_events")
+}
+
+model ReadEvent {
+  id          String   @id @default(cuid()) @map("id")
+  userId      String?  @map("user_id")
+  deviceId    String   @map("device_id")
+  itemType    String   @map("item_type") // MAGAZINE, POST
+  itemId      String   @map("item_id")
+  firstReadAt DateTime @default(now()) @map("first_read_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([deviceId, itemType, itemId])
+  @@index([userId])
+  @@index([deviceId])
+  @@index([itemType, itemId])
+  @@map("read_events")
+}
+
+model Receipt {
+  id              String   @id @default(cuid()) @map("id")
+  receiptNo       String   @unique @map("receipt_no")
+  supporterPassId String   @unique @map("supporter_pass_id")
+  paymentId       String?  @map("payment_id")
+  userEmail       String   @map("user_email")
+  userName        String   @map("user_name")
+  amount          Int      @map("amount")
+  issuedAt        DateTime @default(now()) @map("issued_at")
+  pdfUrl          String?  @map("pdf_url")
+
+  supporterPass SupporterPass @relation(fields: [supporterPassId], references: [id], onDelete: Cascade)
+
+  @@index([receiptNo])
+  @@map("receipts")
+}
+
+// ----------------------------------------------------
+// ADMISSIONS & STUDENT ENROLLMENT (DYNAMIC SYSTEM)
+// ----------------------------------------------------
+
+enum AdmissionStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  VERIFIED
+  ADMITTED
+  REJECTED
+}
+
+model AdmissionConfig {
+  id               String   @id @default("default") @map("id")
+  isOpen           Boolean  @default(true) @map("is_open")
+  academicYear     String   @default("2026–2027") @map("academic_year")
+  announcementText String?  @default("Admissions Open for Academic Year 2026–2027 across Secondary & Higher Secondary campuses.") @map("announcement_text")
+  guidelinesUrl    String?  @map("guidelines_url")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("admission_configs")
+}
+
+model AdmissionApplication {
+  id                 String          @id @default(cuid()) @map("id")
+  applicationNumber  String          @unique @map("application_number")
+  academicYear       String          @map("academic_year")
+  institutionCode    InstitutionCode @map("institution_code")
+  institutionName    String          @map("institution_name")
+  gradeApplied       String          @map("grade_applied")
+  stream             String?         @map("stream")
+  studentName        String          @map("student_name")
+  dob                DateTime        @map("dob")
+  gender             String          @map("gender")
+  placeOfBirth       String?         @map("place_of_birth")
+  nationality        String          @default("Indian") @map("nationality")
+  motherTongue       String          @default("Konkani") @map("mother_tongue")
+  aadhaarNumber      String          @map("aadhaar_number")
+  category           String          @default("GENERAL") @map("category")
+  bloodGroup         String?         @map("blood_group")
+  fatherName         String          @map("father_name")
+  fatherOccupation   String?         @map("father_occupation")
+  motherName         String          @map("mother_name")
+  motherOccupation   String?         @map("mother_occupation")
+  primaryPhone       String          @map("primary_phone")
+  alternatePhone     String?         @map("alternate_phone")
+  email              String          @map("email")
+  address            String          @map("address")
+  village            String          @map("village")
+  taluka             String          @default("Canacona") @map("taluka")
+  district           String          @default("South Goa") @map("district")
+  state              String          @default("Goa") @map("state")
+  pincode            String          @map("pincode")
+  previousSchool     String?         @map("previous_school")
+  previousClass      String?         @map("previous_class")
+  previousPercentage Float?          @map("previous_percentage")
+  status             AdmissionStatus @default(SUBMITTED) @map("status")
+  adminRemarks       String?         @map("admin_remarks")
+  pdfPath            String?         @map("pdf_path")
+  ipAddress          String?         @map("ip_address")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+
+  @@index([applicationNumber])
+  @@index([institutionCode])
+  @@index([status])
+  @@index([academicYear])
+  @@index([primaryPhone])
+  @@map("admission_applications")
+}

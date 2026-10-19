@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #fdf3f3;
+  --color-brand-100: #fce5e5;
+  --color-brand-200: #f9cfcf;
+  --color-brand-300: #f4abab;
+  --color-brand-400: #eb7979;
+  --color-brand-500: #dc4848;
+  --color-brand-600: #bd2828;
+  --color-brand-700: #9b1e1e;
+  --color-brand-800: #7f1d1d;
+  --color-brand-900: #681c1c;
+  --color-brand-950: #3a0a0a;
+
+  --color-accent-50: #fdfbf0;
+  --color-accent-100: #faf5dc;
+  --color-accent-200: #f5eab8;
+  --color-accent-300: #eed98b;
+  --color-accent-400: #e4c35c;
+  --color-accent-500: #d7ab36;
+  --color-accent-600: #bc8e29;
+  --color-accent-700: #956b23;
+  --color-accent-800: #795523;
+  --color-accent-900: #654722;
+  --color-accent-950: #3a2610;
+
+  --font-serif: "Cinzel", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.faculty-messages-page {
+  --font-serif: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-sans);
+}
+
+:focus-visible {
+  outline: 2px solid #9b1e1e;
+  outline-offset: 2px;
+}

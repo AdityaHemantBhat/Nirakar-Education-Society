@@ -1,0 +1,71 @@
+/* =========================================================================
+   SVG Curve Page Transition (agentPritam47/svg-page-transition)
+   Light Palette - Single Color (#82A0FF), No Yellow, Light & Airy
+   ========================================================================= */
+
+.svg-transition-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  background-color: transparent;
+
+  /* Google Developer Performance Isolation */
+  contain: strict;
+  will-change: opacity;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.svg-transition-canvas {
+  width: 100%;
+  height: 100%;
+  transform: scale(1.3);
+  -webkit-transform: scale(1.3);
+  display: block;
+  pointer-events: none;
+  filter: drop-shadow(0 0 30px rgba(11, 19, 43, 0.75));
+}
+
+/* Centered Society Insignia Badge (Clean & Light - Zero Yellow) */
+.svg-transition-badge {
+  position: absolute;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  max-width: 90vw;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+/* Page Content Wrapper: Smooth, hardware-accelerated entrance reveal */
+.page-transition-content {
+  width: 100%;
+  min-height: 100vh;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Accessibility: Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  .svg-transition-overlay {
+    transition: opacity 0.2s ease-out !important;
+  }
+}

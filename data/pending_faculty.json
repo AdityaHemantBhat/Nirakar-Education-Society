@@ -1,0 +1,41 @@
+[
+  {
+    "id": "fac-app-1792343867637-766",
+    "name": "Dr. Ramesh Prabhu",
+    "firstName": "Ramesh",
+    "lastName": "Prabhu",
+    "email": "ramesh.prabhu@nirakar.org",
+    "phone": "",
+    "employeeCode": "NES-FAC-5778",
+    "institutionCode": "NIRAKAR_HS",
+    "institutionName": "Shri Nirakar Vidyalaya",
+    "department": "Science & Laboratories",
+    "qualification": "M.Sc. Physics",
+    "experienceYears": 10,
+    "experience": "10 Years",
+    "subjects": [],
+    "appliedAt": "2026-10-18T17:17:47.637Z",
+    "status": "PENDING"
+  },
+  {
+    "id": "fac-app-1792341989953-641",
+    "name": "Anant Prabhu Dessai",
+    "firstName": "Anant",
+    "lastName": "Prabhu Dessai",
+    "email": "anant.dessai@nirakar.org",
+    "phone": "+91 98221 12345",
+    "employeeCode": "NES-FAC-5001",
+    "institutionCode": "ANGLE_HSS",
+    "institutionName": "S. S. Angle Higher Secondary School",
+    "department": "Mathematics & Computer Science",
+    "qualification": "M.Sc. Mathematics, B.Ed.",
+    "experienceYears": 15,
+    "experience": "15 Years",
+    "subjects": [
+      "Pure Mathematics",
+      "Statistics"
+    ],
+    "appliedAt": "2026-10-18T16:46:29.953Z",
+    "status": "PENDING"
+  }
+]
