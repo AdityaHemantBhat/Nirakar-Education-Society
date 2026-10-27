@@ -13,7 +13,6 @@ import {
   Volume2,
   VolumeX,
   X,
-  Lock,
 } from 'lucide-react';
 
 export interface PageData {
@@ -28,7 +27,6 @@ export interface PageData {
     zoom?: string;
   };
   blurhash?: string;
-  isLockedPage?: boolean;
 }
 
 export interface TocArticle {
@@ -43,8 +41,6 @@ interface FlipbookReaderProps {
   publishDate: string;
   pages: PageData[];
   articles?: TocArticle[];
-  isPaywalled?: boolean;
-  onOpenPassSheet?: () => void;
   readerName?: string;
 }
 
@@ -53,8 +49,6 @@ export const FlipbookReader: React.FC<FlipbookReaderProps> = ({
   publishDate,
   pages = [],
   articles = [],
-  isPaywalled = false,
-  onOpenPassSheet,
   readerName = 'Alumni Reader',
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -72,6 +66,8 @@ export const FlipbookReader: React.FC<FlipbookReaderProps> = ({
   // Initialize PageFlip instance
   useEffect(() => {
     if (!containerRef.current || pages.length === 0) return;
+    setCurrentPage(0);
+    setTotalPages(pages.length);
 
     const isMobile = window.innerWidth < 1024;
     const width = isMobile ? Math.min(window.innerWidth - 32, 480) : 520;
@@ -100,10 +96,6 @@ export const FlipbookReader: React.FC<FlipbookReaderProps> = ({
       pageFlip.on('flip', (e: any) => {
         setCurrentPage(e.data);
 
-        // Paywall enforcement if user flips beyond preview page 2
-        if (isPaywalled && e.data >= 2) {
-          onOpenPassSheet?.();
-        }
       });
 
       flipbookRef.current = pageFlip;
@@ -121,7 +113,7 @@ export const FlipbookReader: React.FC<FlipbookReaderProps> = ({
         }
       }
     };
-  }, [pages.length, isPaywalled, onOpenPassSheet]);
+  }, [pages.length]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -152,10 +144,6 @@ export const FlipbookReader: React.FC<FlipbookReaderProps> = ({
   };
 
   const jumpToPage = (pageNum: number) => {
-    if (isPaywalled && pageNum > 2) {
-      onOpenPassSheet?.();
-      return;
-    }
     flipbookRef.current?.flip(pageNum);
     setIsTocOpen(false);
   };
@@ -166,20 +154,20 @@ export const FlipbookReader: React.FC<FlipbookReaderProps> = ({
 
   return (
     <div
-      className={`relative w-full min-h-[85vh] bg-[#221c1a] text-paper flex flex-col justify-between overflow-hidden select-none ${
+      className={`relative flex min-h-screen w-full flex-col justify-between overflow-hidden bg-[#171510] text-paper select-none ${
         isFullscreen ? 'fixed inset-0 z-50 h-screen' : ''
       }`}
       style={{
-        backgroundImage: 'radial-gradient(#3a2f2b 1px, transparent 1px)',
-        backgroundSize: '24px 24px',
+        backgroundImage: 'radial-gradient(#403a2f 1px, transparent 1px), radial-gradient(ellipse at center, rgba(179,119,37,0.12), transparent 58%)',
+        backgroundSize: '28px 28px, 100% 100%',
       }}
     >
       {/* Top Paper Reader Toolbar */}
-      <div className="bg-[#181312]/90 border-b border-stone-800 px-4 py-2.5 flex items-center justify-between text-xs font-serif backdrop-blur-md z-30">
+      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-amber-100/10 bg-[#171510]/90 px-4 py-3 text-xs font-serif backdrop-blur-md sm:px-8">
         <div className="flex items-center space-x-3">
           <a
             href="/magazine"
-            className="text-stone-400 hover:text-white transition-colors flex items-center gap-1"
+            className="flex items-center gap-1 text-stone-400 transition-colors hover:text-amber-200"
           >
             <ChevronLeft size={16} />
             <span className="hidden sm:inline">All Issues</span>
@@ -235,9 +223,9 @@ export const FlipbookReader: React.FC<FlipbookReaderProps> = ({
       </div>
 
       {/* Main Flipbook Stage with Paper Thickness & Desk Vignette */}
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-8 relative overflow-hidden">
+      <div className="relative flex flex-1 items-center justify-center overflow-hidden px-3 py-8 sm:px-8 sm:py-10">
         {/* Soft Warm Desk Light Vignette */}
-        <div className="absolute inset-0 bg-radial-gradient from-transparent via-black/30 to-black/80 pointer-events-none" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(202,138,50,0.12),transparent_38%),radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.75)_100%)]" />
 
         {/* Client-side faint reader watermark overlay (Section 8 Protection) */}
         <div className="absolute inset-0 pointer-events-none z-20 flex items-center justify-center opacity-[0.03] select-none text-2xl font-mono text-white rotate-[-25deg]">
@@ -258,43 +246,22 @@ export const FlipbookReader: React.FC<FlipbookReaderProps> = ({
                     boxShadow: 'inset 0 0 30px rgba(0,0,0,0.06)',
                   }}
                 >
-                  {p.isLockedPage ? (
-                    /* Locked Page Placeholder with Pass Trigger */
-                    <div className="w-full h-full p-8 flex flex-col items-center justify-center text-center space-y-4 bg-stone-100">
-                      <div className="w-16 h-16 rounded-full bg-brand-100 text-brand-800 flex items-center justify-center">
-                        <Lock size={28} />
-                      </div>
-                      <h4 className="font-serif text-lg font-bold text-ink">Supporter Pass Required</h4>
-                      <p className="text-xs text-stone-600 max-w-xs">
-                        Page {p.pageNo} is reserved for active supporters. Contribute from ₹10 to unlock all issues and the archive.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={onOpenPassSheet}
-                        className="px-5 py-2.5 rounded-xl bg-brand-700 text-white font-serif text-xs font-bold shadow-md hover:bg-brand-800"
-                      >
-                        Unlock with Supporter Pass
-                      </button>
-                    </div>
-                  ) : (
-                    /* Normal Page Spread Image */
-                    <div className="w-full h-full relative">
-                      <img
-                        src={p.imageVariants.w1024 || p.imageVariants.w640 || p.imageVariants.zoom || ''}
-                        alt={`Page ${p.pageNo}`}
-                        className="w-full h-full object-contain pointer-events-none"
-                        loading={idx <= 3 ? 'eager' : 'lazy'}
-                      />
-                      {/* Subtle Page Edge Paper Curl / Shadow */}
-                      <div className="absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-black/15 to-transparent pointer-events-none" />
-                      <div className="absolute inset-y-0 right-0 w-4 bg-gradient-to-l from-black/10 to-transparent pointer-events-none" />
+                  <div className="w-full h-full relative">
+                    <img
+                      src={p.imageVariants.w1024 || p.imageVariants.w640 || p.imageVariants.zoom || ''}
+                      alt={`Page ${p.pageNo}`}
+                      className="w-full h-full object-contain pointer-events-none"
+                      loading={idx <= 3 ? 'eager' : 'lazy'}
+                    />
+                    {/* Subtle Page Edge Paper Curl / Shadow */}
+                    <div className="absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-black/15 to-transparent pointer-events-none" />
+                    <div className="absolute inset-y-0 right-0 w-4 bg-gradient-to-l from-black/10 to-transparent pointer-events-none" />
 
-                      {/* Page number footer */}
-                      <div className="absolute bottom-2 inset-x-0 text-center text-[10px] font-mono text-stone-400">
-                        {p.pageNo}
-                      </div>
+                    {/* Page number footer */}
+                    <div className="absolute bottom-2 inset-x-0 text-center text-[10px] font-mono text-stone-400">
+                      {p.pageNo}
                     </div>
-                  )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -389,11 +356,6 @@ export const FlipbookReader: React.FC<FlipbookReaderProps> = ({
           <span>
             Page {currentPage + 1} of {totalPages}
           </span>
-          {isPaywalled && (
-            <span className="text-[10px] text-accent-400 font-bold px-2 py-0.5 rounded bg-accent-950/60 border border-accent-800/60">
-              Preview Mode
-            </span>
-          )}
         </div>
 
         {/* Thumbnail Quick Strip */}

@@ -146,7 +146,7 @@ export async function analyzePdfIssue(
     const page = await doc.getPage(i);
     const textContent = await page.getTextContent();
 
-    let pageText = textContent.items
+    const pageText = textContent.items
       .map((item: any) => item.str || '')
       .join(' ')
       .trim();

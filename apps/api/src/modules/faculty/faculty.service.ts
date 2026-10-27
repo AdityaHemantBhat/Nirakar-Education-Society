@@ -120,9 +120,9 @@ function toSlug(str: string): string {
 export class FacultyService {
   constructor(private repo = new FacultyRepository()) {}
 
-  async listPublished(institutionCode?: any) {
+  async listPublished(institutionCode?: any, search?: string) {
     const list = await this.repo.findByInstitution(institutionCode);
-    return list.map((f: any) => {
+    const mapped = list.map((f: any) => {
       const toggles = (f.publicContactToggles || {}) as any;
       const name =
         toggles.name ||
@@ -139,6 +139,15 @@ export class FacultyService {
         institutionName: f.institution?.name || f.institutionCode,
       };
     });
+
+    if (!search) return mapped;
+    const q = search.toLowerCase();
+    return mapped.filter((f: any) =>
+      f.name?.toLowerCase().includes(q) ||
+      f.department?.toLowerCase().includes(q) ||
+      f.designation?.toLowerCase().includes(q) ||
+      (Array.isArray(f.subjects) && f.subjects.some((s: string) => s.toLowerCase().includes(q)))
+    );
   }
 
   async getMyProfile(userId: string) {
@@ -299,7 +308,7 @@ export class FacultyService {
   async approveApplicant(id: string) {
     const apps = readPendingApps();
     const appIndex = apps.findIndex((a) => a.id === id);
-    let target = appIndex !== -1 ? apps[appIndex] : null;
+    const target = appIndex !== -1 ? apps[appIndex] : null;
 
     if (target) {
       target.status = 'PUBLISHED';
@@ -313,7 +322,7 @@ export class FacultyService {
         let inst = await prisma.institution.findFirst({ where: { code: target.institutionCode as any } });
         if (!inst) inst = await prisma.institution.findFirst();
 
-        let user = target.email ? await prisma.user.findFirst({ where: { email: target.email } }) : null;
+        const user = target.email ? await prisma.user.findFirst({ where: { email: target.email } }) : null;
 
         await prisma.facultyProfile.upsert({
           where: user ? { userId: user.id } : { id },

@@ -124,7 +124,20 @@ export class HomeRepository {
       prisma.galleryItem.findMany({
         take: 8,
         orderBy: { createdAt: 'desc' },
-        select: { id: true, title: true, mediaUrl: true, caption: true },
+        select: {
+          id: true,
+          title: true,
+          mediaUrl: true,
+          caption: true,
+          album: {
+            select: {
+              id: true,
+              title: true,
+              institutionCode: true,
+              category: true,
+            },
+          },
+        },
       }),
 
       // 9. Social Feed (Facebook / Instagram)

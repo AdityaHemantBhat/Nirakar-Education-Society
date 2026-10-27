@@ -4,7 +4,7 @@ import { config } from './config/index.js';
 import { logger } from './lib/logger.js';
 import { startWorker, boss } from './jobs/boss.js';
 import { initSocketIO } from './lib/socket.js';
-// Faculty routes and controllers reloaded - verified
+import { migrateLegacyLibrarySources } from './modules/library/library.service.js';
 
 async function main() {
   const app = createApp();
@@ -22,6 +22,14 @@ async function main() {
   // Start background queue worker concurrently without blocking HTTP listener
   startWorker().catch((err) => {
     logger.warn({ err }, 'PgBoss background worker startup issue');
+  });
+
+  /* The source PDFs of earlier volumes were written into the public
+     uploads directory. They are private documents, so they are moved out
+     of it. This must not hold up the server, so it runs alongside
+     everything else. */
+  migrateLegacyLibrarySources().catch((err) => {
+    logger.warn({ err }, 'Could not move the older library sources out of the public directory');
   });
 
   const shutdown = async (signal: string) => {
@@ -50,6 +58,4 @@ main().catch((err) => {
   logger.fatal({ err }, 'Failed to start API server');
   process.exit(1);
 });
-// Nirakar API Server reloaded with delete routes
-
 

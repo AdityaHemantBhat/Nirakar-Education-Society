@@ -64,10 +64,10 @@ export const ContactPage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Contact Us | Shree Nirakar Education Society</title>
+        <title>Contact Us | Shri Nirakar Education Society</title>
         <meta
           name="description"
-          content="Get in touch with Shree Nirakar Education Society administration, admissions, and alumni relations in Mashem, Canacona, Goa."
+          content="Get in touch with Shri Nirakar Education Society administration, admissions, and alumni relations in Mashem, Canacona, Goa."
         />
       </Helmet>
 
@@ -153,6 +153,9 @@ export const ContactPage: React.FC = () => {
 
               {!submitted ? (
                 <form onSubmit={handleSubmit} className="space-y-5">
+                  <p id="contact-privacy-notice" className="rounded-xl border border-stone-200 bg-white px-4 py-3 text-xs leading-relaxed text-stone-600">
+                    We use your details to review and respond to this inquiry. Avoid including children’s sensitive personal information unless needed for your request. See our <a href="/privacy" className="font-semibold text-[#111b5e] underline">Privacy Policy</a>. For personal-data requests, use the <a href="/data-rights" className="font-semibold text-[#111b5e] underline">Data Rights form</a>; no separate privacy contact email is published here.
+                  </p>
                   <div>
                     <label className="mb-1.5 block text-xs font-serif font-bold uppercase tracking-wider text-stone-600">
                       Your Name
@@ -162,6 +165,7 @@ export const ContactPage: React.FC = () => {
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      aria-describedby="contact-privacy-notice"
                       className="w-full rounded-xl border border-stone-200 bg-stone-50/70 px-4 py-3 text-sm focus:border-brand-700 focus:bg-white focus:outline-none"
                     />
                   </div>

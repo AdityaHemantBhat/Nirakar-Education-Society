@@ -13,8 +13,8 @@ export const SupporterPassPage: React.FC = () => {
   return (
     <div className="w-full min-h-screen bg-[#FAF7F2] text-[#0f172a] flex flex-col font-sans">
       <Helmet>
-        <title>Supporter Pass | Shree Nirakar Education Society</title>
-        <meta name="description" content="Support Shree Nirakar Education Society and unlock all daily Magazine publications and alumni posts." />
+        <title>Supporter Pass | Shri Nirakar Education Society</title>
+        <meta name="description" content="Support Shri Nirakar Education Society and help keep daily Magazine publications freely available." />
       </Helmet>
 
       <Navbar />

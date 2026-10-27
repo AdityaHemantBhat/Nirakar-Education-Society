@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { SCHOOLS } from '../constants.js';
 
 export const LoginSchema = z.object({
-  identifier: z.string().min(1, 'Please enter your email or username'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  identifier: z.string().trim().min(1, 'Please enter your email or username').max(254),
+  password: z.string().min(6, 'Password must be at least 6 characters').max(256),
 });
 
 export type LoginInput = z.infer<typeof LoginSchema>;
@@ -24,8 +24,8 @@ export const AlumniRegisterSchema = z
       .regex(/^[a-zA-Z0-9_.-]+$/, 'Username can only contain letters, numbers, dots, hyphens and underscores'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string(),
-    consent: z.literal(true, {
-      errorMap: () => ({ message: 'You must consent to the privacy policy and storage of your alumni profile details' }),
+  consent: z.literal(true, {
+      message: 'You must consent to the privacy policy and storage of your alumni profile details',
     }),
   })
   .refine((data) => data.password === data.confirmPassword, {

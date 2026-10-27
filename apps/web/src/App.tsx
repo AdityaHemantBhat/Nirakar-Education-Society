@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HelmetProvider } from 'react-helmet-async';
 
@@ -34,8 +34,17 @@ const GalleryPage = lazy(() =>
 const PolicyPage = lazy(() =>
   import('./pages/PolicyPage.js').then((m) => ({ default: m.PolicyPage }))
 );
+const DataRightsPage = lazy(() =>
+  import('./pages/DataRightsPage.js').then((m) => ({ default: m.DataRightsPage }))
+);
+const GrievanceRedressalPage = lazy(() =>
+  import('./pages/GrievanceRedressalPage.js').then((m) => ({ default: m.GrievanceRedressalPage }))
+);
 const SupporterPassPage = lazy(() =>
   import('./pages/SupporterPassPage.js').then((m) => ({ default: m.SupporterPassPage }))
+);
+const AlumniCommunityPage = lazy(() =>
+  import('./pages/AlumniCommunityPage.js').then((m) => ({ default: m.AlumniCommunityPage }))
 );
 const AlumniDirectoryPage = lazy(() =>
   import('./pages/AlumniDirectoryNextPage.js').then((m) => ({ default: m.AlumniDirectoryNextPage }))
@@ -85,6 +94,15 @@ const FacultyEditPage = lazy(() =>
 const AdminConsolePage = lazy(() =>
   import('./pages/AdminConsolePage.js').then((m) => ({ default: m.AdminConsolePage }))
 );
+const LibraryPage = lazy(() =>
+  import('./pages/LibraryPage.js').then((m) => ({ default: m.LibraryPage }))
+);
+const LibraryReaderPage = lazy(() =>
+  import('./pages/LibraryReaderPage.js').then((m) => ({ default: m.LibraryReaderPage }))
+);
+const ResultsPage = lazy(() =>
+  import('./pages/ResultsPage.js').then((m) => ({ default: m.ResultsPage }))
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -106,10 +124,24 @@ function PageFallback() {
 import { SmoothScroll } from './components/SmoothScroll.js';
 import { PageTransitionLayout } from './components/PageTransitionLayout.js';
 import { useFacultySocket } from './hooks/useFacultySocket.js';
+import { useContentSocket } from './hooks/useContentSocket.js';
 import { AuthCaptchaProvider } from './components/AuthCaptcha.js';
+
+function RouteMountTracker() {
+  const location = useLocation();
+  React.useLayoutEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent('pageRouteMounted', {
+        detail: { pathname: location.pathname },
+      })
+    );
+  }, [location.pathname]);
+  return null;
+}
 
 function AppContent() {
   useFacultySocket();
+  useContentSocket();
 
   return (
     <BrowserRouter>
@@ -117,6 +149,7 @@ function AppContent() {
         <SmoothScroll>
           <PageTransitionLayout>
             <Suspense fallback={<PageFallback />}>
+              <RouteMountTracker />
               <Routes>
               {/* Core Home */}
                 <Route path="/" element={<HomePage />} />
@@ -148,6 +181,7 @@ function AppContent() {
 
               {/* Alumni Sanctuary & Batch Archive */}
               <Route path="/alumni" element={<AlumniDirectoryPage />} />
+              <Route path="/alumni/community" element={<AlumniCommunityPage />} />
               <Route path="/alumni/login" element={<AlumniAuthPage initialMode="login" />} />
               <Route path="/account/login" element={<AlumniAuthPage initialMode="login" />} />
               <Route path="/alumni/register" element={<AlumniAuthPage initialMode="register" />} />
@@ -168,6 +202,14 @@ function AppContent() {
               {/* Admissions & Enrolment */}
               <Route path="/admissions" element={<AdmissionsPage />} />
 
+              {/* Digital Library */}
+              <Route path="/library" element={<LibraryPage />} />
+              <Route path="/library/:slug" element={<LibraryReaderPage />} />
+
+              {/* Academic Results */}
+              <Route path="/results" element={<ResultsPage />} />
+              <Route path="/home/home_results" element={<Navigate to="/results" replace />} />
+
               {/* Contact & Help */}
               <Route path="/contact" element={<ContactPage />} />
 
@@ -175,6 +217,13 @@ function AppContent() {
               <Route path="/privacy" element={<PolicyPage />} />
               <Route path="/terms" element={<PolicyPage />} />
               <Route path="/dpdp" element={<PolicyPage />} />
+              <Route path="/privacy-policy" element={<PolicyPage />} />
+              <Route path="/privacy-notice" element={<PolicyPage />} />
+              <Route path="/cookie-policy" element={<PolicyPage />} />
+              <Route path="/data-rights" element={<DataRightsPage />} />
+              <Route path="/grievance-redressal" element={<GrievanceRedressalPage />} />
+              <Route path="/grievance-redressal/track" element={<GrievanceRedressalPage />} />
+              <Route path="/grievance-policy" element={<GrievanceRedressalPage />} />
 
               {/* Administrative Governance & Verification Console */}
               <Route path="/admin" element={<AdminConsolePage />} />

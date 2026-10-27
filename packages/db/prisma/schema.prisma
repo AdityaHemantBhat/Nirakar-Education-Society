@@ -9,6 +9,94 @@ generator client {
 }
 
 // ----------------------------------------------------
+// PRIVACY NOTICE AND CONSENT EVIDENCE
+// ----------------------------------------------------
+
+model PrivacyConsentRecord {
+  id               String   @id @default(cuid()) @map("id")
+  subjectKey       String   @map("subject_key")
+  purpose          String   @map("purpose")
+  noticeVersion    String   @map("notice_version")
+  action           String   @map("action") // GRANTED or WITHDRAWN
+  channel          String   @map("channel")
+  guardianVerified Boolean  @default(false) @map("guardian_verified")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([subjectKey, purpose, createdAt])
+  @@map("privacy_consent_records")
+}
+
+model PrivacyRequest {
+  id                 String                 @id @default(cuid()) @map("id")
+  reference          String                 @unique @default(cuid()) @map("reference")
+  name               String                 @map("name")
+  email              String                 @map("email")
+  type               String                 @map("type")
+  details            String                 @map("details")
+  status             String                 @default("RECEIVED") @map("status")
+  assignedToUserId   String?                @map("assigned_to_user_id")
+  identityStatus     String                 @default("UNVERIFIED") @map("identity_status")
+  resolution         String?                @map("resolution")
+  createdAt          DateTime               @default(now()) @map("created_at")
+  updatedAt          DateTime               @updatedAt @map("updated_at")
+  events             PrivacyRequestEvent[]
+
+  @@index([status, createdAt])
+  @@index([email, createdAt])
+  @@index([assignedToUserId, status])
+  @@map("privacy_requests")
+}
+
+model PrivacyRequestEvent {
+  id             String        @id @default(cuid()) @map("id")
+  requestId      String        @map("request_id")
+  actorUserId    String?       @map("actor_user_id")
+  kind           String        @map("kind")
+  message        String        @map("message")
+  isInternal     Boolean       @default(true) @map("is_internal")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  request        PrivacyRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId, createdAt])
+  @@map("privacy_request_events")
+}
+
+model GrievanceCase {
+  id               String                 @id @default(cuid()) @map("id")
+  reference        String                 @unique @default(cuid()) @map("reference")
+  trackingTokenHash String                @unique @map("tracking_token_hash")
+  name             String                 @map("name")
+  email            String                 @map("email")
+  category         String                 @map("category")
+  subject          String                 @map("subject")
+  description      String                 @map("description")
+  status           String                 @default("RECEIVED") @map("status")
+  restricted       Boolean                @default(false) @map("restricted")
+  assignedToUserId String?                @map("assigned_to_user_id")
+  createdAt        DateTime               @default(now()) @map("created_at")
+  updatedAt        DateTime               @updatedAt @map("updated_at")
+  events           GrievanceEvent[]
+
+  @@index([status, createdAt])
+  @@index([assignedToUserId, status])
+  @@map("grievance_cases")
+}
+
+model GrievanceEvent {
+  id            String        @id @default(cuid()) @map("id")
+  caseId        String        @map("case_id")
+  actorUserId   String?       @map("actor_user_id")
+  kind          String        @map("kind")
+  message       String        @map("message")
+  isInternal    Boolean       @default(false) @map("is_internal")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  grievanceCase GrievanceCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId, createdAt])
+  @@map("grievance_events")
+}
+
+// ----------------------------------------------------
 // IDENTITY & USERS
 // ----------------------------------------------------
 
@@ -66,8 +154,11 @@ model User {
   readEvents      ReadEvent[]
   auditLogs       AuditLog[]
   posts           Post[]
-  vouchesGiven    AlumniVouch[]   @relation("VoucherRelation")
-  reportsFiled    ProfileReport[] @relation("ReporterRelation")
+  uploadedMedia   Media[]               @relation("MediaUploader")
+  vouchesGiven    AlumniVouch[]         @relation("VoucherRelation")
+  reportsFiled    ProfileReport[]       @relation("ReporterRelation")
+  libraryReviews  LibraryVolumeReview[]
+  magazineReviews MagazineIssueReview[]
 
   @@index([email])
   @@index([username])
@@ -183,6 +274,7 @@ model Institution {
   history   String?         @map("history")
   vision    String?         @map("vision")
   bannerUrl String?         @map("banner_url")
+  profile   Json            @default("{}") @map("profile")
   createdAt DateTime        @default(now()) @map("created_at")
   updatedAt DateTime        @updatedAt @map("updated_at")
 
@@ -211,9 +303,10 @@ model FacultyProfile {
   createdAt            DateTime        @default(now()) @map("created_at")
   updatedAt            DateTime        @updatedAt @map("updated_at")
 
-  user          User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
-  institution   Institution           @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  conversations FacultyConversation[]
+  user            User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
+  institution     Institution           @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  conversations   FacultyConversation[]
+  magazineReviews MagazineIssueReview[]
 
   @@index([institutionCode])
   @@index([status])
@@ -249,7 +342,7 @@ model FacultyConversationMessage {
   readAt         DateTime?            @map("read_at")
   createdAt      DateTime             @default(now()) @map("created_at")
 
-  conversation FacultyConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversation FacultyConversation             @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   attachments  FacultyConversationAttachment[]
 
   @@index([conversationId, createdAt])
@@ -278,17 +371,17 @@ enum FacultyMessageIdentityType {
 }
 
 model FacultyMessageModeration {
-  id                String                    @id @default(cuid()) @map("id")
-  identityType      FacultyMessageIdentityType @map("identity_type")
-  identityHash      String                    @map("identity_hash")
-  strikes           Int                       @default(0) @map("strikes")
-  lastViolationAt   DateTime?                 @map("last_violation_at")
-  cooldownUntil     DateTime?                 @map("cooldown_until")
-  blockedUntil      DateTime?                 @map("blocked_until")
-  manualBlockedAt   DateTime?                 @map("manual_blocked_at")
-  manualBlockedBy   String?                   @map("manual_blocked_by")
-  createdAt         DateTime                  @default(now()) @map("created_at")
-  updatedAt         DateTime                  @updatedAt @map("updated_at")
+  id              String                     @id @default(cuid()) @map("id")
+  identityType    FacultyMessageIdentityType @map("identity_type")
+  identityHash    String                     @map("identity_hash")
+  strikes         Int                        @default(0) @map("strikes")
+  lastViolationAt DateTime?                  @map("last_violation_at")
+  cooldownUntil   DateTime?                  @map("cooldown_until")
+  blockedUntil    DateTime?                  @map("blocked_until")
+  manualBlockedAt DateTime?                  @map("manual_blocked_at")
+  manualBlockedBy String?                    @map("manual_blocked_by")
+  createdAt       DateTime                   @default(now()) @map("created_at")
+  updatedAt       DateTime                   @updatedAt @map("updated_at")
 
   @@unique([identityType, identityHash])
   @@index([blockedUntil])
@@ -458,6 +551,15 @@ model GalleryItem {
   @@map("gallery_items")
 }
 
+/// The streams a graduating batch can belong to.
+enum BatchStream {
+  SSC
+  HSSC_SCIENCE
+  HSSC_COMMERCE
+  HSSC_ARTS
+  SPECIAL
+}
+
 model BatchPhoto {
   id              String          @id @default(cuid()) @map("id")
   institutionCode InstitutionCode @map("institution_code")
@@ -465,9 +567,25 @@ model BatchPhoto {
   title           String          @map("title")
   photoUrl        String          @map("photo_url")
   caption         String?         @map("caption")
+  /// The stream the batch belonged to, which the archive sorts itself by.
+  stream          BatchStream     @default(SSC) @map("stream")
+  /// The academic session, written out as it was on the print ("2022-23").
+  batchSession    String?         @map("batch_session")
+  /// The class the students sat in ("Std X", "Std XII").
+  classLevel      String?         @map("class_level")
+  /// The section within the class ("Div A"), when the photograph names one.
+  division        String?         @map("division")
+  /// The size of the stored file in bytes, so the archive can show it
+  /// without having to fetch the file first.
+  fileSizeBytes   Int             @default(0) @map("file_size_bytes")
+  /// The format the photograph was stored in. Uploads are converted on the
+  /// way in, so this is always a modern format rather than what was picked.
+  imageFormat     String          @default("webp") @map("image_format")
   createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
 
   @@index([institutionCode, batchYear])
+  @@index([stream])
   @@map("batch_photos")
 }
 
@@ -490,13 +608,16 @@ model Blog {
 model Comment {
   id         String   @id @default(cuid()) @map("id")
   authorName String   @map("author_name")
+  email      String?  @map("email")
+  place      String?  @map("place")
   content    String   @map("content")
-  targetType String   @map("target_type") // BLOG, POST, GENERAL
+  targetType String   @map("target_type") // BLOG, POST, GENERAL, EVENT
   targetId   String?  @map("target_id")
   status     String   @default("APPROVED") @map("status") // PENDING, APPROVED, REJECTED
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@index([targetType, targetId])
+  @@index([targetType, targetId, status, createdAt])
   @@index([status])
   @@map("comments")
 }
@@ -593,7 +714,11 @@ model Media {
   focalPoint    Json?    @map("focal_point")
   variants      Json     @map("variants")
   altText       String?  @map("alt_text")
+  uploadedById  String?  @map("uploaded_by_id")
   createdAt     DateTime @default(now()) @map("created_at")
+
+  uploadedBy      User?       @relation("MediaUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+  postAttachments PostMedia[]
 
   @@index([mimeType])
   @@map("media")
@@ -721,6 +846,7 @@ model MagazineIssue {
 
   pages    MagazineIssuePage[]
   articles MagazineArticle[]
+  reviews  MagazineIssueReview[]
 
   @@index([publishDate])
   @@index([status])
@@ -759,22 +885,45 @@ model MagazineArticle {
   @@map("magazine_articles")
 }
 
+/// A reader's rating and optional comment on a Daily Magazine issue.
+model MagazineIssueReview {
+  id        String   @id @default(cuid()) @map("id")
+  issueId   String   @map("issue_id")
+  userId    String?  @map("user_id")
+  guestKey  String?  @map("guest_key")
+  guestName String?  @map("guest_name")
+  rating    Int      @map("rating")
+  comment   String?  @map("comment")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  issue            MagazineIssue   @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  user             User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  facultyProfile   FacultyProfile? @relation(fields: [facultyProfileId], references: [id])
+  facultyProfileId String?
+
+  @@unique([issueId, userId])
+  @@unique([issueId, guestKey])
+  @@index([issueId])
+  @@map("magazine_issue_reviews")
+}
+
 // ----------------------------------------------------
 // ALUMNI POSTS
 // ----------------------------------------------------
 
 model Post {
-  id          String   @id @default(cuid()) @map("id")
-  authorId    String   @map("author_id")
-  title       String   @map("title")
-  body        String   @map("body")
-  excerpt     String?  @map("excerpt")
-  coverUrl    String?  @map("cover_url")
-  status      String   @default("PUBLISHED") @map("status") // DRAFT, PENDING, PUBLISHED
-  isLocked    Boolean  @default(true) @map("is_locked")
-  publishedAt DateTime @default(now()) @map("published_at")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id          String      @id @default(cuid()) @map("id")
+  authorId    String      @map("author_id")
+  title       String      @map("title")
+  body        String      @map("body")
+  excerpt     String?     @map("excerpt")
+  coverUrl    String?     @map("cover_url")
+  status      String      @default("PUBLISHED") @map("status") // DRAFT, PENDING, PUBLISHED
+  publishedAt DateTime    @default(now()) @map("published_at")
+  media       PostMedia[]
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
 
   author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
@@ -782,6 +931,24 @@ model Post {
   @@index([status])
   @@index([publishedAt])
   @@map("posts")
+}
+
+model PostMedia {
+  id        String   @id @default(cuid()) @map("id")
+  postId    String   @map("post_id")
+  mediaId   String?  @map("media_id")
+  url       String   @map("url")
+  mediaType String   @map("media_type")
+  mimeType  String   @map("mime_type")
+  order     Int      @default(0) @map("order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post  Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  media Media? @relation(fields: [mediaId], references: [id], onDelete: SetNull)
+
+  @@index([postId, order])
+  @@index([mediaId])
+  @@map("post_media")
 }
 
 // ----------------------------------------------------
@@ -807,10 +974,7 @@ model AccessSettings {
   snapStops              Json     @default("[10, 20, 50, 100, 250, 500, 1000]") @map("snap_stops")
   freeReadPolicyMagazine String   @default("METERED_N") @map("free_read_policy_magazine")
   freeReadCountMagazine  Int      @default(5) @map("free_read_count_magazine")
-  freeReadPolicyPosts    String   @default("METERED_N") @map("free_read_policy_posts")
-  freeReadCountPosts     Int      @default(5) @map("free_read_count_posts")
   passDurationDays       Int?     @map("pass_duration_days")
-  passAppliesTo          String   @default("BOTH") @map("pass_applies_to") // MAGAZINE, POSTS, BOTH
   purposeText            String   @default("Your voluntary contribution supports student scholarships, science lab upgrades, and library facilities at Shri Nirakar Vidhyalaya.") @map("purpose_text")
   tierLabels             Json     @default("{\"10\": \"Student Supporter\", \"50\": \"Patron of Learning\", \"100\": \"Vidya Sahayak\", \"250\": \"Heritage Builder\", \"500\": \"Guardian Pillar\", \"1000\": \"Distinguished Benefactor\"}") @map("tier_labels")
   thankYouMessages       Json     @default("{\"10\": \"Thank you for supporting our student library!\", \"50\": \"Your support fuels bright ambitions.\", \"100\": \"Warmest gratitude from the Nirakar family.\", \"250\": \"Your generosity strengthens our foundation.\", \"500\": \"You are a beacon of hope for our learners.\", \"1000\": \"Exceptional contribution towards rural Goan education.\"}") @map("thank_you_messages")
@@ -936,14 +1100,30 @@ enum AdmissionStatus {
 }
 
 model AdmissionConfig {
-  id               String   @id @default("default") @map("id")
-  isOpen           Boolean  @default(true) @map("is_open")
-  academicYear     String   @default("2026–2027") @map("academic_year")
-  announcementText String?  @default("Admissions Open for Academic Year 2026–2027 across Secondary & Higher Secondary campuses.") @map("announcement_text")
-  guidelinesUrl    String?  @map("guidelines_url")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  id                  String   @id @default("default") @map("id")
+  isOpen              Boolean  @default(true) @map("is_open")
+  academicYear        String   @default("2026–2027") @map("academic_year")
+  announcementText    String?  @default("Admissions Open for Academic Year 2026–2027 across Secondary & Higher Secondary campuses.") @map("announcement_text")
+  announcementVisible Boolean  @default(true) @map("announcement_visible")
+  guidelinesUrl       String?  @map("guidelines_url")
+  updatedAt           DateTime @updatedAt @map("updated_at")
 
   @@map("admission_configs")
+}
+
+model AdmissionPopup {
+  id        String   @id @default("default") @map("id")
+  title     String?  @map("title")
+  body      String?  @map("body")
+  mediaUrl  String?  @map("media_url")
+  mediaType String?  @map("media_type")
+  visible   Boolean  @default(true) @map("visible")
+  ctaText   String?  @map("cta_text")
+  ctaUrl    String?  @map("cta_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("admission_popups")
 }
 
 model AdmissionApplication {
@@ -992,4 +1172,183 @@ model AdmissionApplication {
   @@index([academicYear])
   @@index([primaryPhone])
   @@map("admission_applications")
+}
+
+model HeroSlide {
+  id        String   @id @default(cuid()) @map("id")
+  imageUrl  String   @map("image_url")
+  title     String   @map("title")
+  campus    String   @map("campus")
+  tag       String   @map("tag")
+  order     Int      @default(0) @map("order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([order])
+  @@index([isActive])
+  @@map("hero_slides")
+}
+
+// ----------------------------------------------------
+// ACADEMIC RESULTS (STD V TO XII)
+// ----------------------------------------------------
+
+model AcademicResult {
+  id              String          @id @default(cuid()) @map("id")
+  academicYear    String          @map("academic_year") // e.g. "2025–2026"
+  standard        LibraryStandard @map("standard") // V to XII
+  examType        String          @map("exam_type") // e.g. "Annual Board Exam", "First Term", "Final Exam"
+  title           String?         @map("title") // e.g. "Std X Annual Board Exam Result Sheet 2026"
+  pdfUrl          String?         @map("pdf_url") // Direct uploaded PDF file url for download/view
+  studentName     String?         @map("student_name")
+  rollNumber      String?         @map("roll_number")
+  percentage      Float?          @map("percentage")
+  cgpa            Float?          @map("cgpa")
+  grade           String?         @map("grade") // e.g. "A+", "Distinction", "First Class"
+  stream          String?         @map("stream") // e.g. "Science", "Commerce", "Arts", or null for V-X
+  institutionCode InstitutionCode @map("institution_code")
+  remarks         String?         @map("remarks") // e.g. "School Topper", "State Rank 5"
+  photoUrl        String?         @map("photo_url")
+  isFeatured      Boolean         @default(false) @map("is_featured")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  @@index([academicYear])
+  @@index([standard])
+  @@index([institutionCode])
+  @@index([isFeatured])
+  @@map("academic_results")
+}
+
+enum LibraryStatus {
+  DRAFT
+  PROCESSING
+  PUBLISHED
+  ARCHIVED
+}
+
+/// Standard/grade a volume belongs to, e.g. "V" (Std V) … "XII" (Std XII).
+enum LibraryStandard {
+  V
+  VI
+  VII
+  VIII
+  IX
+  X
+  XI
+  XII
+}
+
+/// What kind of material the volume holds.
+enum LibraryCategory {
+  TEXTBOOK
+  WORKBOOK
+  REFERENCE
+  QUESTION_PAPER
+  PRACTICE_PAPER
+  NOTEBOOK
+  OTHER
+}
+
+model LibraryVolume {
+  id                 String           @id @default(cuid()) @map("id")
+  title              String           @map("title")
+  slug               String           @unique @map("slug")
+  description        String?          @map("description")
+  author             String?          @map("author")
+  publisher          String?          @map("publisher")
+  academicYear       String?          @map("academic_year")
+  standard           LibraryStandard  @map("standard")
+  category           LibraryCategory  @default(TEXTBOOK) @map("category")
+  subject            String?          @map("subject")
+  institutionCode    InstitutionCode? @map("institution_code")
+  language           String           @default("English") @map("language")
+  status             LibraryStatus    @default(PROCESSING) @map("status")
+  isPublished        Boolean          @default(false) @map("is_published")
+  /// How far the PDF parser has got, 0-100. Shown while a volume is being
+  /// prepared in the background.
+  processingProgress Int              @default(0) @map("processing_progress")
+  /// The step the parser is currently on, e.g. "Rendering page 40 of 300".
+  processingStep     String?          @map("processing_step")
+  /// Why the last processing attempt failed, if it did.
+  processingError    String?          @map("processing_error")
+  pageCount          Int              @default(0) @map("page_count")
+  /// How many pages the source PDF really had. This can be more than
+  /// `pageCount` when a long document was sampled down to the ceiling.
+  sourcePageCount    Int              @default(0) @map("source_page_count")
+  /// True when the source was longer than the page ceiling and was
+  /// therefore sampled rather than rendered in full.
+  isSampled          Boolean          @default(false) @map("is_sampled")
+  wordCount          Int              @default(0) @map("word_count")
+  readingMinutes     Int              @default(5) @map("reading_minutes")
+  fileSizeBytes      Int              @default(0) @map("file_size_bytes")
+  originalName       String?          @map("original_name")
+  pdfPath            String?          @map("pdf_path")
+  coverUrl           String?          @map("cover_url")
+  keywords           String[]         @default([]) @map("keywords")
+  excerpt            String?          @map("excerpt")
+  viewCount          Int              @default(0) @map("view_count")
+  publishedAt        DateTime?        @map("published_at")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+
+  pages   LibraryVolumePage[]
+  reviews LibraryVolumeReview[]
+
+  // The catalogue is filtered by standard/category/subject on every page
+  // load, so those columns are indexed.
+  @@index([status, isPublished])
+  @@index([standard])
+  @@index([category])
+  @@index([subject])
+  @@index([institutionCode])
+  @@index([publishedAt])
+  @@index([title])
+  @@map("library_volumes")
+}
+
+model LibraryVolumePage {
+  id            String   @id @default(cuid()) @map("id")
+  volumeId      String   @map("volume_id")
+  pageNo        Int      @map("page_no")
+  text          String   @default("") @map("text")
+  imageVariants Json     @map("image_variants") // { thumb, w640, w1024, w1600, zoom }
+  blurhash      String   @default("L6PZfSi_.AyE_3t7t7R**0o#DgR4") @map("blurhash")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  volume LibraryVolume @relation(fields: [volumeId], references: [id], onDelete: Cascade)
+
+  @@unique([volumeId, pageNo])
+  @@index([volumeId])
+  @@map("library_volume_pages")
+}
+
+/// A reader's rating and comment on a volume.
+///
+/// A review may be left by a signed-in reader or by a guest. Guests are
+/// identified by a device key rather than a user id, so a guest can review
+/// without an account while still being limited to one review per volume.
+model LibraryVolumeReview {
+  id        String   @id @default(cuid()) @map("id")
+  volumeId  String   @map("volume_id")
+  /// Null for a guest review.
+  userId    String?  @map("user_id")
+  /// A stable per-device key for a guest review. Null for a signed-in reader.
+  guestKey  String?  @map("guest_key")
+  /// The name shown next to a guest review.
+  guestName String?  @map("guest_name")
+  rating    Int      @map("rating") // 1 to 5
+  comment   String?  @map("comment")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  volume LibraryVolume @relation(fields: [volumeId], references: [id], onDelete: Cascade)
+  user   User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// One review per reader (or guest) per volume.
+  @@unique([volumeId, userId])
+  @@unique([volumeId, guestKey])
+  @@index([volumeId])
+  @@map("library_volume_reviews")
 }

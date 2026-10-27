@@ -1,6 +1,91 @@
-import { prisma, InstitutionCode } from '@nirakar/db';
+import { prisma, InstitutionCode, Prisma } from '@nirakar/db';
+import { contentSlug } from '@nirakar/shared';
+import { config } from '../../config/index.js';
+import { eventDateSortValue, matchesEventDateFilter } from '../../lib/event-dates.js';
+
+export class CommitteeRosterConflictError extends Error {
+  constructor() {
+    super('The submitted member order does not match this committee roster. Refresh and try again.');
+    this.name = 'CommitteeRosterConflictError';
+  }
+}
 
 export class ContentRepository {
+  async getAdminInstitutions() {
+    return prisma.institution.findMany({
+      orderBy: { code: 'asc' },
+      include: {
+        committees: {
+          orderBy: { order: 'asc' },
+          include: { members: { orderBy: { order: 'asc' } } },
+        },
+      },
+    });
+  }
+
+  async updateInstitution(id: string, data: {
+    tagline: string;
+    history: string | null;
+    vision: string | null;
+    bannerUrl: string | null;
+    profile: Prisma.InputJsonValue;
+  }) {
+    return prisma.institution.update({ where: { id }, data });
+  }
+
+  async createCommittee(data: { institutionId: string; name: string; slug: string; description: string | null; order: number }) {
+    return prisma.committee.create({ data, include: { members: true } });
+  }
+
+  async getCommittee(id: string) {
+    return prisma.committee.findUnique({ where: { id }, select: { id: true, institution: { select: { id: true, code: true, slug: true } } } });
+  }
+
+  async getInstitution(id: string) {
+    return prisma.institution.findUnique({ where: { id }, select: { id: true, code: true, slug: true } });
+  }
+
+  async updateCommittee(id: string, data: { name: string; slug: string; description: string | null; order: number }) {
+    return prisma.committee.update({ where: { id }, data });
+  }
+
+  async deleteCommittee(id: string) {
+    return prisma.committee.delete({ where: { id } });
+  }
+
+  async createCommitteeMember(committeeId: string, data: { name: string; designation: string; role: string; photoUrl: string | null; order: number }) {
+    return prisma.committeeMember.create({ data: { ...data, committeeId } });
+  }
+
+  async updateCommitteeMember(id: string, data: { name: string; designation: string; role: string; photoUrl: string | null; order: number }) {
+    return prisma.committeeMember.update({ where: { id }, data });
+  }
+
+  async getCommitteeMember(id: string) {
+    return prisma.committeeMember.findUnique({
+      where: { id },
+      select: { id: true, committee: { select: { institution: { select: { id: true, code: true, slug: true } } } } },
+    });
+  }
+
+  async deleteCommitteeMember(id: string) {
+    return prisma.committeeMember.delete({ where: { id } });
+  }
+
+  async reorderCommitteeMembers(committeeId: string, orderedIds: string[]) {
+    return prisma.$transaction(async (tx) => {
+      const existing = await tx.committeeMember.findMany({ where: { committeeId }, select: { id: true } });
+      const existingIds = new Set(existing.map(({ id }) => id));
+      if (existingIds.size !== orderedIds.length || orderedIds.some((id) => !existingIds.has(id))) {
+        throw new CommitteeRosterConflictError();
+      }
+      for (const [order, id] of orderedIds.entries()) {
+        await tx.committeeMember.update({ where: { id }, data: { order } });
+      }
+      return tx.committeeMember.findMany({ where: { committeeId }, orderBy: { order: 'asc' } });
+    });
+  }
+
   async getInstitutions() {
     return prisma.institution.findMany({
       orderBy: { code: 'asc' },
@@ -13,6 +98,7 @@ export class ContentRepository {
         history: true,
         vision: true,
         bannerUrl: true,
+        profile: true,
       },
     });
   }
@@ -29,6 +115,7 @@ export class ContentRepository {
         history: true,
         vision: true,
         bannerUrl: true,
+        profile: true,
         facultyProfiles: {
           where: { status: 'PUBLISHED' },
           orderBy: { order: 'asc' },
@@ -84,10 +171,10 @@ export class ContentRepository {
     });
     if (direct) return direct;
 
+    /* The public site addresses a circular by its title's slug, so the
+       lookup uses the very same rule the links were built with. */
     const all = await prisma.notice.findMany({ take: 200 });
-    const matched = all.find(
-      (n) => n.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') === idOrSlug
-    );
+    const matched = all.find((n) => contentSlug(n.title) === idOrSlug);
     return matched || null;
   }
 
@@ -138,13 +225,10 @@ export class ContentRepository {
     });
   }
 
-  async getEvents(upcoming?: boolean, institutionCode?: InstitutionCode, limit = 100) {
-    return (prisma.event as any).findMany({
-      where: {
-        ...(upcoming !== undefined ? { isUpcoming: upcoming } : {}),
-        ...(institutionCode ? { institutionCode } : {}),
-      },
-      orderBy: { startDate: upcoming ? 'asc' : 'desc' },
+  async getEvents(filter: 'all' | 'today' | 'upcoming' | 'past' = 'all', institutionCode?: InstitutionCode, limit = 100) {
+    const rows = await (prisma.event as any).findMany({
+      where: institutionCode ? { institutionCode } : {},
+      orderBy: { startDate: 'asc' },
       take: limit,
       select: {
         id: true,
@@ -163,6 +247,16 @@ export class ContentRepository {
         createdAt: true,
       },
     });
+
+    const visible = rows.filter((row: any) =>
+      matchesEventDateFilter(row.startDate, row.endDate, filter, config.APP_TIMEZONE),
+    );
+
+    return visible.sort((a: any, b: any) => {
+      const aTime = eventDateSortValue(a.startDate, config.APP_TIMEZONE);
+      const bTime = eventDateSortValue(b.startDate, config.APP_TIMEZONE);
+      return filter === 'past' ? bTime.localeCompare(aTime) : aTime.localeCompare(bTime);
+    });
   }
 
   async getEventById(idOrSlug: string) {
@@ -171,10 +265,10 @@ export class ContentRepository {
     });
     if (direct) return direct;
 
+    /* The public site addresses a gathering by its title's slug, so the
+       lookup uses the very same rule the links were built with. */
     const all = await prisma.event.findMany({ take: 200 });
-    const matched = all.find(
-      (e) => e.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') === idOrSlug
-    );
+    const matched = all.find((e) => contentSlug(e.title) === idOrSlug);
     return matched || null;
   }
 
@@ -277,29 +371,84 @@ export class ContentRepository {
         description: true,
         category: true,
         coverUrl: true,
+        createdAt: true,
         items: {
           orderBy: { order: 'asc' },
-          select: { id: true, title: true, mediaUrl: true, caption: true },
+          select: { id: true, title: true, mediaUrl: true, caption: true, order: true },
         },
       },
     });
   }
 
-  async getBatchPhotos(school: InstitutionCode, batchYear?: number) {
-    return prisma.batchPhoto.findMany({
-      where: {
-        institutionCode: school,
-        ...(batchYear ? { batchYear } : {}),
+  async createGalleryAlbum(data: {
+    institutionCode?: InstitutionCode;
+    title: string;
+    description?: string;
+    category?: string;
+    coverUrl?: string;
+    items?: Array<{ title: string; mediaUrl: string; caption?: string; order?: number }>;
+  }) {
+    return prisma.galleryAlbum.create({
+      data: {
+        institutionCode: data.institutionCode,
+        title: data.title,
+        description: data.description,
+        category: data.category || 'Campus',
+        coverUrl: data.coverUrl,
+        items: data.items && data.items.length > 0 ? {
+          create: data.items.map((item, idx) => ({
+            title: item.title || data.title,
+            mediaUrl: item.mediaUrl,
+            caption: item.caption,
+            order: item.order ?? idx,
+          })),
+        } : undefined,
       },
-      orderBy: { batchYear: 'desc' },
-      select: {
-        id: true,
-        institutionCode: true,
-        batchYear: true,
-        title: true,
-        photoUrl: true,
-        caption: true,
+      include: {
+        items: true,
       },
+    });
+  }
+
+  async updateGalleryAlbum(id: string, data: {
+    institutionCode?: InstitutionCode;
+    title?: string;
+    description?: string;
+    category?: string;
+    coverUrl?: string;
+    items?: Array<{ id?: string; title: string; mediaUrl: string; caption?: string; order?: number }>;
+  }) {
+    // If items are provided, delete existing and re-create to keep in sync
+    if (data.items) {
+      await prisma.galleryItem.deleteMany({ where: { albumId: id } });
+    }
+
+    return prisma.galleryAlbum.update({
+      where: { id },
+      data: {
+        institutionCode: data.institutionCode,
+        title: data.title,
+        description: data.description,
+        category: data.category,
+        coverUrl: data.coverUrl,
+        items: data.items ? {
+          create: data.items.map((item, idx) => ({
+            title: item.title || data.title || '',
+            mediaUrl: item.mediaUrl,
+            caption: item.caption,
+            order: item.order ?? idx,
+          })),
+        } : undefined,
+      },
+      include: {
+        items: true,
+      },
+    });
+  }
+
+  async deleteGalleryAlbum(id: string) {
+    return prisma.galleryAlbum.delete({
+      where: { id },
     });
   }
 
@@ -340,19 +489,55 @@ export class ContentRepository {
       select: {
         id: true,
         authorName: true,
+        place: true,
         content: true,
         createdAt: true,
       },
     });
   }
 
+  async getAdminComments(targetType?: string) {
+    return prisma.comment.findMany({
+      where: targetType ? { targetType } : {},
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+      select: {
+        id: true,
+        authorName: true,
+        email: true,
+        place: true,
+        content: true,
+        targetType: true,
+        targetId: true,
+        status: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  async getCommentById(id: string) {
+    return prisma.comment.findUnique({
+      where: { id },
+      select: { id: true, targetType: true, targetId: true, authorName: true },
+    });
+  }
+
+  async deleteComment(id: string) {
+    return prisma.comment.delete({ where: { id }, select: { id: true } });
+  }
+
   async createComment(data: any) {
     return prisma.comment.create({
       data: {
-        ...data,
-        status: 'APPROVED', // Default approved in school community
+        authorName: data.authorName,
+        email: data.email || null,
+        place: data.place || null,
+        content: data.content,
+        targetType: data.targetType,
+        targetId: data.targetId || null,
+        status: 'APPROVED',
       },
-      select: { id: true, authorName: true, content: true },
+      select: { id: true, authorName: true, place: true, content: true, createdAt: true },
     });
   }
 
@@ -515,6 +700,27 @@ export class ContentRepository {
         altText: true,
         createdAt: true,
       },
+    });
+  }
+
+  async getHeroSlides() {
+    const setting = await prisma.siteSetting.findUnique({
+      where: { key: 'home.hero_slides' },
+    });
+    if (!setting || !setting.value) return null;
+    try {
+      return JSON.parse(setting.value);
+    } catch {
+      return null;
+    }
+  }
+
+  async saveHeroSlides(slides: any[]) {
+    const value = JSON.stringify(slides);
+    return prisma.siteSetting.upsert({
+      where: { key: 'home.hero_slides' },
+      create: { key: 'home.hero_slides', value, type: 'JSON' },
+      update: { value },
     });
   }
 }

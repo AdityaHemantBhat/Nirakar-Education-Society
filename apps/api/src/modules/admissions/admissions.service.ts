@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import { prisma } from '@nirakar/db';
 import { SubmitAdmissionInput, UpdateAdmissionConfigInput } from './admissions.validator.js';
 import { broadcastAdmissionsUpdate } from '../../lib/socket.js';
+import { PRIVATE_STORAGE_PATH } from '../../config/index.js';
+import sharp from 'sharp';
 
 export const INSTITUTION_NAMES: Record<string, string> = {
   NIRAKAR_HS: 'Shri Nirakar High School (Mashem)',
@@ -56,6 +58,7 @@ export class AdmissionsService {
         isOpen: input.isOpen,
         academicYear: input.academicYear,
         announcementText: input.announcementText || null,
+        announcementVisible: input.announcementVisible ?? true,
         guidelinesUrl: input.guidelinesUrl || null,
       },
       create: {
@@ -63,6 +66,7 @@ export class AdmissionsService {
         isOpen: input.isOpen,
         academicYear: input.academicYear,
         announcementText: input.announcementText || null,
+        announcementVisible: input.announcementVisible ?? true,
         guidelinesUrl: input.guidelinesUrl || null,
       },
     });
@@ -83,7 +87,7 @@ export class AdmissionsService {
       throw new Error('Admissions are currently closed for the requested academic session.');
     }
 
-    const institutionName = INSTITUTION_NAMES[input.institutionCode] || 'Shree Nirakar Education Society';
+    const institutionName = INSTITUTION_NAMES[input.institutionCode] || 'Shri Nirakar Education Society';
 
     // Generate unique sequential-style reference code e.g. SNES-2026-8341
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
@@ -134,27 +138,25 @@ export class AdmissionsService {
 
     if (input.photoData || input.signatureData) {
       try {
-        const admissionsUploadsDir = path.resolve('./uploads/admissions');
+        const admissionsUploadsDir = path.resolve(PRIVATE_STORAGE_PATH, 'admissions');
         if (!fs.existsSync(admissionsUploadsDir)) {
           fs.mkdirSync(admissionsUploadsDir, { recursive: true });
         }
 
         if (input.photoData) {
-          const match = input.photoData.match(/^data:image\/([a-zA-Z+]+);base64,(.+)$/);
-          const buffer = match && match[2] ? Buffer.from(match[2], 'base64') : Buffer.from(input.photoData, 'base64');
+          const buffer = await decodeImageData(input.photoData);
           const photoFileName = `${application.id}_photo.jpg`;
           const photoFilePath = path.join(admissionsUploadsDir, photoFileName);
           fs.writeFileSync(photoFilePath, buffer);
-          photoUrl = `/uploads/admissions/${photoFileName}`;
+          photoUrl = `/api/v1/admissions/applications/${application.id}/media/photo`;
         }
 
         if (input.signatureData) {
-          const match = input.signatureData.match(/^data:image\/([a-zA-Z+]+);base64,(.+)$/);
-          const buffer = match && match[2] ? Buffer.from(match[2], 'base64') : Buffer.from(input.signatureData, 'base64');
+          const buffer = await decodeImageData(input.signatureData);
           const signatureFileName = `${application.id}_signature.png`;
           const signatureFilePath = path.join(admissionsUploadsDir, signatureFileName);
           fs.writeFileSync(signatureFilePath, buffer);
-          signatureUrl = `/uploads/admissions/${signatureFileName}`;
+          signatureUrl = `/api/v1/admissions/applications/${application.id}/media/signature`;
         }
 
         if (photoUrl || signatureUrl) {
@@ -250,18 +252,69 @@ export class AdmissionsService {
       throw new Error('Admission application not found');
     }
 
-    return app;
+    // Attach candidate photo/signature URLs — disk is the source of truth
+    const admissionsUploadsDir = path.resolve(PRIVATE_STORAGE_PATH, 'admissions');
+    const photoOnDisk = fs.existsSync(path.join(admissionsUploadsDir, `${app.id}_photo.jpg`));
+    const signatureOnDisk = fs.existsSync(path.join(admissionsUploadsDir, `${app.id}_signature.png`));
+
+    return {
+      ...app,
+      photoUrl: photoOnDisk
+        ? `/api/v1/admissions/applications/${app.id}/media/photo`
+        : null,
+      signatureUrl: signatureOnDisk
+        ? `/api/v1/admissions/applications/${app.id}/media/signature`
+        : null,
+    };
+  }
+
+  async getApplicationMedia(id: string, kind: string) {
+    if (kind !== 'photo' && kind !== 'signature') throw new Error('Application media not found');
+    const app = await (prisma as any).admissionApplication.findFirst({
+      where: { OR: [{ id }, { applicationNumber: id }] },
+      select: { id: true, applicationNumber: true },
+    });
+    if (!app) throw new Error('Application media not found');
+
+    const extension = kind === 'photo' ? 'jpg' : 'png';
+    const mediaPath = path.resolve(PRIVATE_STORAGE_PATH, 'admissions', `${app.id}_${kind}.${extension}`);
+    if (!fs.existsSync(mediaPath)) throw new Error('Application media not found');
+    return {
+      path: mediaPath,
+      mimeType: kind === 'photo' ? 'image/jpeg' : 'image/png',
+      filename: `Admission_${app.applicationNumber}_${kind}.${extension}`,
+    };
   }
 
   /**
-   * Update status and notes for an application
+   * Update status and notes for an application.
+   * Preserves photo/signature metadata stored in adminRemarks JSON.
    */
   async updateApplicationStatus(id: string, status: string, adminRemarks?: string | null) {
+    const existing = await (prisma as any).admissionApplication.findUnique({ where: { id } });
+
+    let mergedRemarks: string | null | undefined = adminRemarks || undefined;
+
+    if (existing?.adminRemarks) {
+      try {
+        const parsed = JSON.parse(existing.adminRemarks);
+        if (parsed && typeof parsed === 'object') {
+          mergedRemarks = JSON.stringify({
+            photoUrl: parsed.photoUrl ?? null,
+            signatureUrl: parsed.signatureUrl ?? null,
+            note: adminRemarks ?? parsed.note ?? null,
+          });
+        }
+      } catch {
+        // Legacy plain-text remarks — fall through to plain replacement
+      }
+    }
+
     return await (prisma as any).admissionApplication.update({
       where: { id },
       data: {
         status,
-        adminRemarks: adminRemarks || undefined,
+        adminRemarks: mergedRemarks,
       },
     });
   }
@@ -330,4 +383,14 @@ export class AdmissionsService {
 
     return [headers.join(','), ...rows.map((r: string[]) => r.join(','))].join('\n');
   }
+}
+
+async function decodeImageData(value: string): Promise<Buffer> {
+  const match = value.match(/^data:image\/(png|jpeg|jpg|webp);base64,([A-Za-z0-9+/=]+)$/i);
+  if (!match?.[2]) throw new Error('Uploaded image data is invalid.');
+  const buffer = Buffer.from(match[2], 'base64');
+  if (buffer.length === 0 || buffer.length > 2 * 1024 * 1024) throw new Error('Uploaded image is invalid or too large.');
+  const metadata = await sharp(buffer).metadata();
+  if (!metadata.width || !metadata.height || !metadata.format) throw new Error('Uploaded image is invalid.');
+  return buffer;
 }

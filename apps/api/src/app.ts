@@ -5,18 +5,32 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import path from 'node:path';
 import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { config } from './config/index.js';
 import { apiRouter } from './routes/index.js';
 import { errorHandler } from './middleware/error.js';
+import { auditChanges } from './middleware/audit.js';
 import { logger } from './lib/logger.js';
 
 export function createApp() {
   const app = express();
+  app.disable('x-powered-by');
 
-  // Security Headers
   app.use(
     helmet({
-      contentSecurityPolicy: false, // In development and hybrid static serving
+      contentSecurityPolicy: config.NODE_ENV === 'production' ? {
+        directives: {
+          defaultSrc: ["'self'"],
+          baseUri: ["'self'"],
+          objectSrc: ["'none'"],
+          frameAncestors: ["'self'"],
+          imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'", 'https://www.google.com/recaptcha/', 'https://www.gstatic.com/recaptcha/'],
+           connectSrc: ["'self'", 'https://www.google.com', ...config.CORS_ORIGIN.split(',').map((origin) => origin.trim())],
+          frameSrc: ["'self'", 'https://www.google.com/recaptcha/', 'https://www.youtube.com', 'https://www.youtube-nocookie.com', 'https://www.google.com/maps/'],
+        },
+      } : false,
       crossOriginEmbedderPolicy: false,
     })
   );
@@ -71,7 +85,6 @@ export function createApp() {
     });
   });
 
-  // Local Uploads Static File Serving
   const uploadsDir = path.resolve(config.STORAGE_LOCAL_PATH);
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
@@ -79,21 +92,38 @@ export function createApp() {
   app.use('/uploads/faculty-messages', (_req: Request, res: Response) => {
     res.sendStatus(404);
   });
+  app.use('/uploads/admissions', (_req: Request, res: Response) => {
+    res.sendStatus(404);
+  });
   app.use(
     '/uploads',
     express.static(uploadsDir, {
       maxAge: config.NODE_ENV === 'production' ? '1y' : '0',
       immutable: config.NODE_ENV === 'production',
+      setHeaders: (res) => {
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+      },
     })
   );
+
+  /* Everything that changes something is written to the activity log.
+     It sits before the router so that it can wrap the response; the entry
+     itself is written once the handler has run, by which point the
+     administrator's identity is known. */
+  app.use('/api/v1', auditChanges);
 
   // Mount Main REST API
   app.use('/api/v1', apiRouter);
 
   // Single Web Service Production Mode: Serve Frontend Apps
   if (config.NODE_ENV === 'production') {
-    const webDistPath = path.resolve('../../apps/web/dist');
-    const adminDistPath = path.resolve('../../apps/admin/dist');
+    const compiledDir = path.dirname(fileURLToPath(import.meta.url));
+    const webDistPath = fs.existsSync(path.resolve(process.cwd(), 'apps/web/dist'))
+      ? path.resolve(process.cwd(), 'apps/web/dist')
+      : path.resolve(compiledDir, '../../web/dist');
+    const adminDistPath = fs.existsSync(path.resolve(process.cwd(), 'apps/admin/dist'))
+      ? path.resolve(process.cwd(), 'apps/admin/dist')
+      : path.resolve(compiledDir, '../../admin/dist');
 
     // 1. Serve Admin Portal at /admin
     if (fs.existsSync(adminDistPath)) {

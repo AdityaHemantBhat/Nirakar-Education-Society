@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { io, Socket } from 'socket.io-client';
+import { socketOrigin } from '../lib/api.js';
 
 let socketInstance: Socket | null = null;
 
@@ -10,12 +11,13 @@ export function useAdmissionsSocket() {
   useEffect(() => {
     // Only initialize one client socket instance
     if (!socketInstance) {
-      socketInstance = io({
+      socketInstance = io(socketOrigin(), {
         transports: ['websocket', 'polling'],
         autoConnect: true,
         reconnection: true,
         reconnectionAttempts: 10,
         reconnectionDelay: 2000,
+        withCredentials: true,
       });
     }
 
@@ -28,10 +30,17 @@ export function useAdmissionsSocket() {
       queryClient.invalidateQueries({ queryKey: ['admissions_config'] });
     };
 
+    const handlePopupUpdate = (newPopup: any) => {
+      queryClient.setQueryData(['homepage_popup'], newPopup);
+      queryClient.invalidateQueries({ queryKey: ['homepage_popup'] });
+    };
+
     socket.on('admissions:config_updated', handleConfigUpdate);
+    socket.on('admissions:popup_updated', handlePopupUpdate);
 
     return () => {
       socket.off('admissions:config_updated', handleConfigUpdate);
+      socket.off('admissions:popup_updated', handlePopupUpdate);
     };
   }, [queryClient]);
 }

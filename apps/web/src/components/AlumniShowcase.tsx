@@ -11,7 +11,9 @@ import {
   Users, 
   X,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -234,6 +236,31 @@ export const AlumniShowcase: React.FC<AlumniProps> = ({ alumni = [], registeredC
 
   const sectionRef = useRef<HTMLElement>(null);
   const marqueeContainerRef = useRef<HTMLDivElement>(null);
+  const mobileSliderRef = useRef<HTMLDivElement>(null);
+  const [mobileActiveIndex, setMobileActiveIndex] = useState(0);
+
+  const handleMobileScroll = () => {
+    if (mobileSliderRef.current) {
+      const { scrollLeft, clientWidth } = mobileSliderRef.current;
+      const index = Math.round(scrollLeft / clientWidth);
+      setMobileActiveIndex(index);
+    }
+  };
+
+  const handleScrollMobile = (direction: 'prev' | 'next') => {
+    if (mobileSliderRef.current) {
+      const { clientWidth } = mobileSliderRef.current;
+      const targetIndex = direction === 'next' 
+        ? Math.min(mobileActiveIndex + 1, normalizedItems.length - 1)
+        : Math.max(mobileActiveIndex - 1, 0);
+      
+      mobileSliderRef.current.scrollTo({
+        left: targetIndex * clientWidth,
+        behavior: 'smooth',
+      });
+      setMobileActiveIndex(targetIndex);
+    }
+  };
 
   // GSAP ScrollTrigger for elegant section entrance
   useEffect(() => {
@@ -284,7 +311,7 @@ export const AlumniShowcase: React.FC<AlumniProps> = ({ alumni = [], registeredC
   return (
     <section 
       ref={sectionRef} 
-      className="relative w-full bg-[#FAF7F2] py-20 sm:py-24 overflow-hidden"
+      className="relative w-full bg-[#FAF7F2] py-14 sm:py-20 lg:py-24 overflow-hidden"
     >
       {/* Ambient background glows */}
       <div className="absolute top-1/4 -right-10 w-96 h-96 rounded-full bg-gradient-to-br from-amber-200/25 to-blue-200/20 blur-3xl pointer-events-none" />
@@ -292,23 +319,23 @@ export const AlumniShowcase: React.FC<AlumniProps> = ({ alumni = [], registeredC
 
       {/* Top Header Section (Full Width with Fluid Padding) */}
       <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 2xl:px-24">
-        <div className="gsap-alumni-headline flex flex-col lg:flex-row lg:items-end justify-between mb-10 gap-6 border-b border-stone-200/90 pb-8">
+        <div className="gsap-alumni-headline flex flex-col lg:flex-row lg:items-end justify-between mb-8 sm:mb-10 gap-4 sm:gap-6 border-b border-stone-200/90 pb-6 sm:pb-8">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 text-xs uppercase font-serif font-bold tracking-widest text-[#111b5e] bg-white/90 border border-stone-200/90 px-4 py-1.5 rounded-full shadow-2xs mb-3">
+            <div className="inline-flex items-center gap-2 text-[11px] sm:text-xs uppercase font-serif font-bold tracking-wider sm:tracking-widest text-[#111b5e] bg-white/90 border border-stone-200/90 px-3.5 sm:px-4 py-1.5 rounded-full shadow-2xs mb-2.5 sm:mb-3">
               <ShieldCheck size={14} className="text-amber-500 shrink-0" />
-              <span>{displayCount} Verified Alumni Registered Across 3 Campuses</span>
+              <span>{displayCount} Verified Alumni Across 3 Campuses</span>
             </div>
 
-            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-[#0b132b] tracking-tight leading-tight">
+            <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-black text-[#0b132b] tracking-tight leading-tight">
               Distinguished Alumni
             </h2>
 
-            <p className="text-stone-600 text-sm sm:text-base mt-2.5 font-sans leading-relaxed">
+            <p className="text-stone-600 text-xs sm:text-base mt-2 sm:mt-2.5 font-sans leading-relaxed">
               From High Court advocates and civil administrators to physicians, research scientists, and technology innovators, our verified graduates continue to serve Goa and the world with honor.
             </p>
           </div>
 
-          <div className="shrink-0 flex items-center gap-3">
+          <div className="shrink-0 flex items-center gap-3 self-start lg:self-auto">
             <a
               href="/alumni"
               className="inline-flex items-center gap-2 text-xs font-serif font-bold text-[#111b5e] hover:text-[#0b132b] bg-white/90 hover:bg-white px-4 py-2.5 rounded-xl border border-stone-300/80 shadow-2xs transition-all group"
@@ -320,30 +347,204 @@ export const AlumniShowcase: React.FC<AlumniProps> = ({ alumni = [], registeredC
         </div>
       </div>
 
-      {/* Single-Line Marquee Carousel Container with Smooth Non-Cutting Gradient Fade */}
+      {/* MOBILE ONLY (<sm): ONE-BY-ONE CAROUSEL (NO CUTTING OFF, FULL CARD VISIBLE WITH SWIPE & STEPPER) */}
+      <div className="sm:hidden w-full px-4 select-none">
+        <div className="relative w-full">
+          {/* Scrollable Container with 100% card snap */}
+          <div 
+            ref={mobileSliderRef}
+            onScroll={handleMobileScroll}
+            className="w-full flex items-stretch gap-4 overflow-x-auto scrollbar-none py-2 snap-x snap-mandatory"
+          >
+            {normalizedItems.map((alumnus: AlumnusItem, idx: number) => {
+              const schoolInfo = getFullSchoolName(alumnus.school);
+
+              return (
+                <div
+                  key={`mobile-${alumnus.id}-${idx}`}
+                  className="w-full shrink-0 snap-center rounded-2xl overflow-hidden bg-white/95 border border-stone-200/90 shadow-[0_8px_30px_-6px_rgba(11,19,43,0.1)] flex flex-col justify-between relative"
+                >
+                  {/* 1. Header with dynamic campus gradient */}
+                  <div className={`relative h-24 bg-gradient-to-r ${schoolInfo.headerBg} p-4 text-white overflow-hidden`}>
+                    <div className="relative z-10 flex items-center justify-between text-[11px] font-mono tracking-wider uppercase text-amber-300">
+                      <div className="flex items-center gap-1.5 opacity-90">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                        <span className="truncate max-w-[150px]">{schoolInfo.shortCampus}</span>
+                      </div>
+
+                      <span className="bg-white/15 px-2.5 py-0.5 rounded-full border border-white/25 text-white font-serif font-bold text-[10px] tracking-wide shrink-0">
+                        Class of {alumnus.batchYear}
+                      </span>
+                    </div>
+
+                    {/* Bottom Organic SVG Curve */}
+                    <svg
+                      className="absolute -bottom-[1px] left-0 right-0 w-full h-8 overflow-visible"
+                      viewBox="0 0 400 36"
+                      fill="none"
+                      preserveAspectRatio="none"
+                    >
+                      <path d="M0,0 C120,34 280,34 400,0 L400,36 L0,36 Z" fill="#ffffff" />
+                      <path d="M0,0 C120,34 280,34 400,0" stroke="#f59e0b" strokeWidth="1.5" strokeOpacity="0.5" fill="none" />
+                    </svg>
+                  </div>
+
+                  {/* 2. Card Content */}
+                  <div className="relative z-10 px-5 pt-1 pb-5 space-y-3.5 flex-1 flex flex-col justify-between">
+                    <div>
+                      {/* Avatar Medallion */}
+                      <div className="-mt-12 mb-2.5 flex items-end justify-between">
+                        <div className="relative">
+                          <div className="w-18 h-18 rounded-2xl overflow-hidden border-3 border-white shadow-md bg-stone-100 ring-2 ring-amber-400/40">
+                            <img
+                              src={alumnus.photoUrl}
+                              alt={alumnus.fullName}
+                              loading="lazy"
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+                              }}
+                            />
+                          </div>
+
+                          <div 
+                            className="absolute -bottom-1 -right-1 bg-[#111b5e] text-amber-300 rounded-full p-1 shadow border-2 border-white"
+                            title="Verified Alumni Profile"
+                          >
+                            <ShieldCheck size={12} className="text-amber-400" />
+                          </div>
+                        </div>
+
+                        <div className="text-right pb-1 max-w-[55%]">
+                          <span className="text-xs font-serif font-bold text-[#111b5e] block truncate">
+                            {schoolInfo.fullName}
+                          </span>
+                          <span className="text-[10px] text-stone-500 font-sans block">
+                            Nirakar Alumni Record
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Name & Occupation */}
+                      <div className="space-y-1">
+                        <h3 className="font-serif text-lg font-bold text-[#0b132b] leading-tight">
+                          {alumnus.fullName}
+                        </h3>
+
+                        <p className="text-xs text-stone-700 font-medium font-sans flex items-start gap-1.5 leading-relaxed">
+                          <Briefcase size={13} className="text-[#111b5e] shrink-0 mt-0.5" />
+                          <span>{alumnus.occupation}</span>
+                        </p>
+                      </div>
+
+                      {/* Accolade */}
+                      {alumnus.accolade && (
+                        <div className="flex items-center gap-1.5 text-xs text-amber-700/90 font-sans font-medium pt-1">
+                          <Award size={13} className="text-amber-600 shrink-0" />
+                          <span className="line-clamp-1">{alumnus.accolade}</span>
+                        </div>
+                      )}
+
+                      {/* Bio Quote */}
+                      {alumnus.bio && (
+                        <div className="pt-2.5 border-t border-stone-100">
+                          <p className="text-xs text-stone-600 font-sans italic leading-relaxed line-clamp-3">
+                            “{alumnus.bio}”
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card Footer Actions */}
+                    <div className="pt-3 border-t border-stone-100 flex items-center justify-between">
+                      {alumnus.city && (
+                        <div className="flex items-center gap-1 text-[11px] text-stone-500 font-sans truncate max-w-[50%]">
+                          <MapPin size={11} className="text-amber-600 shrink-0" />
+                          <span className="truncate">{alumnus.city}</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-2.5 shrink-0 ml-auto">
+                        <button
+                          type="button"
+                          onClick={() => setActiveModalItem(alumnus)}
+                          className="text-[11px] font-serif font-semibold text-stone-500 hover:text-[#111b5e] underline transition-colors cursor-pointer"
+                        >
+                          Quick View
+                        </button>
+
+                        <a
+                          href={`/alumni/${alumnus.username}`}
+                          className="inline-flex items-center gap-1 text-xs font-serif font-bold text-[#111b5e] hover:text-[#0b132b]"
+                        >
+                          <span>Profile</span>
+                          <ArrowRight size={13} />
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Stepper Dots & Arrow Controls for Mobile One-by-One Navigation */}
+          <div className="flex items-center justify-between pt-3 text-xs font-mono">
+            <button
+              type="button"
+              onClick={() => handleScrollMobile('prev')}
+              className="p-2 rounded-full border border-stone-300 bg-white/90 text-stone-700 hover:bg-stone-100 transition-colors cursor-pointer shadow-xs"
+              aria-label="Previous Alumnus"
+            >
+              <ChevronLeft size={16} />
+            </button>
+
+            <div className="flex items-center gap-1.5 overflow-hidden">
+              <span className="text-stone-600 text-xs font-serif font-bold">
+                {mobileActiveIndex + 1}
+              </span>
+              <span className="text-stone-300">/</span>
+              <span className="text-stone-400 text-xs">
+                {normalizedItems.length}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleScrollMobile('next')}
+              className="p-2 rounded-full border border-stone-300 bg-white/90 text-stone-700 hover:bg-stone-100 transition-colors cursor-pointer shadow-xs"
+              aria-label="Next Alumnus"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* DESKTOP & TABLET (sm:block): Single-Line Marquee Carousel Container (Untouched) */}
       <div 
         ref={marqueeContainerRef}
-        className="alumni-marquee-container relative w-full overflow-hidden py-4 select-none"
+        className="hidden sm:block alumni-marquee-container relative w-full overflow-hidden py-3 sm:py-4 select-none"
         style={{
-          maskImage: 'linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 1) 4%, rgba(0, 0, 0, 1) 96%, transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 1) 4%, rgba(0, 0, 0, 1) 96%, transparent 100%)',
+          maskImage: 'linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 1) 4%, rgba(0, 0, 1) 96%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 1) 4%, rgba(0, 0, 1) 96%, transparent 100%)',
         }}
       >
         {/* LEFT Smooth Edge Feathering (Zero harsh lines or cut-offs) */}
-        <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-24 z-20 pointer-events-none bg-gradient-to-r from-[#FAF7F2] to-transparent" />
+        <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-16 md:w-24 z-20 pointer-events-none bg-gradient-to-r from-[#FAF7F2] to-transparent" />
 
         {/* RIGHT Smooth Edge Feathering (Zero harsh lines or cut-offs) */}
-        <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-24 z-20 pointer-events-none bg-gradient-to-l from-[#FAF7F2] to-transparent" />
+        <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-16 md:w-24 z-20 pointer-events-none bg-gradient-to-l from-[#FAF7F2] to-transparent" />
 
         {/* The Continuous Infinite Marquee Track (One Line, Pauses on Hover) */}
-        <div className="alumni-marquee-track flex items-stretch gap-6 sm:gap-7 px-6">
+        <div className="alumni-marquee-track flex items-stretch gap-4 sm:gap-6 md:gap-7 px-4 sm:px-6">
           {marqueeItems.map((alumnus: AlumnusItem, idx: number) => {
             const schoolInfo = getFullSchoolName(alumnus.school);
 
             return (
               <article
                 key={`${alumnus.id}-${idx}`}
-                className="group w-[350px] sm:w-[390px] shrink-0 rounded-[30px] overflow-hidden bg-white/95 backdrop-blur-md border border-stone-200/90 shadow-[0_10px_35px_-8px_rgba(11,19,43,0.08)] hover:shadow-[0_24px_55px_-10px_rgba(17,27,94,0.18)] hover:-translate-y-1.5 transition-all duration-500 flex flex-col justify-between relative"
+                className="group w-[320px] sm:w-[360px] md:w-[390px] shrink-0 rounded-2xl sm:rounded-[30px] overflow-hidden bg-white/95 backdrop-blur-md border border-stone-200/90 shadow-[0_10px_35px_-8px_rgba(11,19,43,0.08)] hover:shadow-[0_24px_55px_-10px_rgba(17,27,94,0.18)] hover:-translate-y-1.5 transition-all duration-500 flex flex-col justify-between relative"
               >
                 {/* 1. ARCHITECTURAL SVG HEADER WITH DYNAMIC HERITAGE WAVE */}
                 <div className={`relative h-28 bg-gradient-to-r ${schoolInfo.headerBg} p-5 text-white overflow-hidden`}>
@@ -532,12 +733,12 @@ export const AlumniShowcase: React.FC<AlumniProps> = ({ alumni = [], registeredC
             </svg>
           </div>
 
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-1.5 text-center md:text-left max-w-2xl">
-              <span className="text-[10px] uppercase font-serif font-bold tracking-widest text-amber-300">
+          <div className="relative z-10 flex flex-col xl:flex-row items-center xl:items-center justify-between gap-6 sm:gap-8">
+            <div className="space-y-2 text-center xl:text-left max-w-2xl">
+              <span className="text-[10px] sm:text-xs uppercase font-serif font-bold tracking-widest text-amber-300">
                 Lifelong Nirakar Fellowship
               </span>
-              <h3 className="font-serif text-2xl sm:text-3xl font-black text-white tracking-tight">
+              <h3 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight leading-tight">
                 Are You an Alumnus of Our Three Campuses?
               </h3>
               <p className="text-xs sm:text-sm text-stone-300 font-sans leading-relaxed">
@@ -545,16 +746,16 @@ export const AlumniShowcase: React.FC<AlumniProps> = ({ alumni = [], registeredC
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-3 shrink-0">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 shrink-0 w-full sm:w-auto">
               <a
                 href="/alumni/register"
-                className="bg-amber-400 hover:bg-amber-300 text-[#0b132b] font-serif font-bold text-xs px-6 py-3.5 rounded-xl transition-all shadow-md hover:scale-102"
+                className="bg-amber-400 hover:bg-amber-300 text-[#0b132b] font-serif font-bold text-xs sm:text-sm px-6 py-3.5 rounded-xl transition-all shadow-md hover:scale-102 text-center"
               >
                 Register in Alumni Directory
               </a>
               <a
                 href="/alumni"
-                className="bg-white/10 hover:bg-white/20 text-white border border-white/25 font-serif font-semibold text-xs px-5 py-3.5 rounded-xl transition-all"
+                className="bg-white/10 hover:bg-white/20 text-white border border-white/25 font-serif font-semibold text-xs sm:text-sm px-5 py-3.5 rounded-xl transition-all text-center"
               >
                 Search {displayCount} Directory Profiles
               </a>

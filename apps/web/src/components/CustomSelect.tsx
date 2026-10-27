@@ -101,7 +101,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
     <div
       ref={containerRef}
       onKeyDown={handleKeyDown}
-      className={`relative ${isFullWidth ? 'w-full flex' : 'inline-flex'} items-center text-left ${containerClassName}`}
+      className={`relative ${isFullWidth ? 'w-full flex' : 'inline-flex'} items-center text-left ${isOpen ? 'z-50' : 'z-auto'} ${containerClassName}`}
     >
       {label && (
         <span className="text-xs font-serif font-semibold text-stone-500 mr-2 shrink-0 select-none">
@@ -119,18 +119,20 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         onClick={() => {
           if (!disabled) setIsOpen((prev) => !prev);
         }}
-        className={`${isFullWidth ? 'w-full flex' : 'inline-flex'} items-center justify-between gap-3 rounded-xl border transition-all duration-200 ease-out cursor-pointer select-none text-left h-12 px-4 text-sm ${
+        className={`${isFullWidth ? 'w-full flex' : 'inline-flex'} items-center justify-between gap-2.5 rounded-xl border transition-all duration-200 ease-out cursor-pointer select-none text-left ${
+          size === 'sm' ? 'h-9 px-3 text-xs' : 'h-10 px-3.5 text-xs sm:text-sm'
+        } ${
           isOpen
             ? 'bg-white border-amber-400 shadow-sm ring-2 ring-amber-500/10 text-stone-900'
             : 'bg-stone-50/90 hover:bg-stone-100 border-stone-200 hover:border-amber-400/90 text-stone-800 shadow-xs'
         } ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
       >
-        <span className="font-sans font-medium text-stone-800 flex-1 text-left truncate text-sm">
+        <span className={`font-sans font-medium text-stone-800 flex-1 text-left truncate ${size === 'sm' ? 'text-xs' : 'text-xs sm:text-sm'}`}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown
-          size={16}
-          className={`shrink-0 text-stone-400 transition-transform duration-200 ml-2 ${
+          size={size === 'sm' ? 14 : 16}
+          className={`shrink-0 text-stone-400 transition-transform duration-200 ml-1.5 ${
             isOpen ? 'rotate-180 text-amber-600' : 'group-hover:text-stone-600'
           }`}
         />

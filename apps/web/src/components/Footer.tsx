@@ -51,53 +51,53 @@ export const Footer: React.FC = () => {
         </svg>
       </div>
 
-      <div className="w-full bg-[#07112c] pt-10 sm:pt-14 pb-14 px-6 sm:px-10 md:px-14 lg:px-16 xl:px-20 2xl:px-28">
+      <div className="w-full bg-[#07112c] pt-8 sm:pt-14 pb-10 sm:pb-14 px-4 sm:px-8 md:px-12 lg:px-16 xl:px-20 2xl:px-28">
         
         {/* TOP EDITORIAL SPREAD: Pure Typography, Wide Hierarchy, Zero Box Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 pb-16 border-b border-white/[0.08]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-16 pb-10 sm:pb-16 border-b border-white/[0.08]">
           
           {/* Left: Monumental Society Statement */}
-          <div className="lg:col-span-7 space-y-5">
+          <div className="lg:col-span-7 space-y-4 sm:space-y-5">
             <div className="flex items-center gap-3">
               <img 
                 src="/images/Logo.webp" 
-                alt="Shree Nirakar Education Society" 
-                className="w-12 h-12 object-contain shrink-0"
+                alt="Shri Nirakar Education Society" 
+                className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0"
               />
               <div>
-                <span className="text-[11px] font-mono uppercase tracking-widest text-amber-400 font-bold block">
+                <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-wider sm:tracking-widest text-amber-400 font-bold block">
                   Mashem • Gaondongrem • Dapot, Canacona
                 </span>
-                <span className="text-xs text-stone-400 font-serif">
+                <span className="text-[11px] sm:text-xs text-stone-400 font-serif">
                   Estd. 1939 • Registered Society No. 128
                 </span>
               </div>
             </div>
 
-            <h3 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.12]">
-              Shree Nirakar Education Society
+            <h3 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.12]">
+              Shri Nirakar Education Society
             </h3>
 
-            <p className="text-stone-300 text-sm sm:text-base leading-relaxed max-w-2xl font-sans">
+            <p className="text-stone-300 text-xs sm:text-base leading-relaxed max-w-2xl font-sans">
               Dedicated to rural empowerment, academic excellence, scientific innovation, and moral character for the youth of Canacona, South Goa across three historic campuses.
             </p>
 
-            <div className="pt-2 text-xs text-amber-400/90 font-serif font-bold tracking-wide">
+            <div className="pt-1 sm:pt-2 text-[11px] sm:text-xs text-amber-400/90 font-serif font-bold tracking-wide">
               <span>विद्या परं दैवतम् • Knowledge is the Supreme Deity</span>
             </div>
           </div>
 
           {/* Right: Direct Contacts & Campus Central Line */}
-          <div className="lg:col-span-5 flex flex-col justify-between space-y-6 lg:pl-6">
-            <div className="space-y-4">
-              <div className="text-xs uppercase font-mono tracking-widest text-stone-400 font-bold">
+          <div className="lg:col-span-5 flex flex-col justify-between space-y-5 sm:space-y-6 lg:pl-6">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="text-[11px] sm:text-xs uppercase font-mono tracking-wider sm:tracking-widest text-stone-400 font-bold">
                 Central Administrative Secretariat
               </div>
               
-              <div className="space-y-3 text-sm text-stone-300 font-sans">
+              <div className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm text-stone-300 font-sans">
                 <a 
                   href="tel:+918322643232" 
-                  className="flex items-center gap-3 hover:text-white transition-colors group"
+                  className="flex items-center gap-2.5 sm:gap-3 hover:text-white transition-colors group"
                 >
                   <Phone size={15} className="text-amber-400 shrink-0" />
                   <span className="group-hover:translate-x-0.5 transition-transform">
@@ -107,7 +107,7 @@ export const Footer: React.FC = () => {
 
                 <a 
                   href="mailto:info@nirakar.org" 
-                  className="flex items-center gap-3 hover:text-white transition-colors group"
+                  className="flex items-center gap-2.5 sm:gap-3 hover:text-white transition-colors group"
                 >
                   <Mail size={15} className="text-amber-400 shrink-0" />
                   <span className="group-hover:translate-x-0.5 transition-transform">
@@ -115,7 +115,7 @@ export const Footer: React.FC = () => {
                   </span>
                 </a>
 
-                <div className="flex items-start gap-3 text-stone-400">
+                <div className="flex items-start gap-2.5 sm:gap-3 text-stone-400">
                   <MapPin size={15} className="text-amber-400 shrink-0 mt-0.5" />
                   <span>
                     Mashem, Canacona, South Goa, Goa 403728, India
@@ -125,7 +125,7 @@ export const Footer: React.FC = () => {
             </div>
 
             {/* Quick Portals Ribbon (Clean Text Links with Underline Effects) */}
-            <div className="flex flex-wrap items-center gap-4 text-xs font-mono pt-2">
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 text-xs font-mono pt-2">
               <a 
                 href="/contact" 
                 className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1 group font-bold"
@@ -160,7 +160,7 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* 3. MINIMALIST 4-COLUMN INSTITUTIONAL DIRECTORY (Zero Boxes, Pure Typography) */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12 py-14 border-b border-white/[0.08] text-xs">
+        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 lg:gap-12 py-10 sm:py-14 border-b border-white/[0.08] text-xs">
           
           {/* Column 1: Three Campuses */}
           <div className="space-y-3">
@@ -214,6 +214,16 @@ export const Footer: React.FC = () => {
               <li>
                 <a href="/academics" className="hover:text-white transition-colors block">
                   Secondary Curriculum (Std V–X)
+                </a>
+              </li>
+              <li>
+                <a href="/library" className="hover:text-white transition-colors block">
+                  Digital Library (Std V–XII)
+                </a>
+              </li>
+              <li>
+                <a href="/results" className="hover:text-white transition-colors block">
+                  Academic Results &amp; Toppers
                 </a>
               </li>
               <li>
@@ -322,8 +332,8 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* 4. GOVERNMENT ACCREDITATIONS (Single-Line Minimalist Text) */}
-        <div className="py-6 border-b border-white/[0.08] text-[11px] text-stone-400 font-sans flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+        <div className="py-5 sm:py-6 border-b border-white/[0.08] text-[11px] text-stone-400 font-sans flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-6 leading-relaxed">
             <span>Recognised by Directorate of Education, Government of Goa</span>
             <span className="text-white/20 hidden sm:inline">•</span>
             <span>Affiliated to Goa Board of Secondary & Higher Secondary Education (GBSHSE)</span>
@@ -334,7 +344,7 @@ export const Footer: React.FC = () => {
           <button
             onClick={scrollToTop}
             type="button"
-            className="hover:text-white text-stone-400 transition-colors inline-flex items-center gap-1 font-mono text-xs cursor-pointer group"
+            className="hover:text-white text-stone-400 transition-colors inline-flex items-center gap-1 font-mono text-xs cursor-pointer group self-end sm:self-auto shrink-0"
           >
             <span>Back to top</span>
             <ArrowUp size={12} className="group-hover:-translate-y-0.5 transition-transform text-amber-400" />
@@ -342,19 +352,21 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* 5. MINIMAL BOTTOM BAR: Legal, Rights, DPDP Act */}
-        <div className="pt-6 flex flex-col md:flex-row items-center justify-between text-stone-400 text-xs gap-4 font-sans">
-          <div>
-            © {new Date().getFullYear()} Shree Nirakar Education Society, Mashem, Canacona, South Goa. All rights reserved.
+        <div className="pt-5 sm:pt-6 flex flex-col xl:flex-row items-center justify-between text-stone-400 text-xs gap-3 sm:gap-4 font-sans text-center xl:text-left">
+          <div className="max-w-xl">
+            © {new Date().getFullYear()} Shri Nirakar Education Society, Mashem, Canacona, South Goa. All rights reserved.
           </div>
 
-          <div className="flex items-center space-x-6 text-[11px]">
+          <div className="flex flex-wrap items-center justify-center xl:justify-end gap-x-4 sm:gap-x-6 gap-y-2 text-[11px]">
             <a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a>
             <span className="text-white/20">•</span>
             <a href="/terms" className="hover:text-white transition-colors">Terms of Use</a>
             <span className="text-white/20">•</span>
             <a href="/dpdp" className="hover:text-white transition-colors">DPDP Act 2023</a>
             <span className="text-white/20">•</span>
-            <a href="/contact" className="hover:text-white transition-colors">Grievance Desk</a>
+            <a href="/data-rights" className="hover:text-white transition-colors">My Data Rights</a>
+            <span className="text-white/20">•</span>
+            <a href="/grievance-redressal" className="hover:text-white transition-colors">Grievance Redressal</a>
           </div>
         </div>
 

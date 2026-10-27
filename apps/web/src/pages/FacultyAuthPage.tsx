@@ -295,12 +295,12 @@ export const FacultyAuthPage: React.FC<FacultyAuthPageProps> = ({ initialMode })
       <Helmet>
         <title>
           {mode === 'login'
-            ? 'Faculty & Staff Portal Login | Shree Nirakar Education Society'
-            : 'Educator Registration & Onboarding | Shree Nirakar Education Society'}
+            ? 'Faculty & Staff Portal Login | Shri Nirakar Education Society'
+            : 'Educator Registration & Onboarding | Shri Nirakar Education Society'}
         </title>
         <meta
           name="description"
-          content="Official faculty and educator portal for Shree Nirakar Education Society institutions in Canacona."
+          content="Official faculty and educator portal for Shri Nirakar Education Society institutions in Canacona."
         />
       </Helmet>
 
@@ -352,7 +352,7 @@ export const FacultyAuthPage: React.FC<FacultyAuthPageProps> = ({ initialMode })
                   </div>
 
                   <p className="text-xs sm:text-sm text-stone-300 leading-relaxed font-sans">
-                    Shree Nirakar Education Society provides educators complete autonomy over their pedagogical records, public research profiles, and digital classroom interactions.
+                    Shri Nirakar Education Society provides educators complete autonomy over their pedagogical records, public research profiles, and digital classroom interactions.
                   </p>
 
                   <div className="space-y-3 pt-3 border-t border-white/10 text-xs">
@@ -399,13 +399,13 @@ export const FacultyAuthPage: React.FC<FacultyAuthPageProps> = ({ initialMode })
             </div>
 
             {/* RIGHT COLUMN: Interactive Sliding Auth Station */}
-            <div className="lg:col-span-8 xl:col-span-8 space-y-6">
+            <div className="lg:col-span-8 xl:col-span-8 space-y-5 sm:space-y-6 w-full min-w-0">
               
               {/* Segmented Pill Switcher with Smooth Slide Indicator */}
-              <div className="bg-white p-1.5 rounded-2xl border border-stone-200/90 shadow-sm flex items-center max-w-md mx-auto sm:mx-0 relative">
+              <div className="bg-white p-1 sm:p-1.5 rounded-2xl border border-stone-200/90 shadow-sm flex items-center w-full max-w-md mx-auto sm:mx-0 relative">
                 <div
-                  className={`absolute top-1.5 bottom-1.5 rounded-xl bg-[#0b132b] transition-all duration-500 ease-in-out shadow-md ${
-                    mode === 'login' ? 'left-1.5 w-[calc(50%-6px)]' : 'left-[calc(50%+3px)] w-[calc(50%-6px)]'
+                  className={`absolute top-1 bottom-1 sm:top-1.5 sm:bottom-1.5 rounded-xl bg-[#0b132b] transition-all duration-500 ease-in-out shadow-md ${
+                    mode === 'login' ? 'left-1 w-[calc(50%-4px)] sm:left-1.5 sm:w-[calc(50%-6px)]' : 'left-[calc(50%+2px)] w-[calc(50%-4px)] sm:left-[calc(50%+3px)] sm:w-[calc(50%-6px)]'
                   }`}
                 />
 
@@ -413,64 +413,65 @@ export const FacultyAuthPage: React.FC<FacultyAuthPageProps> = ({ initialMode })
                   type="button"
                   data-no-transition="true"
                   onClick={() => switchMode('login')}
-                  className={`relative z-10 flex-1 py-3 text-center text-sm font-bold rounded-xl transition-colors duration-300 cursor-pointer flex items-center justify-center gap-2 ${
+                  className={`relative z-10 flex-1 py-2.5 sm:py-3 text-center text-xs sm:text-sm font-bold rounded-xl transition-colors duration-300 cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2 select-none ${
                     mode === 'login' ? 'text-amber-300' : 'text-stone-600 hover:text-stone-900'
                   }`}
                 >
-                  <Lock size={15} />
-                  <span>Faculty Sign In</span>
+                  <Lock size={14} className="shrink-0" />
+                  <span className="truncate">Faculty Sign In</span>
                 </button>
 
                 <button
                   type="button"
                   data-no-transition="true"
                   onClick={() => switchMode('register')}
-                  className={`relative z-10 flex-1 py-3 text-center text-sm font-bold rounded-xl transition-colors duration-300 cursor-pointer flex items-center justify-center gap-2 ${
+                  className={`relative z-10 flex-1 py-2.5 sm:py-3 text-center text-xs sm:text-sm font-bold rounded-xl transition-colors duration-300 cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2 select-none ${
                     mode === 'register' ? 'text-amber-300' : 'text-stone-600 hover:text-stone-900'
                   }`}
                 >
-                  <UserPlus size={15} />
-                  <span>Educator Registration</span>
+                  <UserPlus size={14} className="shrink-0" />
+                  <span className="truncate">Registration</span>
                 </button>
               </div>
 
               {/* Sliding Forms Container Track (Overflow hidden + flex track + dynamic height animation) */}
               <div
                 style={{ height: cardHeight ? `${cardHeight}px` : undefined }}
-                className="w-full bg-white rounded-3xl border border-stone-200/90 shadow-xl overflow-hidden relative transition-[height] duration-500 ease-in-out"
+                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 shadow-xl overflow-hidden relative transition-[height] duration-500 ease-in-out"
               >
                 <div
-                  className={`flex w-[200%] items-start transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) ease-in-out ${
+                  style={{ width: '200%', minWidth: '200%', maxWidth: 'none' }}
+                  className={`flex items-start transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) ease-in-out ${
                     mode === 'login' ? 'translate-x-0' : '-translate-x-1/2'
                   }`}
                 >
                   
                   {/* ==================== SLIDE 1: LOGIN FORM ==================== */}
-                  <div ref={loginRef} className="w-1/2 shrink-0 p-6 sm:p-10 lg:p-12 space-y-7">
-                    <div className="space-y-1.5 border-b border-stone-100 pb-5">
-                      <div className="flex items-center gap-2 text-amber-800 text-xs font-serif font-bold uppercase tracking-wider">
-                        <Lock size={14} />
+                  <div ref={loginRef} style={{ width: '50%', minWidth: '50%', maxWidth: '50%' }} className="shrink-0 p-5 sm:p-8 md:p-10 lg:p-12 space-y-6 sm:space-y-7">
+                    <div className="space-y-1.5 border-b border-stone-100 pb-4 sm:pb-5">
+                      <div className="flex items-center gap-2 text-amber-800 text-[11px] sm:text-xs font-serif font-bold uppercase tracking-wider">
+                        <Lock size={13} className="shrink-0" />
                         <span>Staff Terminal Access</span>
                       </div>
-                      <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
+                      <h2 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold text-stone-900 leading-tight">
                         Sign In to Your Faculty Profile
                       </h2>
-                      <p className="text-xs sm:text-sm text-stone-500 font-sans">
+                      <p className="text-xs sm:text-sm text-stone-500 font-sans leading-relaxed">
                         Access syllabus logs, student grading, and update your published institutional profile.
                       </p>
                     </div>
 
                     {loginError && (
-                      <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800 font-medium flex items-start gap-2.5">
+                      <div className="p-3.5 sm:p-4 rounded-xl bg-red-50 border border-red-200 text-xs sm:text-sm text-red-800 font-medium flex items-start gap-2.5">
                         <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-600" />
-                        <span>{loginError}</span>
+                        <span className="break-words">{loginError}</span>
                       </div>
                     )}
 
                     {loginSuccess && (
-                      <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-medium flex items-center gap-2.5">
+                      <div className="p-3.5 sm:p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs sm:text-sm text-emerald-800 font-medium flex items-center gap-2.5">
                         <CheckCircle2 size={17} className="text-emerald-600 shrink-0" />
-                        <span>Authentication verified! Redirecting to Educator Dashboard...</span>
+                        <span className="break-words">Authentication verified! Redirecting to Educator Dashboard...</span>
                       </div>
                     )}
 
@@ -595,48 +596,48 @@ export const FacultyAuthPage: React.FC<FacultyAuthPageProps> = ({ initialMode })
                   </div>
 
                   {/* ==================== SLIDE 2: REGISTER FORM ==================== */}
-                  <div ref={registerRef} className="w-1/2 shrink-0 p-6 sm:p-10 lg:p-12 space-y-7">
-                    <div className="space-y-1.5 border-b border-stone-100 pb-5">
-                      <div className="flex items-center gap-2 text-amber-800 text-xs font-serif font-bold uppercase tracking-wider">
-                        <UserPlus size={14} />
+                  <div ref={registerRef} style={{ width: '50%', minWidth: '50%', maxWidth: '50%' }} className="shrink-0 p-5 sm:p-8 md:p-10 lg:p-12 space-y-6 sm:space-y-7">
+                    <div className="space-y-1.5 border-b border-stone-100 pb-4 sm:pb-5">
+                      <div className="flex items-center gap-2 text-amber-800 text-[11px] sm:text-xs font-serif font-bold uppercase tracking-wider">
+                        <UserPlus size={13} className="shrink-0" />
                         <span>Personnel Onboarding Form</span>
                       </div>
-                      <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
+                      <h2 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold text-stone-900 leading-tight">
                         Register Faculty Credentials
                       </h2>
-                      <p className="text-xs sm:text-sm text-stone-500 font-sans">
+                      <p className="text-xs sm:text-sm text-stone-500 font-sans leading-relaxed">
                         Complete your official educator profile for administrative review and public faculty directory listing.
                       </p>
                     </div>
 
                     {regError && (
-                      <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800 font-medium flex items-start gap-2.5">
+                      <div className="p-3.5 sm:p-4 rounded-xl bg-red-50 border border-red-200 text-xs sm:text-sm text-red-800 font-medium flex items-start gap-2.5">
                         <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-600" />
-                        <span>{regError}</span>
+                        <span className="break-words">{regError}</span>
                       </div>
                     )}
 
                     {regSubmitted ? (
-                      <div className="py-12 text-center space-y-5 bg-emerald-50 rounded-2xl border border-emerald-200 p-8 sm:p-12">
-                        <CheckCircle2 size={52} className="text-emerald-600 mx-auto" />
-                        <h3 className="font-serif text-2xl sm:text-3xl font-bold text-emerald-950">
+                      <div className="py-8 sm:py-12 text-center space-y-4 sm:space-y-5 bg-emerald-50 rounded-2xl border border-emerald-200 p-6 sm:p-8 md:p-12">
+                        <CheckCircle2 size={44} className="text-emerald-600 mx-auto sm:w-13 sm:h-13" />
+                        <h3 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold text-emerald-950 leading-tight">
                           Application Submitted for Administrative Approval
                         </h3>
-                        <p className="text-sm text-emerald-800 leading-relaxed font-sans max-w-lg mx-auto">
+                        <p className="text-xs sm:text-sm text-emerald-800 leading-relaxed font-sans max-w-lg mx-auto">
                           Thank you, <strong>{regData.firstName} {regData.lastName}</strong>. Your faculty profile registration has been submitted to the Central Administrative Committee. Once verified by the Directorate, your profile will be published and activated.
                         </p>
-                        <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
+                        <div className="pt-3 sm:pt-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full">
                           <button
                             type="button"
                             data-no-transition="true"
                             onClick={() => switchMode('login')}
-                            className="px-6 py-3 rounded-xl bg-[#0b132b] text-white text-sm font-bold hover:bg-[#16247e] transition-colors cursor-pointer"
+                            className="w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-[#0b132b] text-white text-xs sm:text-sm font-bold hover:bg-[#16247e] transition-colors cursor-pointer text-center"
                           >
                             ← Back to Faculty Sign In
                           </button>
                           <a
                             href="/faculty"
-                            className="px-6 py-3 rounded-xl bg-white border border-stone-200 text-stone-700 text-sm font-bold hover:bg-stone-50 transition-colors cursor-pointer"
+                            className="w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-white border border-stone-200 text-stone-700 text-xs sm:text-sm font-bold hover:bg-stone-50 transition-colors cursor-pointer text-center"
                           >
                             Explore Faculty Directory
                           </a>
@@ -932,7 +933,7 @@ export const FacultyAuthPage: React.FC<FacultyAuthPageProps> = ({ initialMode })
                               className="mt-0.5 rounded text-amber-600 focus:ring-amber-500 border-stone-300"
                             />
                             <span className="text-xs leading-relaxed text-stone-600">
-                              I confirm that all entered educational qualifications and employment history details are accurate as per Goa Educational Board norms and Shree Nirakar Education Society policies. I understand that my profile will be reviewed by the Administrative Directorate prior to public publishing.
+                              I confirm that all entered educational qualifications and employment history details are accurate as per Goa Educational Board norms and Shri Nirakar Education Society policies. I understand that my profile will be reviewed by the Administrative Directorate prior to public publishing.
                             </span>
                           </label>
                         </div>

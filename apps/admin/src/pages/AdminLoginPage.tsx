@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ShieldAlert } from 'lucide-react';
 import { AuthCaptchaNotice, useAuthCaptcha } from '../components/AuthCaptcha.js';
-import schoolEmblem from '../../../web/public/images/Logo.webp';
 
 export const AdminLoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -44,8 +43,8 @@ export const AdminLoginPage: React.FC = () => {
       <header className="border-b border-stone-200 bg-white">
         <div className="mx-auto flex min-h-[76px] w-full max-w-6xl items-center gap-3 px-5 sm:px-8">
           <img
-            src={schoolEmblem}
-            alt="Shree Nirakar Education Society emblem"
+            src="/images/Logo.webp"
+            alt="Shri Nirakar Education Society emblem"
             width={44}
             height={44}
             loading="eager"
@@ -54,7 +53,7 @@ export const AdminLoginPage: React.FC = () => {
             className="h-11 w-11 object-contain"
           />
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold leading-5 text-stone-900 sm:text-base">Shree Nirakar Education Society</p>
+            <p className="truncate text-sm font-semibold leading-5 text-stone-900 sm:text-base">Shri Nirakar Education Society</p>
             <p className="text-xs leading-5 text-stone-500">Administration</p>
           </div>
         </div>
@@ -136,7 +135,7 @@ export const AdminLoginPage: React.FC = () => {
 
       <footer className="border-t border-stone-200 bg-white">
         <div className="mx-auto w-full max-w-6xl px-5 py-4 text-xs text-stone-500 sm:px-8">
-          Shree Nirakar Education Society · Canacona, Goa
+          Shri Nirakar Education Society · Canacona, Goa
         </div>
       </footer>
     </main>

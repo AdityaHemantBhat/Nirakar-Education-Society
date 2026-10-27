@@ -12,7 +12,6 @@ export const AccessSettingsPage: React.FC = () => {
     maxAmount: 1000,
     defaultAmount: 100,
     freeReadCountMagazine: 5,
-    freeReadCountPosts: 5,
     purposeText: '',
   });
 
@@ -87,7 +86,7 @@ export const AccessSettingsPage: React.FC = () => {
           Supporter Pass & Monetisation Rules
         </h1>
         <p className="text-xs sm:text-sm text-stone-500 font-sans mt-1">
-          Configure pay-what-you-want slider bounds, metered free read allowances, and purpose copy.
+          Configure voluntary contributions and free school magazine reads.
         </p>
       </div>
 
@@ -151,7 +150,7 @@ export const AccessSettingsPage: React.FC = () => {
           </div>
 
           {/* Metered Free Reads Allowance */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div className="grid grid-cols-1 gap-4 pt-2">
             <div>
               <label className="block text-xs font-serif font-bold uppercase tracking-wider text-stone-600 mb-1">
                 Free School Magazine Reads Before Paywall
@@ -171,21 +170,6 @@ export const AccessSettingsPage: React.FC = () => {
               </span>
             </div>
 
-            <div>
-              <label className="block text-xs font-serif font-bold uppercase tracking-wider text-stone-600 mb-1">
-                Free Post Reads Before Paywall
-              </label>
-              <input
-                type="number"
-                min={0}
-                max={20}
-                value={formData.freeReadCountPosts}
-                onChange={(e) =>
-                  setFormData({ ...formData, freeReadCountPosts: parseInt(e.target.value) })
-                }
-                className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm font-mono focus:outline-none focus:border-brand-700"
-              />
-            </div>
           </div>
 
           {/* Purpose Text */}

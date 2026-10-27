@@ -194,10 +194,10 @@ export const AlumniDirectoryNextPage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Alumni Directory | Shree Nirakar Education Society</title>
+        <title>Alumni Directory | Shri Nirakar Education Society</title>
         <meta
           name="description"
-          content="Explore alumni from Shree Nirakar Education Society schools and reconnect with your community."
+          content="Explore alumni from Shri Nirakar Education Society schools and reconnect with your community."
         />
       </Helmet>
       <Navbar />

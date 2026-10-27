@@ -85,7 +85,7 @@ export const ChairpersonMessage: React.FC = () => {
               <div className="relative w-52 h-52 sm:w-60 sm:h-60 rounded-full overflow-hidden border-4 border-white shadow-2xl bg-[#f0ede6]">
                 <img
                   src="/photos/Prashant_naik.png"
-                  alt="Shri Prashant Naik, Chairperson, Shree Nirakar Education Society"
+                  alt="Shri Prashant Naik, Chairperson, Shri Nirakar Education Society"
                   className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500"
                   onError={(e) => {
                     const target = e.currentTarget;
@@ -111,7 +111,7 @@ export const ChairpersonMessage: React.FC = () => {
                 Chairperson
               </p>
               <p className="text-xs text-stone-600 font-sans">
-                Shree Nirakar Education Society
+                Shri Nirakar Education Society
               </p>
               <div className="flex items-center justify-center gap-1.5 text-[11px] text-stone-500 font-sans pt-1">
                 <MapPin size={12} className="text-accent-600" />

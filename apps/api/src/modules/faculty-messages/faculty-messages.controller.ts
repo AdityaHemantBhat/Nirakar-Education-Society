@@ -165,7 +165,7 @@ export class FacultyMessagesController {
       const attachment = await this.service.getAttachment(req.params.id, {
         visitorToken: req.get('X-Conversation-Token'),
         userId: req.user?.sub,
-        isAdmin: ['SUPER_ADMIN', 'ADMIN', 'EDITOR'].includes(req.user?.role || ''),
+        isAdmin: ['SUPER_ADMIN', 'ADMIN'].includes(req.user?.role || ''),
       });
       res.set({
         'Cache-Control': 'private, no-store',

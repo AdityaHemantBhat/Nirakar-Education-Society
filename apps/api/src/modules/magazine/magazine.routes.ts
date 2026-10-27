@@ -4,6 +4,7 @@ import path from 'node:path';
 import { MagazineController } from './magazine.controller.js';
 import { authenticate, optionalAuthenticate, requireRole } from '../../middleware/auth.js';
 import { config } from '../../config/index.js';
+import { magazineReviewLimiter } from '../../middleware/rate-limiter.js';
 
 const router = Router();
 const controller = new MagazineController();
@@ -33,10 +34,18 @@ const uploadPdf = multer({
 
 // Public Reader Routes
 router.get('/calendar', controller.getCalendar);
+router.get('/issue/:date/review/me', optionalAuthenticate, controller.getReaderReview);
+router.post('/issue/:date/review', magazineReviewLimiter, optionalAuthenticate, controller.submitReview);
 router.get('/issue/:date', optionalAuthenticate, controller.getIssueByDate);
 router.get('/search', controller.search);
 
 // Admin Management Routes
+router.get(
+  '/admin/issues',
+  authenticate,
+  requireRole('SUPER_ADMIN', 'ADMIN', 'EDITOR'),
+  controller.adminGetIssues
+);
 router.post(
   '/admin/upload',
   authenticate,
@@ -55,6 +64,12 @@ router.put(
   authenticate,
   requireRole('SUPER_ADMIN', 'ADMIN', 'EDITOR'),
   controller.adminUpdateIssue
+);
+router.delete(
+  '/admin/:id',
+  authenticate,
+  requireRole('SUPER_ADMIN', 'ADMIN'),
+  controller.adminDeleteIssue,
 );
 
 export { router as magazineRoutes };

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { CustomCampusSelect, CAMPUS_OPTIONS } from '../components/AdminSelect.js';
 import {
   Calendar,
   FileText,
@@ -112,33 +113,15 @@ export interface NoticeFormData {
   institutionCode: string;
 }
 
-/** Encode metadata (Ref No. & Urgent) inside notice content header */
-export function encodeNoticeMeta(body: string, meta: { refNo?: string; urgent?: boolean }): string {
-  const cleanRef = meta.refNo ? meta.refNo.trim() : '';
-  const isUrgent = Boolean(meta.urgent);
-  if (!cleanRef && !isUrgent) {
-    return body;
-  }
-  const header = `<!--NOTICE_META:${JSON.stringify({ refNo: cleanRef, urgent: isUrgent })}-->\n`;
-  return header + (body || '');
-}
+/**
+ * Encode metadata (Ref No. & Urgent) inside notice content header.
+ *
+ * The rules live in the shared package, so the console writes the same
+ * header the server and the public site read.
+ */
+import { encodeNoticeMeta, decodeNoticeMeta } from '@nirakar/shared';
 
-/** Decode metadata (Ref No. & Urgent) from notice content header */
-export function decodeNoticeMeta(rawContent: string | null | undefined): { content: string; refNo: string; urgent: boolean } {
-  if (!rawContent) return { content: '', refNo: '', urgent: false };
-  const match = rawContent.match(/^<!--NOTICE_META:(\{.*?\})-->\n?/);
-  if (match) {
-    try {
-      const parsed = JSON.parse(match[1]);
-      return {
-        content: rawContent.slice(match[0].length),
-        refNo: parsed.refNo || '',
-        urgent: Boolean(parsed.urgent),
-      };
-    } catch {}
-  }
-  return { content: rawContent, refNo: '', urgent: false };
-}
+export { encodeNoticeMeta, decodeNoticeMeta };
 
 /** Sanitize and convert video link to safe embed URL (YouTube, Vimeo, or direct video) */
 export function getSafeVideoEmbedUrl(url: string | null | undefined): string | null {
@@ -165,13 +148,6 @@ export function getSafeVideoEmbedUrl(url: string | null | undefined): string | n
   return null;
 }
 
-const INSTITUTIONS = [
-  { code: '', label: 'All Society Campuses', short: 'All Campuses' },
-  { code: 'NIRAKAR_HS', label: 'Shri Nirakar High School (Mashem)', short: 'Nirakar HS' },
-  { code: 'TUDAL_HS', label: 'Tudal High School (Gaodongrem)', short: 'Tudal HS' },
-  { code: 'ANGLE_HSS', label: 'S. S. Angle Higher Secondary School (Dapot)', short: 'Angle HSS' },
-];
-
 const MAX_PDF_MB = 15; // 15MB limit with buffer for exact 10MB PDFs and metadata
 
 /** Clean hover tooltip for concise info without clutter */
@@ -196,117 +172,6 @@ const InfoTooltip: React.FC<{ text: string }> = ({ text }) => {
         <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-50 w-64 p-2.5 bg-slate-900 text-white text-xs rounded-lg shadow-xl pointer-events-none leading-relaxed">
           {text}
           <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
-        </div>
-      )}
-    </div>
-  );
-};
-
-interface CustomCampusSelectProps {
-  value: string;
-  onChange: (val: string) => void;
-  label?: string;
-  placeholder?: string;
-  compact?: boolean;
-}
-
-/** Bespoke modern custom dropdown for campus selection (No raw browser select) */
-const CustomCampusSelect: React.FC<CustomCampusSelectProps> = ({
-  value,
-  onChange,
-  label,
-  placeholder = 'Select Campus...',
-  compact = false,
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
-
-  const selectedItem = INSTITUTIONS.find((i) => i.code === value) || INSTITUTIONS[0];
-
-  return (
-    <div ref={containerRef} className="relative w-full">
-      {label && (
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-          {label}
-        </label>
-      )}
-
-      {/* Trigger */}
-      <button
-        type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
-        className={`w-full border bg-white flex items-center justify-between text-left transition-all shadow-xs select-none cursor-pointer group ${
-          compact ? 'px-3 py-2 rounded-lg text-xs' : 'px-4 py-3 rounded-xl text-sm'
-        } ${
-          isOpen
-            ? 'border-brand-700 ring-2 ring-brand-700/20 shadow-md'
-            : 'border-slate-300 hover:border-slate-400 hover:shadow-xs'
-        }`}
-      >
-        <div className="flex items-center gap-2.5 min-w-0 pr-2">
-          <div
-            className={`rounded-lg bg-slate-100 group-hover:bg-brand-50 text-slate-500 group-hover:text-brand-700 flex items-center justify-center shrink-0 transition-colors ${
-              compact ? 'w-5 h-5' : 'w-7 h-7'
-            }`}
-          >
-            <Building2 size={compact ? 12 : 15} />
-          </div>
-          <span className="font-semibold text-slate-900 truncate">
-            {selectedItem ? (compact ? selectedItem.short : selectedItem.label) : placeholder}
-          </span>
-        </div>
-
-        <ChevronDown
-          size={compact ? 14 : 16}
-          className={`text-slate-400 transition-transform duration-200 shrink-0 ${
-            isOpen ? 'rotate-180 text-brand-700' : ''
-          }`}
-        />
-      </button>
-
-      {/* Dropdown Menu */}
-      {isOpen && (
-        <div className="absolute z-50 left-0 right-0 top-full mt-1.5 bg-white rounded-xl shadow-xl border border-slate-200/90 py-1.5 animate-in fade-in zoom-in-95 duration-100 overflow-hidden max-h-64 overflow-y-auto">
-          {INSTITUTIONS.map((inst) => {
-            const isSelected = inst.code === value;
-            return (
-              <button
-                key={inst.code}
-                type="button"
-                onClick={() => {
-                  onChange(inst.code);
-                  setIsOpen(false);
-                }}
-                className={`w-full px-3.5 py-2.5 flex items-center justify-between text-left transition-colors cursor-pointer ${
-                  isSelected
-                    ? 'bg-brand-50 text-brand-800 font-bold'
-                    : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
-                }`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div
-                    className={`w-2 h-2 rounded-full shrink-0 ${
-                      isSelected ? 'bg-brand-700' : 'bg-slate-300'
-                    }`}
-                  />
-                  <div className="truncate text-xs sm:text-sm">{inst.label}</div>
-                </div>
-                {isSelected && <Check size={16} className="text-brand-700 shrink-0 ml-2" />}
-              </button>
-            );
-          })}
         </div>
       )}
     </div>
@@ -503,7 +368,7 @@ const CustomDateTimePicker: React.FC<DateTimePickerProps> = ({
   const handleStepMinute = (delta: number) => {
     let nextMin = Math.round(parsed.minute / 5) * 5 + delta;
     let nextH = parsed.hour12;
-    let nextAmPm = parsed.ampm;
+    const nextAmPm = parsed.ampm;
     if (nextMin >= 60) {
       nextMin = 0;
       nextH = nextH === 12 ? 1 : nextH + 1;
@@ -2314,8 +2179,8 @@ export const ContentManagerPage: React.FC = () => {
   });
 
   const getInstitutionShort = (code: string | null) => {
-    const found = INSTITUTIONS.find((i) => i.code === code);
-    return found ? found.short : 'Central';
+    const found = CAMPUS_OPTIONS.find((i) => i.value === code);
+    return found ? (found.shortLabel || found.label) : 'Central';
   };
 
   // =========================================================================
@@ -2472,13 +2337,16 @@ export const ContentManagerPage: React.FC = () => {
                     Physical Venue / Location
                   </label>
                   <div className="relative">
-                    <MapPin size={16} className="absolute left-3.5 top-3.5 text-slate-400" />
+                    <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                       type="text"
                       placeholder="e.g. Mashem Central Sports Pavilion & Athletics Field"
                       value={eventFormData.location}
                       onChange={(e) => setEventFormData({ ...eventFormData, location: e.target.value })}
-                      className="w-full pl-9 pr-3.5 py-3 text-sm text-slate-800 border border-slate-300 rounded-xl focus:outline-none focus:border-brand-700 placeholder:text-slate-400"
+                      /* Matched to the campus select beside it: 28px icon chip + 12px
+                         padding above and below + the border, so the two fields
+                         share one baseline. */
+                      className="w-full h-[54px] pl-9 pr-3.5 text-sm text-slate-800 border border-slate-300 rounded-xl focus:outline-none focus:border-brand-700 focus:ring-1 focus:ring-brand-700 transition-all placeholder:text-slate-400"
                     />
                   </div>
                 </div>

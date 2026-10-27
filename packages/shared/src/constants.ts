@@ -78,10 +78,7 @@ export const DEFAULT_ACCESS_SETTINGS = {
   snapStops: [10, 20, 50, 100, 250, 500, 1000],
   freeReadPolicyMagazine: FREE_READ_POLICIES.METERED_N,
   freeReadCountMagazine: 5,
-  freeReadPolicyPosts: FREE_READ_POLICIES.METERED_N,
-  freeReadCountPosts: 5,
   passDurationDays: null, // lifetime
-  passAppliesTo: 'BOTH' as 'MAGAZINE' | 'POSTS' | 'BOTH',
   purposeText: 'Your contribution supports student scholarships, library book purchases, and classroom facilities at Shri Nirakar Vidhyalaya.',
   tierLabels: {
     10: 'Student Supporter',

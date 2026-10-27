@@ -238,6 +238,16 @@ export const MegaMenuPanels: React.FC<MegaMenuPanelsProps> = ({ activeMenu, onCl
                     </a>
                   </li>
                   <li>
+                    <a href="/library" className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5">
+                      Digital Library &amp; Textbooks (Std V–XII)
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/results" className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5">
+                      Academic Results &amp; Toppers (Std V–XII)
+                    </a>
+                  </li>
+                  <li>
                     <a href="/academics#evaluation-policy" className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5">
                       System of Continuous Evaluation (CCE)
                     </a>
@@ -253,12 +263,12 @@ export const MegaMenuPanels: React.FC<MegaMenuPanelsProps> = ({ activeMenu, onCl
                     </a>
                   </li>
                   <li>
-                    <a href="/events/goa-board-secondary-higher-secondary-merit-felicitations" className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5">
+                    <a href="/events?search=Merit" className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5">
                       Goa Board Merit Felicitations
                     </a>
                   </li>
                   <li>
-                    <a href="/notices/enrollment-open-ss-angle-higher-secondary-science-commerce-arts" className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5">
+                    <a href="/notices?search=Enrollment" className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5">
                       NEET & JEE Foundation Enrollment
                     </a>
                   </li>
@@ -281,7 +291,7 @@ export const MegaMenuPanels: React.FC<MegaMenuPanelsProps> = ({ activeMenu, onCl
                     </a>
                   </li>
                   <li>
-                    <a href="/notices/state-government-tribal-rural-student-scholarship-disbursal-2026" className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5">
+                    <a href="/notices?search=Scholarship" className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5">
                       Government Scholarship Notice
                     </a>
                   </li>
@@ -293,6 +303,11 @@ export const MegaMenuPanels: React.FC<MegaMenuPanelsProps> = ({ activeMenu, onCl
                   <li>
                     <a href={isFaculty ? facultyProfileHref : '/faculty/login'} className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5">
                       {isFaculty ? 'My Faculty Profile' : 'Faculty Portal Sign In'}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/gallery" className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5 font-medium text-amber-800">
+                      Campus Photo Gallery (All 3 Institutions)
                     </a>
                   </li>
                   <li>
@@ -475,6 +490,15 @@ export const MegaMenuPanels: React.FC<MegaMenuPanelsProps> = ({ activeMenu, onCl
                   </li>
                   <li>
                     <a
+                      href="/grievance-redressal"
+                      onClick={() => onClose?.()}
+                      className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5"
+                    >
+                      Grievance Redressal
+                    </a>
+                  </li>
+                  <li>
+                    <a
                       href="/society?tab=vision#amenities"
                       onClick={(e) => handleSocietyNav(e, 'vision', 'amenities')}
                       className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5"
@@ -489,15 +513,6 @@ export const MegaMenuPanels: React.FC<MegaMenuPanelsProps> = ({ activeMenu, onCl
                       className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5"
                     >
                       Athletics Grounds & Sports Pavilion
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="/supporter-pass"
-                      onClick={() => onClose?.()}
-                      className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5"
-                    >
-                      Supporter Pass & Endowments
                     </a>
                   </li>
                   <li>
@@ -720,6 +735,11 @@ export const MegaMenuPanels: React.FC<MegaMenuPanelsProps> = ({ activeMenu, onCl
                     </a>
                   </li>
                   <li>
+                    <a href="/alumni/community" className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5">
+                      Alumni Commons — community posts
+                    </a>
+                  </li>
+                  <li>
                     <a href="/alumni#directory-filters" className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5">
                       Search Alumni by Batch & Campus
                     </a>
@@ -763,17 +783,7 @@ export const MegaMenuPanels: React.FC<MegaMenuPanelsProps> = ({ activeMenu, onCl
                     </a>
                   </li>
                   <li>
-                    <a href="/pass" className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5">
-                      Supporter Pass Contribution
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/pass" className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5">
-                      Support Student Resources
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/events/grand-annual-alumni-reunion-heritage-dialogue-assembly" className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5">
+                    <a href="/events?search=Alumni" className="text-stone-700 hover:text-[#111b5e] hover:font-semibold transition-all block py-0.5">
                       Annual Alumni Homecoming & Reunion
                     </a>
                   </li>

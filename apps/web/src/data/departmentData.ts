@@ -1,5 +1,5 @@
 /**
- * Department Registry for Shree Nirakar Education Society
+ * Department Registry for Shri Nirakar Education Society
  * Synchronized across Admin, Faculty Registration, and Faculty Dashboard
  */
 

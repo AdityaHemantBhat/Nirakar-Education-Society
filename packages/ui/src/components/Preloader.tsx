@@ -55,7 +55,7 @@ export const Preloader: React.FC<PreloaderProps> = ({
   if (prefersReducedMotion) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-paper transition-opacity duration-300">
-        <span className="font-serif text-lg font-bold text-brand-800">Shree Nirakar Education Society</span>
+        <span className="font-serif text-lg font-bold text-brand-800">Shri Nirakar Education Society</span>
       </div>
     );
   }

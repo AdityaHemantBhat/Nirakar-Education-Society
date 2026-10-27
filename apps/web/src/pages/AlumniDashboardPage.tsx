@@ -389,13 +389,13 @@ export const AlumniDashboardPage: React.FC = () => {
         <Navbar />
         <header className="relative isolate w-full overflow-hidden bg-[#0b132b] px-4 pb-10 pt-12 text-white sm:px-8 sm:pb-12 sm:pt-16 lg:-mt-[78px] lg:px-12 lg:pb-14 lg:pt-28 xl:px-16">
           <HeroWaves opacity={0.85} />
-          <div className="relative z-10 mx-auto flex w-full max-w-[1850px] flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <div className="w-full max-w-2xl space-y-3">
+          <div className="relative z-10 mx-auto w-full max-w-[1850px]">
+            <div className="mx-auto flex max-w-4xl flex-col items-center space-y-3 text-center">
               <div className="h-3 w-24 animate-pulse rounded bg-white/15" />
               <div className="h-9 w-64 max-w-full animate-pulse rounded-lg bg-white/20" />
               <div className="h-4 w-full max-w-xl animate-pulse rounded bg-white/10" />
             </div>
-            <div className="h-11 w-36 animate-pulse rounded-xl bg-amber-400/40" />
+            <div className="mx-auto mt-6 h-11 w-36 animate-pulse rounded-xl bg-amber-400/40" />
           </div>
         </header>
         <SectionEdge variant="scoop" color="#FAF7F2" bgColor="#0b132b" height={36} withGoldLine />
@@ -483,29 +483,47 @@ export const AlumniDashboardPage: React.FC = () => {
   const profileUsername = profile.username || profile.user?.username || '';
   const publicProfileUrl = profileUsername ? `/alumni/${encodeURIComponent(profileUsername)}` : '/alumni';
   const fullName = [firstName, middleName, lastName].filter(Boolean).join(' ');
+  const handleSignOut = async () => {
+    try {
+      await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'same-origin' });
+    } finally {
+      localStorage.removeItem('nirakar_auth_user');
+      window.dispatchEvent(new Event('nirakar:auth-changed'));
+      window.location.href = '/';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] text-stone-900">
       <Helmet>
-        <title>My Alumni Dashboard | Shree Nirakar Education Society</title>
+        <title>My Alumni Dashboard | Shri Nirakar Education Society</title>
       </Helmet>
       <Navbar />
       <header className="relative isolate w-full overflow-hidden bg-[#0b132b] px-4 pb-10 pt-12 text-white sm:px-8 sm:pb-12 sm:pt-16 lg:-mt-[78px] lg:px-12 lg:pb-14 lg:pt-28 xl:px-16">
         <HeroWaves opacity={0.85} />
-        <div className="relative z-10 mx-auto flex w-full max-w-[1850px] flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-          <div>
+        <div className="relative z-10 mx-auto w-full max-w-[1850px]">
+          <div className="mx-auto max-w-4xl text-center">
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">Alumni space</p>
             <h1 className="font-serif text-3xl font-bold sm:text-4xl">Your dashboard</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-300">
+            <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-stone-300">
               Keep your alumni profile current. Changes you save here are stored in your account and update your public profile.
             </p>
           </div>
-          <Link
-            to={publicProfileUrl}
-            className="inline-flex w-fit items-center gap-2 rounded-xl bg-amber-400 px-4 py-3 text-sm font-bold text-[#0b132b] transition hover:bg-amber-300"
-          >
-            View my profile <ArrowRight size={16} />
-          </Link>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link
+              to={publicProfileUrl}
+              className="inline-flex w-fit items-center gap-2 rounded-xl bg-amber-400 px-4 py-3 text-sm font-bold text-[#0b132b] transition hover:bg-amber-300"
+            >
+              View my profile <ArrowRight size={16} />
+            </Link>
+            <button
+              type="button"
+              onClick={() => void handleSignOut()}
+              className="inline-flex w-fit items-center rounded-xl border border-white/30 bg-white/10 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/20"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
       </header>
       <SectionEdge variant="scoop" color="#FAF7F2" bgColor="#0b132b" height={36} withGoldLine />

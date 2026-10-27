@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { AdmissionsController } from './admissions.controller.js';
+import { authenticate, requireRole } from '../../middleware/auth.js';
 
 const router = Router();
 const controller = new AdmissionsController();
@@ -23,16 +24,16 @@ router.get('/config', controller.getConfig);
 // 2. Public Student Online Application Submission
 router.post('/apply', applicationRateLimiter, controller.submitApplication);
 
-// 3. Official Application PDF Download (Accessible with Application ID / Ref)
-router.get('/applications/:id/pdf', controller.downloadPdf);
-
-// 4. Single Application View
-router.get('/applications/:id', controller.getApplication);
+// Application details and documents contain personal information; restrict them to admissions administrators.
+router.get('/applications/:id', authenticate, requireRole('SUPER_ADMIN', 'ADMIN'), controller.getApplication);
+router.get('/applications/:id/media/:kind', authenticate, requireRole('SUPER_ADMIN', 'ADMIN'), controller.downloadMedia);
+router.get('/applications/:id/pdf', authenticate, requireRole('SUPER_ADMIN', 'ADMIN'), applicationRateLimiter, controller.downloadPdf);
 
 // 5. Admin Routes (Management, Status, CSV Export, Dynamic Config)
-router.get('/admin/applications', controller.listApplications);
-router.put('/admin/applications/:id', controller.updateStatus);
-router.put('/admin/config', controller.updateConfig);
-router.get('/admin/export', controller.exportCsv);
+const admissionsAdmins = [authenticate, requireRole('SUPER_ADMIN', 'ADMIN')];
+router.get('/admin/applications', ...admissionsAdmins, controller.listApplications);
+router.put('/admin/applications/:id', ...admissionsAdmins, controller.updateStatus);
+router.put('/admin/config', ...admissionsAdmins, controller.updateConfig);
+router.get('/admin/export', ...admissionsAdmins, controller.exportCsv);
 
 export { router as admissionsRoutes };

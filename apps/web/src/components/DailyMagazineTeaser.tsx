@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Calendar, Clock, ArrowRight, Lock } from 'lucide-react';
+import { BookOpen, Calendar, Clock, ArrowRight } from 'lucide-react';
 
 interface MagazineIssue {
   id: string;
@@ -9,7 +9,6 @@ interface MagazineIssue {
   pageCount: number;
   readingMinutes: number;
   excerpt?: string | null;
-  isLocked: boolean;
 }
 
 interface DailyMagazineTeaserProps {
@@ -38,12 +37,6 @@ export const DailyMagazineTeaser: React.FC<DailyMagazineTeaserProps> = ({ issue 
                 </div>
               )}
 
-              {issue?.isLocked && (
-                <div className="absolute top-3 right-3 px-2 py-1 rounded-md bg-[#07112c]/85 text-white text-[10px] font-mono flex items-center gap-1 backdrop-blur-sm">
-                  <Lock size={11} className="text-amber-400" />
-                  <span>Pass Supported</span>
-                </div>
-              )}
             </div>
 
             <span className="text-xs font-mono text-stone-500 mt-3">

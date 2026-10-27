@@ -53,7 +53,7 @@ export const AlumniDirectoryPage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Verified Alumni Directory | Shree Nirakar Education Society</title>
+        <title>Verified Alumni Directory | Shri Nirakar Education Society</title>
         <meta
           name="description"
           content="Connect with verified alumni of Shri Nirakar Vidyalaya, Tudal High School, and S. S. Angle Higher Secondary School across India and the globe."

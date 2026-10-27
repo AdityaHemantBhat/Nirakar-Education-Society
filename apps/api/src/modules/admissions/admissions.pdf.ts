@@ -110,7 +110,7 @@ export function generateAdmissionApplicationPdf(
         margin: margin,
         info: {
           Title: `Official Admission Form - ${data.applicationNumber}`,
-          Author: 'Shree Nirakar Education Society',
+          Author: 'Shri Nirakar Education Society',
           Subject: `Student Admission Form: ${data.studentName}`,
         },
       });
@@ -159,7 +159,7 @@ export function generateAdmissionApplicationPdf(
       doc.font('Helvetica-Bold')
         .fontSize(15.5)
         .fillColor('#000000')
-        .text('SHREE NIRAKAR EDUCATION SOCIETY', margin, y, { align: 'center', width: contentWidth });
+        .text('SHRI NIRAKAR EDUCATION SOCIETY', margin, y, { align: 'center', width: contentWidth });
 
       y += 18;
       doc.font('Helvetica-Bold')

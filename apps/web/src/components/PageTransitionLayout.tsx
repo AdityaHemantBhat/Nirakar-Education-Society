@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Transition, TransitionHandle } from './Transition.js';
+import { preloadRouteChunk } from '../utils/routePreloader.js';
 
 interface PageTransitionLayoutProps {
   children: React.ReactNode;
@@ -12,7 +13,7 @@ interface PageTransitionLayoutProps {
  * Universal SVG Page Transition Coordinator (Inspired by agentPritam47/svg-page-transition)
  * - Orchestrates the leave/enter lifecycle matching agentPritam47's TransitionRouter.
  * - On link click: executes playLeave (path draws across screen & expands strokeWidth to 380).
- * - Midpoint: React Router switches route & Lenis resets scroll to (0,0) unseen.
+ * - Midpoint: Preloads destination chunk, hides old page content, switches route & resets scroll to (0,0) unseen.
  * - On route mount: executes playEnter (path unwinds & shrinks to strokeWidth 2, overlay fades out).
  * - Styled with Shree Nirakar Royal Heritage Navy & Radiant Golden Saffron.
  * - Optimized with pure GSAP for 2GB RAM phones and 4GB PCs.
@@ -31,54 +32,57 @@ export const PageTransitionLayout: React.FC<PageTransitionLayoutProps> = ({ chil
   // Converts regular <a href="/..."> clicks and customNavigate events into agentPritam47's playLeave -> route change -> playEnter flow
   useEffect(() => {
     const triggerTransition = (targetHref: string) => {
-      // Parse target pathname to prevent full page transition on the same page
-      let targetPathname = targetHref;
-      try {
-        targetPathname = new URL(targetHref, window.location.origin).pathname;
-      } catch {}
-
-      // If target is the exact same pathname (e.g. /society to /society?tab=...), navigate directly without transition
-      if (targetPathname === location.pathname) {
-        navigate(targetHref);
-        return;
-      }
-
-      // Accessibility: Reduced motion check
-      const prefersReduced =
-        typeof window !== 'undefined' &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      if (prefersReduced) {
-        navigate(targetHref);
-        return;
-      }
-
-      // Prevent race condition during active transition
       if (isNavigatingRef.current) return;
       isNavigatingRef.current = true;
+      let hasNavigated = false;
 
-      if (!transitionRef.current) {
+      // Start preloading the destination route chunk immediately while leave animation plays
+      const preloadPromise = preloadRouteChunk(targetHref);
+
+      const navigateToTarget = async () => {
+        if (hasNavigated) return;
+        hasNavigated = true;
+
+        // Ensure the destination route chunk is finished downloading so React doesn't suspend with the old page
+        if (preloadPromise) {
+          try {
+            await Promise.race([
+              preloadPromise,
+              new Promise((resolve) => setTimeout(resolve, 400)),
+            ]);
+          } catch {
+            // Ignore preloader error and continue navigation
+          }
+        }
+
+        // Conceal the old page content completely under the SVG curve
+        if (contentRef.current) {
+          contentRef.current.style.opacity = '0';
+        }
+
         navigate(targetHref);
-        isNavigatingRef.current = false;
-        return;
-      }
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      };
 
-      // Safety failsafe: If playEnter is not triggered within 1600ms, auto-recover
+      // Failsafe timer: in case route mount event is delayed, unwind curtain automatically
       if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
       safetyTimerRef.current = setTimeout(() => {
-        if (isNavigatingRef.current && transitionRef.current) {
-          transitionRef.current.playEnter(() => {
+        if (isNavigatingRef.current) {
+          if (contentRef.current) contentRef.current.style.opacity = '1';
+          transitionRef.current?.playEnter(() => {
             isNavigatingRef.current = false;
+            ScrollTrigger.refresh();
           });
         }
       }, 1600);
 
       // Play the Leave Animation (exact agentPritam47 stroke drawing & width expansion)
-      transitionRef.current.playLeave(() => {
-        // Midpoint: Screen is 100% flooded with Royal Navy & Golden curves
-        navigate(targetHref);
-        window.scrollTo(0, 0);
-      });
+      if (transitionRef.current) {
+        transitionRef.current.playLeave(navigateToTarget);
+      } else {
+        navigateToTarget();
+        isNavigatingRef.current = false;
+      }
     };
 
     const handleDocumentClick = (e: MouseEvent) => {
@@ -118,19 +122,14 @@ export const PageTransitionLayout: React.FC<PageTransitionLayoutProps> = ({ chil
         // If clicking on the exact SAME PATHNAME (e.g. /society to /society?tab=vision#pillars or /faculty to /faculty?campus=...)
         // NEVER trigger full page transition! Let in-page React state, router, and smooth scroll handle it!
         if (targetPathname === location.pathname) {
-          // If completely identical URL, prevent useless page reload
           if (targetSearch === location.search && targetHash === location.hash) {
             e.preventDefault();
             return;
           }
-          // Do NOT call e.preventDefault() or e.stopPropagation()!
-          // Allow the element's onClick handler and in-page navigation to proceed naturally!
           return;
         }
 
         e.preventDefault();
-        e.stopPropagation();
-
         triggerTransition(href);
       }
     };
@@ -143,27 +142,57 @@ export const PageTransitionLayout: React.FC<PageTransitionLayoutProps> = ({ chil
       triggerTransition(to);
     };
 
-    // Capture: true ensures we capture inter-page navigation
+    // Mouseover preloading: loads JS chunks ahead of time so transition is instantaneous
+    const handleDocumentMouseOver = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement)?.closest('a');
+      if (!anchor) return;
+      const href = anchor.getAttribute('href');
+      if (href && href.startsWith('/') && !href.startsWith('//')) {
+        preloadRouteChunk(href);
+      }
+    };
+
+    // Trigger playEnter ONLY when the new route has actually committed to the DOM
+    const handlePageRouteMounted = () => {
+      if (safetyTimerRef.current) {
+        clearTimeout(safetyTimerRef.current);
+        safetyTimerRef.current = null;
+      }
+
+      if (isNavigatingRef.current) {
+        if (contentRef.current) {
+          contentRef.current.style.opacity = '1';
+        }
+        if (transitionRef.current) {
+          transitionRef.current.playEnter(() => {
+            isNavigatingRef.current = false;
+            ScrollTrigger.refresh();
+          });
+        } else {
+          isNavigatingRef.current = false;
+        }
+      }
+    };
+
     document.addEventListener('click', handleDocumentClick, { capture: true });
+    document.addEventListener('mouseover', handleDocumentMouseOver, { passive: true });
     window.addEventListener('customNavigate', handleCustomNavigate as EventListener);
+    window.addEventListener('pageRouteMounted', handlePageRouteMounted);
 
     return () => {
       if (safetyTimerRef.current) clearTimeout(safetyTimerRef.current);
       document.removeEventListener('click', handleDocumentClick, { capture: true });
+      document.removeEventListener('mouseover', handleDocumentMouseOver);
       window.removeEventListener('customNavigate', handleCustomNavigate as EventListener);
+      window.removeEventListener('pageRouteMounted', handlePageRouteMounted);
     };
   }, [navigate, location.pathname, location.search, location.hash]);
 
-  // 2. Play Enter Animation when a new route mounts (or Back/Forward button)
+  // 2. Initial Mount and Browser History (Back/Forward) Management
   useLayoutEffect(() => {
     const content = contentRef.current;
 
-    if (safetyTimerRef.current) {
-      clearTimeout(safetyTimerRef.current);
-      safetyTimerRef.current = null;
-    }
-
-    // Check prefers-reduced-motion
+    // Prefers-reduced-motion check
     const prefersReduced =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -177,7 +206,7 @@ export const PageTransitionLayout: React.FC<PageTransitionLayoutProps> = ({ chil
       return;
     }
 
-    // If initial page mount, reveal content cleanly with ZERO vertical jumping
+    // Initial page load: smooth clean entrance without transition curtain
     if (!hasLoadedInitialRef.current) {
       hasLoadedInitialRef.current = true;
       if (content) {
@@ -190,34 +219,16 @@ export const PageTransitionLayout: React.FC<PageTransitionLayoutProps> = ({ chil
       return;
     }
 
-    // Play the Enter Animation (exact agentPritam47 path unwinding & overlay fade out)
-    if (transitionRef.current) {
-      transitionRef.current.playEnter(() => {
-        isNavigatingRef.current = false;
-        ScrollTrigger.refresh();
-      });
-    } else {
-      isNavigatingRef.current = false;
-    }
-
-    // Synchronized smooth opacity reveal of new page content without vertical jitter
-    if (content) {
-      gsap.fromTo(
-        content,
-        { opacity: 0.4 },
-        {
-          opacity: 1,
-          duration: 0.4,
-          ease: 'power2.out',
-          clearProps: 'opacity',
-        }
-      );
+    // If navigating via browser Back/Forward (where isNavigatingRef is false)
+    if (!isNavigatingRef.current && content) {
+      content.style.opacity = '1';
+      ScrollTrigger.refresh();
     }
   }, [location.pathname]);
 
   return (
     <div className="relative w-full min-h-screen bg-[#FAF7F2]">
-      {/* agentPritam47 SVG Curve Page Transition Layer */}
+      {/* SVG page transition layer */}
       <Transition ref={transitionRef} />
 
       {/* Main Page Content Layer */}

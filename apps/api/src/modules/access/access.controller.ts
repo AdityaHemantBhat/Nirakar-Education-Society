@@ -24,25 +24,13 @@ export class AccessController {
     }
   };
 
-  createOrder = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const input = CreatePassOrderSchema.parse(req.body);
-      const order = await this.service.createRazorpayOrder(input.amount, req.user?.sub);
-      res.json({ success: true, data: order });
-    } catch (err) {
-      next(err);
-    }
+  // Payments disabled — Razorpay removed per site requirements
+  createOrder = async (_req: Request, res: Response, _next: NextFunction) => {
+    res.status(501).json({ success: false, error: { code: 'NOT_IMPLEMENTED', message: 'Payments disabled' } });
   };
 
-  handleWebhook = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const signature = (req.headers['x-razorpay-signature'] as string) || '';
-      const rawBody = (req as any).rawBody || JSON.stringify(req.body);
-      const result = await this.service.handleRazorpayWebhook(rawBody, signature);
-      res.json(result);
-    } catch (err) {
-      next(err);
-    }
+  handleWebhook = async (_req: Request, res: Response, _next: NextFunction) => {
+    res.status(501).json({ success: false, error: { code: 'NOT_IMPLEMENTED', message: 'Payments disabled' } });
   };
 
   getSupporters = async (_req: Request, res: Response, next: NextFunction) => {

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { slugify } from '../utils/slugify.js';
+import { contentSlug } from '@nirakar/shared';
 import { Navbar } from '../components/Navbar.js';
 import { SectionEdge } from '../components/SectionEdge.js';
 import { HeroWaves } from '../components/HeroWaves.js';
@@ -27,190 +27,35 @@ import {
   Building2
 } from 'lucide-react';
 import { CampusEvent } from '../components/NewsAndEvents.js';
-
-const ARCHIVE_EVENTS: CampusEvent[] = [
-  {
-    id: 'e1',
-    title: 'Annual Inter-School Athletics & Sports Championship 2026',
-    dateStr: 'Wednesday, October 28, 2026',
-    rawStartDate: '2026-10-28T08:30:00',
-    rawEndDate: '2026-10-28T17:00:00',
-    day: '28',
-    month: 'OCT',
-    year: '2026',
-    weekday: 'Wednesday',
-    time: '08:30 AM – 05:00 PM',
-    location: 'Mashem Central Sports Pavilion & Athletics Field',
-    campus: 'Shri Nirakar High School (Mashem)',
-    institutionCode: 'NIRAKAR_HS',
-    category: 'Athletics & Sports',
-    coverImage: '/images/sports_champs.jpg',
-    photos: [
-      { url: '/images/sports_champs.jpg', caption: 'Volleyball state-level championship finals victory ceremony', altText: 'Students celebrating volleyball tournament win' },
-      { url: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1200&q=80', caption: '100m sprint line-up at Mashem pavilion', altText: 'Runners on track' },
-      { url: 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=1200&q=80', caption: 'Kabaddi tournament inter-school playoff finals', altText: 'Kabaddi match' }
-    ],
-    documents: [
-      { url: '/documents/athletics_schedule_2026.pdf', title: 'Official Championship Rulebook & Event Schedule 2026', size: '1.8 MB' },
-      { url: '/documents/track_route_map.pdf', title: 'Pavilion Ground Track Layout & Spectator Guidelines', size: '820 KB' }
-    ],
-    videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-    description: 'Track and field sprint races, state-level volleyball finals, inter-school kabaddi championship, and march-past parade bringing together over 800 student athletes from Nirakar HS, Tudal HS, and S.S. Angle HSS across Canacona taluka.',
-    isUpcoming: true,
-  },
-  {
-    id: 'e2',
-    title: 'Goa Board Secondary & Higher Secondary Merit Felicitations',
-    dateStr: 'Thursday, November 12, 2026',
-    rawStartDate: '2026-11-12T10:00:00',
-    day: '12',
-    month: 'NOV',
-    year: '2026',
-    weekday: 'Thursday',
-    time: '10:00 AM – 01:30 PM',
-    location: 'Shree Nirakar Memorial Auditorium, Mashem Campus',
-    campus: 'Shri Nirakar High School (Mashem)',
-    institutionCode: 'NIRAKAR_HS',
-    category: 'Academic Honor',
-    coverImage: '/images/campuses/nirakar_high_school_mashem.png',
-    photos: [
-      { url: '/images/campuses/nirakar_high_school_mashem.png', caption: 'Shree Nirakar High School heritage front courtyard', altText: 'Mashem campus' },
-      { url: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80', caption: 'Honorary gold medal presentation to Goa Board toppers', altText: 'Award ceremony' }
-    ],
-    documents: [
-      { url: '/documents/merit_roll_2026.pdf', title: 'Goa Board SSC & HSSC Society Merit Roll 2026', size: '2.1 MB' }
-    ],
-    videoUrl: null,
-    description: 'Honoring distinction rankers, subject toppers, and our devoted mentor teachers who secured 100% results in the Goa Board examinations. Chief guest Shri Subhash Phal Dessai will address students.',
-    isUpcoming: true,
-  },
-  {
-    id: 'e3',
-    title: 'Grand Annual Alumni Reunion & Heritage Dialogue Assembly',
-    dateStr: 'Tuesday, December 22, 2026',
-    rawStartDate: '2026-12-22T16:00:00',
-    day: '22',
-    month: 'DEC',
-    year: '2026',
-    weekday: 'Tuesday',
-    time: '04:00 PM – 09:00 PM',
-    location: 'Society Central Open Amphitheater & Lawns, Mashem',
-    campus: 'Society Central',
-    institutionCode: 'NIRAKAR_HS',
-    category: 'Alumni Gathering',
-    coverImage: '/images/campuses/ss_angle_higher_secondary_mashem.png',
-    photos: [
-      { url: '/images/campuses/ss_angle_higher_secondary_mashem.png', caption: 'S.S. Angle HSS modern academic block', altText: 'Campus view' },
-      { url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80', caption: 'Golden jubilee alumni gathering and networking dialogue', altText: 'Alumni reunion' }
-    ],
-    documents: [
-      { url: '/documents/alumni_agenda_2026.pdf', title: '50-Year Alumni Council Charter & Project Allocations', size: '1.4 MB' }
-    ],
-    videoUrl: null,
-    description: 'Reconnecting classmates across five decades with authenticated directory vouching, mentoring pledges for current rural students, and cultural performances by alumni artists.',
-    isUpcoming: true,
-  },
-  {
-    id: 'e4',
-    title: 'Annual Science, Mathematics & Robotics Taluka Exhibition',
-    dateStr: 'Friday, January 15, 2027',
-    rawStartDate: '2027-01-15T09:30:00',
-    day: '15',
-    month: 'JAN',
-    year: '2027',
-    weekday: 'Friday',
-    time: '09:30 AM – 04:30 PM',
-    location: 'S.S. Angle HSS Modern Laboratories Complex',
-    campus: 'S.S. Angle HSS (Dapot)',
-    institutionCode: 'ANGLE_HSS',
-    category: 'Science & Innovation',
-    coverImage: 'https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=1200&q=80',
-    photos: [
-      { url: 'https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=1200&q=80', caption: 'Student robotics models powered by solar micro-inverters', altText: 'Robotics project' }
-    ],
-    documents: [
-      { url: '/documents/science_fair_guidelines.pdf', title: 'Exhibition Project Guidelines & Evaluation Rubric', size: '1.2 MB' }
-    ],
-    videoUrl: null,
-    description: 'Featuring 60+ interactive working models created by secondary and higher secondary students on renewable coastal energy, organic cashew farming, and physics demonstrations.',
-    isUpcoming: true,
-  },
-  {
-    id: 'e5',
-    title: 'All-Goa Inter-Collegiate Fugdi, Dhalo & Natak Folk Festival',
-    dateStr: 'Saturday, February 06, 2027',
-    rawStartDate: '2027-02-06T15:00:00',
-    day: '06',
-    month: 'FEB',
-    year: '2027',
-    weekday: 'Saturday',
-    time: '03:00 PM – 09:30 PM',
-    location: 'Tudal High School Open Air Cultural Grounds, Gaondongrem',
-    campus: 'Tudal High School (Gaondongrem)',
-    institutionCode: 'TUDAL_HS',
-    category: 'Cultural Festival',
-    coverImage: '/images/campuses/tudal_high_school_gaodongrem.png',
-    photos: [
-      { url: '/images/campuses/tudal_high_school_gaodongrem.png', caption: 'Tudal High School nestled in the Western Ghats greenery', altText: 'Tudal school campus' }
-    ],
-    documents: [
-      { url: '/documents/cultural_guidelines.pdf', title: 'Folk Dance Protocols & Judging Criteria', size: '940 KB' }
-    ],
-    videoUrl: null,
-    description: 'Celebrating authentic Goan rural arts with traditional Fugdi, Dhalo, and one-act Konkani natak presentations by student troupes across South Goa.',
-    isUpcoming: true,
-  },
-  {
-    id: 'e6',
-    title: 'Golden Jubilee Founder Memorial Tree Plantation & Ecology Drive',
-    dateStr: 'Saturday, July 18, 2026',
-    rawStartDate: '2026-07-18T08:00:00',
-    day: '18',
-    month: 'JUL',
-    year: '2026',
-    weekday: 'Saturday',
-    time: '08:00 AM – 12:30 PM',
-    location: 'Canacona Coastal Eco Corridor & Mashem Riverbank',
-    campus: 'Society Central',
-    institutionCode: 'NIRAKAR_HS',
-    category: 'Community Service',
-    coverImage: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1200&q=80',
-    photos: [
-      { url: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1200&q=80', caption: 'Students planting indigenous Goan saplings along coastal embankment', altText: 'Tree plantation' }
-    ],
-    documents: [
-      { url: '/documents/ecology_report.pdf', title: 'Canacona Biodiversity & Sapling Conservation Register', size: '1.5 MB' }
-    ],
-    videoUrl: null,
-    description: '1,500 indigenous fruit and mangrove saplings planted across Canacona by students, NCC cadets, and alumni to honor society founders.',
-    isUpcoming: false,
-  }
-];
+import { fetchEvents } from '../lib/content.js';
+import { useQuery } from '@tanstack/react-query';
 
 export const EventsPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [campusFilter, setCampusFilter] = useState('all');
-  const [timeFilter, setTimeFilter] = useState<'all' | 'upcoming' | 'past'>('all');
+  const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'upcoming' | 'past'>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 8;
   const eventsRef = useRef<HTMLDivElement>(null);
 
+  /* The calendar, read from the registry. */
+  const { data: events = [], isLoading } = useQuery<CampusEvent[]>({
+    queryKey: ['public_events', timeFilter, campusFilter],
+    queryFn: () => fetchEvents({ filter: timeFilter, institutionCode: campusFilter }),
+    staleTime: 60 * 1000,
+  });
+
   const filtered = useMemo(() => {
-    return ARCHIVE_EVENTS.filter((ev) => {
+    return events.filter((ev) => {
       const matchesCampus = campusFilter === 'all' || ev.institutionCode === campusFilter;
-      const matchesTime = timeFilter === 'all' 
-        ? true 
-        : timeFilter === 'upcoming' 
-          ? ev.isUpcoming 
-          : !ev.isUpcoming;
       const q = search.toLowerCase().trim();
-      const matchesSearch = !q || 
-        ev.title.toLowerCase().includes(q) || 
-        ev.description.toLowerCase().includes(q) || 
+      const matchesSearch = !q ||
+        ev.title.toLowerCase().includes(q) ||
+        ev.description.toLowerCase().includes(q) ||
         ev.location.toLowerCase().includes(q);
-      return matchesCampus && matchesTime && matchesSearch;
+      return matchesCampus && matchesSearch;
     });
-  }, [search, campusFilter, timeFilter]);
+  }, [events, search, campusFilter, timeFilter]);
 
   // Reset page on filter changes
   useEffect(() => {
@@ -234,13 +79,13 @@ export const EventsPage: React.FC = () => {
 
   // Featured flagship upcoming event for spotlight banner
   const featuredUpcomingEvent = useMemo(() => {
-    return ARCHIVE_EVENTS.find((ev) => ev.isUpcoming);
-  }, []);
+    return timeFilter === 'upcoming' || timeFilter === 'all' ? events.find((ev) => ev.isUpcoming) : undefined;
+  }, [events, timeFilter]);
 
   return (
     <div className="w-full min-h-screen bg-[#FAF8F5] text-stone-900 flex flex-col font-sans">
       <Helmet>
-        <title>Campus Events Archive | Shree Nirakar Education Society</title>
+        <title>Campus Events Archive | Shri Nirakar Education Society</title>
         <meta name="description" content="Explore complete archive of athletic championships, academic awards, cultural festivals, and alumni gatherings." />
       </Helmet>
 
@@ -306,7 +151,7 @@ export const EventsPage: React.FC = () => {
                   </div>
 
                   <h2 className="font-serif text-xl sm:text-3xl font-bold tracking-tight text-white hover:text-amber-200 transition-colors leading-snug">
-                    <Link to={`/events/${slugify(featuredUpcomingEvent.title)}`}>
+                    <Link to={`/events/${contentSlug(featuredUpcomingEvent.title)}`}>
                       {featuredUpcomingEvent.title}
                     </Link>
                   </h2>
@@ -336,7 +181,7 @@ export const EventsPage: React.FC = () => {
                   </div>
 
                   <Link
-                    to={`/events/${slugify(featuredUpcomingEvent.title)}`}
+                    to={`/events/${contentSlug(featuredUpcomingEvent.title)}`}
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-[#0b132b] text-xs font-serif font-bold transition-all shadow-md cursor-pointer"
                   >
                     <span>Explore Full Chronicle</span>
@@ -394,9 +239,10 @@ export const EventsPage: React.FC = () => {
           {/* Timeline Quick Filter Pills */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 border-t border-stone-100 scrollbar-none">
             {[
-              { key: 'all', label: 'All Chronicles', count: ARCHIVE_EVENTS.length },
-              { key: 'upcoming', label: 'Upcoming Calendar', count: ARCHIVE_EVENTS.filter((e) => e.isUpcoming).length },
-              { key: 'past', label: 'Past Chronicles', count: ARCHIVE_EVENTS.filter((e) => !e.isUpcoming).length },
+              { key: 'today', label: 'Today', count: timeFilter === 'today' ? events.length : undefined },
+              { key: 'upcoming', label: 'Upcoming Calendar', count: timeFilter === 'upcoming' ? events.length : undefined },
+              { key: 'all', label: 'All Chronicles', count: timeFilter === 'all' ? events.length : undefined },
+              { key: 'past', label: 'Past Chronicles', count: timeFilter === 'past' ? events.length : undefined },
             ].map((t) => {
               const isSelected = timeFilter === t.key;
               return (
@@ -411,13 +257,15 @@ export const EventsPage: React.FC = () => {
                   }`}
                 >
                   <span>{t.label}</span>
-                  <span
-                    className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                      isSelected ? 'bg-white/20 text-white' : 'bg-stone-200 text-stone-600'
-                    }`}
-                  >
-                    {t.count}
-                  </span>
+                  {t.count !== undefined && (
+                    <span
+                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                        isSelected ? 'bg-white/20 text-white' : 'bg-stone-200 text-stone-600'
+                      }`}
+                    >
+                      {t.count}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -432,7 +280,7 @@ export const EventsPage: React.FC = () => {
               <span className="hidden sm:inline"> • Filtered Campus</span>
             )}
             {timeFilter !== 'all' && (
-              <span className="hidden sm:inline"> • {timeFilter === 'upcoming' ? 'Upcoming Only' : 'Past Only'}</span>
+              <span className="hidden sm:inline"> • {timeFilter === 'today' ? 'Today Only' : timeFilter === 'upcoming' ? 'Upcoming Only' : 'Past Only'}</span>
             )}
           </div>
 
@@ -451,12 +299,14 @@ export const EventsPage: React.FC = () => {
         </div>
 
         {/* EVENTS GRID - HEAVENLY MINIMAL CARDS (Strictly 8 items per page, zero lag on 2GB RAM) */}
-        {paginatedEvents.length > 0 ? (
+        {isLoading ? (
+          <div className="py-16 text-center text-sm text-stone-500">Loading campus events…</div>
+        ) : paginatedEvents.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
             {paginatedEvents.map((event) => (
               <Link
                 key={event.id}
-                to={`/events/${slugify(event.title)}`}
+                to={`/events/${contentSlug(event.title)}`}
                 className="group bg-white rounded-2xl overflow-hidden border border-stone-200 hover:border-amber-400 shadow-xs hover:shadow-lg transition-all duration-200 flex flex-col justify-between cursor-pointer block text-inherit no-underline"
               >
                 <div>

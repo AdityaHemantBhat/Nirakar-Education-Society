@@ -10,7 +10,7 @@ export const AcademicsPage: React.FC = () => {
   return (
     <div className="w-full min-h-screen bg-[#FAF7F2] text-[#0f172a] flex flex-col font-sans">
       <Helmet>
-        <title>Academics & Curriculum | Shree Nirakar Education Society</title>
+        <title>Academics & Curriculum | Shri Nirakar Education Society</title>
         <meta name="description" content="Explore Goa Board curriculum, higher secondary science, commerce, and arts streams, labs, and examination schedules." />
       </Helmet>
 

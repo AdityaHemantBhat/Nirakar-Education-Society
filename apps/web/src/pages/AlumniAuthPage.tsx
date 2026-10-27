@@ -222,8 +222,8 @@ export const AlumniAuthPage: React.FC<AlumniAuthPageProps> = ({ initialMode }) =
       <Helmet>
         <title>
           {mode === 'login'
-            ? 'Alumni & Community Sign In | Shree Nirakar Education Society'
-            : 'Alumni Registration & Enrollment | Shree Nirakar Education Society'}
+            ? 'Alumni & Community Sign In | Shri Nirakar Education Society'
+            : 'Alumni Registration & Enrollment | Shri Nirakar Education Society'}
         </title>
         <meta
           name="description"
@@ -288,7 +288,7 @@ export const AlumniAuthPage: React.FC<AlumniAuthPageProps> = ({ initialMode }) =
                         <Check size={11} />
                       </div>
                       <span className="text-stone-300">
-                        Full access to alumni posts, publications & directory
+                        Alumni community, publications & classmate directory
                       </span>
                     </div>
 
@@ -329,13 +329,13 @@ export const AlumniAuthPage: React.FC<AlumniAuthPageProps> = ({ initialMode }) =
             </div>
 
             {/* RIGHT COLUMN: Interactive Sliding Auth Station */}
-            <div className="lg:col-span-8 xl:col-span-8 space-y-6">
+            <div className="lg:col-span-8 xl:col-span-8 space-y-5 sm:space-y-6 w-full min-w-0">
               
               {/* Segmented Pill Switcher with Smooth Slide Indicator */}
-              <div className="bg-white p-1.5 rounded-2xl border border-stone-200/90 shadow-sm flex items-center max-w-md mx-auto sm:mx-0 relative">
+              <div className="bg-white p-1 sm:p-1.5 rounded-2xl border border-stone-200/90 shadow-sm flex items-center w-full max-w-md mx-auto sm:mx-0 relative">
                 <div
-                  className={`absolute top-1.5 bottom-1.5 rounded-xl bg-[#0b132b] transition-all duration-500 ease-in-out shadow-md ${
-                    mode === 'login' ? 'left-1.5 w-[calc(50%-6px)]' : 'left-[calc(50%+3px)] w-[calc(50%-6px)]'
+                  className={`absolute top-1 bottom-1 sm:top-1.5 sm:bottom-1.5 rounded-xl bg-[#0b132b] transition-all duration-500 ease-in-out shadow-md ${
+                    mode === 'login' ? 'left-1 w-[calc(50%-4px)] sm:left-1.5 sm:w-[calc(50%-6px)]' : 'left-[calc(50%+2px)] w-[calc(50%-4px)] sm:left-[calc(50%+3px)] sm:w-[calc(50%-6px)]'
                   }`}
                 />
 
@@ -343,64 +343,65 @@ export const AlumniAuthPage: React.FC<AlumniAuthPageProps> = ({ initialMode }) =
                   type="button"
                   data-no-transition="true"
                   onClick={() => switchMode('login')}
-                  className={`relative z-10 flex-1 py-3 text-center text-sm font-bold rounded-xl transition-colors duration-300 cursor-pointer flex items-center justify-center gap-2 ${
+                  className={`relative z-10 flex-1 py-2.5 sm:py-3 text-center text-xs sm:text-sm font-bold rounded-xl transition-colors duration-300 cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2 select-none ${
                     mode === 'login' ? 'text-amber-300' : 'text-stone-600 hover:text-stone-900'
                   }`}
                 >
-                  <Lock size={15} />
-                  <span>Alumni Sign In</span>
+                  <Lock size={14} className="shrink-0" />
+                  <span className="truncate">Alumni Sign In</span>
                 </button>
 
                 <button
                   type="button"
                   data-no-transition="true"
                   onClick={() => switchMode('register')}
-                  className={`relative z-10 flex-1 py-3 text-center text-sm font-bold rounded-xl transition-colors duration-300 cursor-pointer flex items-center justify-center gap-2 ${
+                  className={`relative z-10 flex-1 py-2.5 sm:py-3 text-center text-xs sm:text-sm font-bold rounded-xl transition-colors duration-300 cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2 select-none ${
                     mode === 'register' ? 'text-amber-300' : 'text-stone-600 hover:text-stone-900'
                   }`}
                 >
-                  <UserPlus size={15} />
-                  <span>Alumni Enrollment</span>
+                  <UserPlus size={14} className="shrink-0" />
+                  <span className="truncate">Enrollment</span>
                 </button>
               </div>
 
               {/* Sliding Forms Container Track (Overflow hidden + flex track + dynamic height animation) */}
               <div
                 style={{ height: cardHeight ? `${cardHeight}px` : undefined }}
-                className="w-full bg-white rounded-3xl border border-stone-200/90 shadow-xl overflow-hidden relative transition-[height] duration-500 ease-in-out"
+                className="w-full bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 shadow-xl overflow-hidden relative transition-[height] duration-500 ease-in-out"
               >
                 <div
-                  className={`flex w-[200%] items-start transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) ease-in-out ${
+                  style={{ width: '200%', minWidth: '200%', maxWidth: 'none' }}
+                  className={`flex items-start transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) ease-in-out ${
                     mode === 'login' ? 'translate-x-0' : '-translate-x-1/2'
                   }`}
                 >
                   
                   {/* ==================== SLIDE 1: ALUMNI LOGIN FORM ==================== */}
-                  <div ref={loginRef} className="w-1/2 shrink-0 p-6 sm:p-10 lg:p-12 space-y-7">
-                    <div className="space-y-1.5 border-b border-stone-100 pb-5">
-                      <div className="flex items-center gap-2 text-amber-800 text-xs font-bold uppercase tracking-wider">
-                        <User size={14} />
+                  <div ref={loginRef} style={{ width: '50%', minWidth: '50%', maxWidth: '50%' }} className="shrink-0 p-5 sm:p-8 md:p-10 lg:p-12 space-y-6 sm:space-y-7">
+                    <div className="space-y-1.5 border-b border-stone-100 pb-4 sm:pb-5">
+                      <div className="flex items-center gap-2 text-amber-800 text-[11px] sm:text-xs font-bold uppercase tracking-wider">
+                        <User size={13} className="shrink-0" />
                         <span>Member Access</span>
                       </div>
-                      <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
+                      <h2 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold text-stone-900 leading-tight">
                         Sign In to Your Alumni Account
                       </h2>
-                      <p className="text-sm text-stone-500 font-sans">
+                      <p className="text-xs sm:text-sm text-stone-500 font-sans leading-relaxed">
                         Enter your registered username or email to access your profile, directories, and archives.
                       </p>
                     </div>
 
                     {loginError && (
-                      <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-sm text-red-800 font-medium flex items-start gap-2.5">
+                      <div className="p-3.5 sm:p-4 rounded-xl bg-red-50 border border-red-200 text-xs sm:text-sm text-red-800 font-medium flex items-start gap-2.5">
                         <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-600" />
-                        <span>{loginError}</span>
+                        <span className="break-words">{loginError}</span>
                       </div>
                     )}
 
                     {loginSuccess && (
-                      <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-sm text-emerald-800 font-medium flex items-center gap-2.5">
+                      <div className="p-3.5 sm:p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs sm:text-sm text-emerald-800 font-medium flex items-center gap-2.5">
                         <CheckCircle2 size={17} className="text-emerald-600 shrink-0" />
-                        <span>Welcome back! Navigating to Alumni Portal...</span>
+                        <span className="break-words">Welcome back! Navigating to Alumni Portal...</span>
                       </div>
                     )}
 
@@ -494,24 +495,24 @@ export const AlumniAuthPage: React.FC<AlumniAuthPageProps> = ({ initialMode }) =
                   </div>
 
                   {/* ==================== SLIDE 2: ALUMNI REGISTER FORM ==================== */}
-                  <div ref={registerRef} className="w-1/2 shrink-0 p-6 sm:p-10 lg:p-12 space-y-7">
-                    <div className="space-y-1.5 border-b border-stone-100 pb-5">
-                      <div className="flex items-center gap-2 text-amber-800 text-xs font-serif font-bold uppercase tracking-wider">
-                        <UserPlus size={14} />
+                  <div ref={registerRef} style={{ width: '50%', minWidth: '50%', maxWidth: '50%' }} className="shrink-0 p-5 sm:p-8 md:p-10 lg:p-12 space-y-6 sm:space-y-7">
+                    <div className="space-y-1.5 border-b border-stone-100 pb-4 sm:pb-5">
+                      <div className="flex items-center gap-2 text-amber-800 text-[11px] sm:text-xs font-serif font-bold uppercase tracking-wider">
+                        <UserPlus size={13} className="shrink-0" />
                         <span>Alumni Verification Registry</span>
                       </div>
-                      <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
+                      <h2 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold text-stone-900 leading-tight">
                         Enroll in Alumni Directory
                       </h2>
-                      <p className="text-xs sm:text-sm text-stone-500 font-sans">
+                      <p className="text-xs sm:text-sm text-stone-500 font-sans leading-relaxed">
                         Enter your academic credentials from Shri Nirakar Vidyalaya, Tudal High School, or S. S. Angle Higher Secondary School.
                       </p>
                     </div>
 
                     {regError && (
-                      <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800 font-medium flex items-start gap-2.5">
+                      <div className="p-3.5 sm:p-4 rounded-xl bg-red-50 border border-red-200 text-xs sm:text-sm text-red-800 font-medium flex items-start gap-2.5">
                         <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-600" />
-                        <span>{regError}</span>
+                        <span className="break-words">{regError}</span>
                       </div>
                     )}
 

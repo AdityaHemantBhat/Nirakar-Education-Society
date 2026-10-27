@@ -56,12 +56,12 @@ export const PolicyPage: React.FC = () => {
       <Helmet>
         <title>
           {activeTab === 'privacy'
-            ? 'Statutory Privacy Policy & DPDP Act 2023 | Shree Nirakar Education Society'
-            : 'Institutional Terms of Service & Code of Discipline | Shree Nirakar Education Society'}
+            ? 'Statutory Privacy Policy & DPDP Act 2023 | Shri Nirakar Education Society'
+            : 'Institutional Terms of Service & Code of Discipline | Shri Nirakar Education Society'}
         </title>
         <meta
           name="description"
-          content="Official statutory charters, student data protection policies under the Digital Personal Data Protection Act, 2023, and institutional terms of service for Shree Nirakar Education Society institutions, Mashem, Canacona, Goa."
+          content="Official statutory charters, student data protection policies under the Digital Personal Data Protection Act, 2023, and institutional terms of service for Shri Nirakar Education Society institutions, Mashem, Canacona, Goa."
         />
       </Helmet>
 
@@ -72,39 +72,39 @@ export const PolicyPage: React.FC = () => {
         {/* Thread-like curve wave strips in light orange / amber */}
         <HeroWaves opacity={0.85} />
 
-        <div className="w-full relative z-10 max-w-6xl">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2 text-xs font-mono uppercase tracking-wider text-amber-300">
-              <span>Shree Nirakar Education Society</span>
+        <div className="w-full relative z-10 mx-auto max-w-4xl text-center flex flex-col items-center">
+          <div className="space-y-3.5 flex flex-col items-center text-center">
+            <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-mono uppercase tracking-wider text-amber-300">
+              <span>Shri Nirakar Education Society</span>
               <span className="text-stone-500">•</span>
               <span>Mashem, Canacona, South Goa</span>
               <span className="text-stone-500">•</span>
               <span>Estd. 1939</span>
             </div>
 
-            <h1 className="font-serif text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+            <h1 className="font-serif text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight text-center">
               {activeTab === 'privacy'
                 ? 'Statutory Privacy Charter & DPDP Act 2023'
                 : 'Terms of Service & Code of Discipline'}
             </h1>
 
-            <p className="text-stone-300 text-xs sm:text-sm max-w-3xl leading-relaxed font-sans">
+            <p className="text-stone-300 text-xs sm:text-sm max-w-3xl leading-relaxed font-sans text-center mx-auto">
               Official regulatory notifications, data protection provisions, student welfare safeguards, and institutional service terms governing Shri Nirakar High School, Tudal High School, and S.S. Angle Higher Secondary School.
             </p>
           </div>
 
-          {/* Institutional Identification Strip */}
-          <div className="mt-6 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-stone-300">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="bg-white/10 text-amber-300 px-2.5 py-1 rounded border border-white/15">
-                Gazette Ref: SNES/STAT/2026-27/01
+          {/* Institutional Identification Strip (Cleanly Centered) */}
+          <div className="mt-7 pt-5 border-t border-white/10 w-full flex flex-wrap items-center justify-center gap-4 text-xs font-mono text-stone-300">
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <span className="bg-white/10 text-amber-300 px-3 py-1 rounded-full border border-white/15">
+                Policy reference: not published
               </span>
               <span>Goa Board Index: SSC 08.006 / HSSC 08.06</span>
             </div>
 
             <button
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3.5 py-1.5 rounded text-xs font-sans transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 px-4 py-1.5 rounded-full text-xs font-sans transition-colors cursor-pointer"
             >
               <Printer size={13} />
               <span>Print Official Gazette</span>
@@ -255,7 +255,7 @@ export const PolicyPage: React.FC = () => {
                 <span>Competent Authority</span>
               </div>
               <p className="text-xs text-stone-700 leading-relaxed">
-                Promulgated under the executive authority of the <strong>Governing Council of Shree Nirakar Education Society</strong>, Mashem, Canacona, South Goa.
+                Promulgated under the executive authority of the <strong>Governing Council of Shri Nirakar Education Society</strong>, Mashem, Canacona, South Goa.
               </p>
               <div className="text-[11px] font-mono text-stone-600 border-t border-stone-200 pt-2 space-y-1">
                 <div>• Registration: Soc. Reg. Act XXI of 1860</div>
@@ -306,7 +306,7 @@ export const PolicyPage: React.FC = () => {
             <div className="bg-white border border-stone-300 p-6 sm:p-8 space-y-3">
               <div className="text-center pb-4 border-b border-stone-200 space-y-1">
                 <div className="font-serif text-sm sm:text-base font-bold text-stone-900 tracking-wide uppercase">
-                  Shree Nirakar Education Society
+                  Shri Nirakar Education Society
                 </div>
                 <div className="text-xs text-stone-600 font-sans">
                   Mashem, Canacona, South Goa, India – 403728
@@ -322,8 +322,8 @@ export const PolicyPage: React.FC = () => {
                 </div>
                 <p>
                   {activeTab === 'privacy'
-                    ? 'In exercise of the powers conferred by the Digital Personal Data Protection Act, 2023 (Act No. 22 of 2023, Parliament of India), and in conformity with the Goa School Education Act, 1984, the Governing Council of Shree Nirakar Education Society hereby notifies the following statutory Data Protection Charter governing the processing of personal records of students, parents, alumni, and educators.'
-                    : 'The Governing Council of Shree Nirakar Education Society hereby promulgates the following Institutional Terms of Service and Code of Academic Discipline to govern enrolment, academic integrity, use of campus scientific infrastructure, alumni relations, and administrative services across all institutions administered by the Society.'}
+                    ? 'In exercise of the powers conferred by the Digital Personal Data Protection Act, 2023 (Act No. 22 of 2023, Parliament of India), and in conformity with the Goa School Education Act, 1984, the Governing Council of Shri Nirakar Education Society hereby notifies the following statutory Data Protection Charter governing the processing of personal records of students, parents, alumni, and educators.'
+                    : 'The Governing Council of Shri Nirakar Education Society hereby promulgates the following Institutional Terms of Service and Code of Academic Discipline to govern enrolment, academic integrity, use of campus scientific infrastructure, alumni relations, and administrative services across all institutions administered by the Society.'}
                 </p>
               </div>
             </div>
@@ -342,7 +342,7 @@ export const PolicyPage: React.FC = () => {
                   </h2>
                   <div className="text-xs sm:text-sm text-stone-800 leading-relaxed space-y-2">
                     <p>
-                      <strong>1.1 Title:</strong> This Charter shall be cited as the <em>Shree Nirakar Education Society Statutory Personal Data Protection Regulations, 2026</em>.
+                      <strong>1.1 Title:</strong> This Charter shall be cited as the <em>Shri Nirakar Education Society Statutory Personal Data Protection Regulations, 2026</em>.
                     </p>
                     <p>
                       <strong>1.2 Institutional Extent:</strong> These provisions apply to all digital databases, web portals, admission engines, alumni records, and staff management files operated for:
@@ -371,7 +371,7 @@ export const PolicyPage: React.FC = () => {
                         <strong>(a) "Data Principal":</strong> Means the natural person to whom the personal data relates, including enrolled students, applicant pupils, parents/lawful guardians, alumni, and teaching or administrative personnel.
                       </li>
                       <li>
-                        <strong>(b) "Data Fiduciary":</strong> Means Shree Nirakar Education Society, which alone determines the purpose and means of processing personal data.
+                        <strong>(b) "Data Fiduciary":</strong> Means Shri Nirakar Education Society, which alone determines the purpose and means of processing personal data.
                       </li>
                       <li>
                         <strong>(c) "Minor Student":</strong> Means an individual enrolled in standard 5th through 12th who has not attained eighteen years of age.
@@ -492,7 +492,7 @@ export const PolicyPage: React.FC = () => {
                   </h2>
                   <div className="text-xs sm:text-sm text-stone-800 leading-relaxed space-y-2">
                     <p className="bg-stone-100 p-4 border-l-4 border-[#111b5e] font-serif text-stone-900">
-                      <strong>Solemn Declaration:</strong> Shree Nirakar Education Society gives its solemn institutional undertaking that student, parent, alumni, and teacher contact records are <strong>never sold, commercialized, monetized, leased, or transferred</strong> to commercial marketing firms, private coaching institutes, or third-party data brokers under any circumstances.
+                      <strong>Solemn Declaration:</strong> Shri Nirakar Education Society gives its solemn institutional undertaking that student, parent, alumni, and teacher contact records are <strong>never sold, commercialized, monetized, leased, or transferred</strong> to commercial marketing firms, private coaching institutes, or third-party data brokers under any circumstances.
                     </p>
                   </div>
                 </section>
@@ -505,10 +505,10 @@ export const PolicyPage: React.FC = () => {
                   </h2>
                   <div className="text-xs sm:text-sm text-stone-800 leading-relaxed space-y-2">
                     <p>
-                      <strong>8.1 Encryption Standards:</strong> Web traffic is encrypted via Transport Layer Security (TLS 1.3). Digital database records are protected with 256-bit encryption at rest and isolated from public internet surfaces.
+                      <strong>8.1 Security safeguards:</strong> The site uses security controls in its application and infrastructure. Specific encryption algorithms, database isolation and hosting safeguards must be confirmed by the Society’s technology provider before this policy can make technical assurances.
                     </p>
                     <p>
-                      <strong>8.2 Retention Period:</strong> Non-admitted admission inquiries are purged within 180 days. Permanent graduation rosters, class batch photographs, and mark registers are preserved perpetually as vital institutional history.
+                      <strong>8.2 Retention Period:</strong> A retention schedule by data category has not been published. No automated deletion schedule is represented here; retention and deletion practices require institutional approval.
                     </p>
                   </div>
                 </section>
@@ -529,7 +529,7 @@ export const PolicyPage: React.FC = () => {
                         <strong>Right to Correction & Erasure (Section 12):</strong> Right to correct inaccurate information, update obsolete contact records, or request complete erasure where educational retention mandates have elapsed.
                       </li>
                       <li>
-                        <strong>Right of Grievance Redressal (Section 13):</strong> Right to register a formal grievance with the designated officer and receive a reasoned response within 30 days.
+                        <strong>Grievance redressal:</strong> Submit a concern through the Grievance Redressal page and use the private tracking code to check published updates. Applicable legal response requirements and the Society’s approved service timeline must be confirmed before publication.
                       </li>
                       <li>
                         <strong>Right to Nominate (Section 14):</strong> Right to nominate an individual who shall exercise data rights in the event of death or incapacity.
@@ -550,7 +550,7 @@ export const PolicyPage: React.FC = () => {
                     </p>
                     <div className="bg-stone-50 p-4 border border-stone-300 space-y-1.5 text-xs font-mono">
                       <div><strong>DESIGNATION:</strong> Registrar & Statutory Compliance Officer</div>
-                      <div><strong>INSTITUTION:</strong> Shree Nirakar Education Society</div>
+                      <div><strong>INSTITUTION:</strong> Shri Nirakar Education Society</div>
                       <div><strong>OFFICE:</strong> Central Secretariat, Mashem Campus, Canacona, South Goa – 403728</div>
                       <div><strong>EMAIL:</strong> privacy@nirakar.edu / registrar@nirakar.edu</div>
                       <div><strong>TELEPHONE:</strong> +91 832 2643236</div>
@@ -579,7 +579,7 @@ export const PolicyPage: React.FC = () => {
                   </h2>
                   <div className="text-xs sm:text-sm text-stone-800 leading-relaxed space-y-2">
                     <p>
-                      <strong>1.1 Promulgation:</strong> These regulations are framed under the authority of the Governing Council of Shree Nirakar Education Society (Estd. 1939) in compliance with the Goa School Education Act, 1984.
+                      <strong>1.1 Promulgation:</strong> These regulations are framed under the authority of the Governing Council of Shri Nirakar Education Society (Estd. 1939) in compliance with the Goa School Education Act, 1984.
                     </p>
                     <p>
                       <strong>1.2 Applicability:</strong> Enrolment in any institutional branch (Shri Nirakar High School, Tudal High School, or S.S. Angle Higher Secondary School) or utilization of this portal implies explicit acceptance of these service terms.
@@ -678,7 +678,7 @@ export const PolicyPage: React.FC = () => {
                   </h2>
                   <div className="text-xs sm:text-sm text-stone-800 leading-relaxed space-y-2">
                     <p>
-                      <strong>7.1 Society Insignia:</strong> The official emblem, motto (<em>।। तमसो मा ज्योतिर्गमय ।।</em>), syllabi, and daily magazine editions are intellectual property of Shree Nirakar Education Society.
+                      <strong>7.1 Society Insignia:</strong> The official emblem, motto (<em>।। तमसो मा ज्योतिर्गमय ।।</em>), syllabi, and daily magazine editions are intellectual property of Shri Nirakar Education Society.
                     </p>
                     <p>
                       <strong>7.2 Historical Portraits:</strong> Historical graduation batch photographs (1968–2026) are preserved for institutional heritage and student commemoration. Unauthorized commercial exploitation is actionable under the Copyright Act, 1957.
@@ -741,7 +741,7 @@ export const PolicyPage: React.FC = () => {
             <div className="bg-stone-100 border border-stone-300 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs font-mono text-stone-700">
               <div>
                 <div>BY ORDER OF THE GOVERNING COUNCIL</div>
-                <div className="text-stone-500 text-[11px]">Shree Nirakar Education Society, Mashem, Canacona, Goa</div>
+                <div className="text-stone-500 text-[11px]">Shri Nirakar Education Society, Mashem, Canacona, Goa</div>
               </div>
               <div className="text-right">
                 <div>REGISTRAR & SECRETARY</div>

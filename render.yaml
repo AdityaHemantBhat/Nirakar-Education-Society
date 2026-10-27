@@ -17,12 +17,38 @@ services:
         fromDatabase:
           name: nirakar-db
           property: connectionString
+      - key: DIRECT_URL
+        fromDatabase:
+          name: nirakar-db
+          property: connectionString
       - key: JWT_ACCESS_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET
         generateValue: true
       - key: COOKIE_SECRET
         generateValue: true
+      - key: CORS_ORIGIN
+        sync: false
+      - key: COOKIE_SAME_SITE
+        value: none
+      - key: STORAGE_DRIVER
+        value: local
+      - key: STORAGE_LOCAL_PATH
+        value: /opt/render/project/src/storage/uploads
+      - key: RECAPTCHA_SECRET_KEY
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+      - key: SUPER_ADMIN_PASSWORD
+        sync: false
+    disk:
+      name: nirakar-storage
+      mountPath: /opt/render/project/src/storage
+      sizeGB: 10
 
 databases:
   - name: nirakar-db

@@ -1,7 +1,8 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { UserPlus, ArrowLeft, Save, Upload, Camera, Check, AlertCircle, User, GraduationCap, Briefcase, Globe } from "lucide-react";
+import { AdminSelect } from "../components/AdminSelect.js";
 
 interface FormData {
   firstName: string;
@@ -152,6 +153,7 @@ export const AddFacultyPage: React.FC = () => {
     mutationFn: async (base64Image: string) => {
       const res = await fetch("/api/v1/faculty/upload-photo", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ imageBase64: base64Image }),
       });
@@ -449,13 +451,14 @@ export const AddFacultyPage: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-stone-700">Institution *</label>
-                <select name="institutionCode" value={formData.institutionCode} onChange={handleInputChange} className="w-full px-4 py-2.5 rounded-lg border border-stone-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" required>
-                  {institutionOptions.map((opt) => (
-                    <option key={opt.code} value={opt.code}>
-                      {opt.name}
-                    </option>
-                  ))}
-                </select>
+                <AdminSelect
+                  value={formData.institutionCode}
+                  onChange={(val) => setFormData((prev) => ({ ...prev, institutionCode: val }))}
+                  options={institutionOptions.map((opt) => ({
+                    value: opt.code,
+                    label: opt.name,
+                  }))}
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-stone-700">Employee Code</label>
@@ -468,13 +471,14 @@ export const AddFacultyPage: React.FC = () => {
             </div>
             <div className="space-y-2">
               <label className="text-xs font-semibold text-stone-700">Department *</label>
-              <select name="department" value={formData.department} onChange={handleInputChange} className="w-full px-4 py-2.5 rounded-lg border border-stone-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" required>
-                {departments.map((dept: string) => (
-                  <option key={dept} value={dept}>
-                    {dept}
-                  </option>
-                ))}
-              </select>
+              <AdminSelect
+                value={formData.department}
+                onChange={(val) => setFormData((prev) => ({ ...prev, department: val }))}
+                options={departments.map((dept: string) => ({
+                  value: dept,
+                  label: dept,
+                }))}
+              />
             </div>
             <div className="space-y-3">
               <label className="text-xs font-semibold text-stone-700">Profile Photo</label>

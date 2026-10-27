@@ -6,7 +6,7 @@ import { encode } from 'blurhash';
 import { config } from '../config/index.js';
 import { MediaVariant } from '@nirakar/shared';
 
-const TARGET_WIDTHS = [320, 480, 768, 1024, 1440, 1920];
+const TARGET_WIDTHS = [320, 768, 1440];
 
 export interface ProcessedMedia {
   filename: string;
@@ -36,6 +36,9 @@ export async function processDocumentUpload(
 ): Promise<ProcessedMedia> {
   if (buffer.length > MAX_PDF_SIZE_BYTES) {
     throw new Error('PDF exceeds the 15MB size limit. Please compress your PDF document before uploading.');
+  }
+  if (buffer.subarray(0, 5).toString('ascii') !== '%PDF-') {
+    throw new Error('The uploaded document is not a valid PDF.');
   }
 
   await ensureUploadDirs();
@@ -119,7 +122,7 @@ export async function processImageUpload(
   }
 
   // Determine target modern format: AVIF if uploaded as avif, otherwise convert to WebP
-  const isAvifInput = originalFilename.toLowerCase().endsWith('.avif') || metadata.format === 'avif';
+  const isAvifInput = originalFilename.toLowerCase().endsWith('.avif') || String(metadata.format) === 'avif';
   const targetFormat = isAvifInput ? 'avif' : 'webp';
 
   let optimizedBuffer: Buffer;
@@ -143,8 +146,10 @@ export async function processImageUpload(
   // Save the optimized modern WebP/AVIF file
   await fs.writeFile(path.join(baseDir, mainFilename), optimizedBuffer);
 
-  // Compute dominant color and stats
-  const stats = await sharp(normalizedBuffer).stats();
+  const [stats, rawRgba] = await Promise.all([
+    sharp(normalizedBuffer).stats(),
+    sharp(normalizedBuffer).resize(32, 32, { fit: 'fill' }).ensureAlpha().raw().toBuffer(),
+  ]);
   const dominantColor = `#${(
     (1 << 24) +
     (Math.round(stats.dominant.r) << 16) +
@@ -154,18 +159,7 @@ export async function processImageUpload(
     .toString(16)
     .slice(1)}`;
 
-  // Compute blurhash (from 32x32 raw pixel buffer)
-  let blurhash = 'L6PZfSi_.AyE_3t7t7R**0o#DgR4';
-  try {
-    const rawRgba = await sharp(normalizedBuffer)
-      .resize(32, 32, { fit: 'fill' })
-      .ensureAlpha()
-      .raw()
-      .toBuffer();
-    blurhash = encode(new Uint8ClampedArray(rawRgba), 32, 32, 4, 4);
-  } catch (err) {
-    // fallback if blurhash generation encounters rare error
-  }
+  const blurhash = encode(new Uint8ClampedArray(rawRgba), 32, 32, 4, 4);
 
   // Generate multi-format variants: AVIF, WebP, JPEG
   const variants: MediaVariant[] = [];
@@ -174,34 +168,27 @@ export async function processImageUpload(
     applicableWidths.push(baseWidth);
   }
 
-  for (const w of applicableWidths) {
-    // 1. AVIF variant
-    const avifFilename = `${hash}-${w}.avif`;
-    const avifBuffer = await sharp(normalizedBuffer)
-      .resize(w, undefined, { withoutEnlargement: true })
-      .avif({ quality: 80, effort: 4 })
-      .toBuffer();
-    await fs.writeFile(path.join(baseDir, 'variants', avifFilename), avifBuffer);
-    variants.push({ width: w, format: 'avif', url: `/uploads/variants/${avifFilename}` });
-
-    // 2. WebP variant
-    const webpFilename = `${hash}-${w}.webp`;
-    const webpBuffer = await sharp(normalizedBuffer)
-      .resize(w, undefined, { withoutEnlargement: true })
-      .webp({ quality: 82, effort: 4 })
-      .toBuffer();
-    await fs.writeFile(path.join(baseDir, 'variants', webpFilename), webpBuffer);
-    variants.push({ width: w, format: 'webp', url: `/uploads/variants/${webpFilename}` });
-
-    // 3. JPEG fallback variant
-    const jpegFilename = `${hash}-${w}.jpg`;
-    const jpegBuffer = await sharp(normalizedBuffer)
-      .resize(w, undefined, { withoutEnlargement: true })
-      .jpeg({ quality: 85, mozjpeg: true })
-      .toBuffer();
-    await fs.writeFile(path.join(baseDir, 'variants', jpegFilename), jpegBuffer);
-    variants.push({ width: w, format: 'jpeg', url: `/uploads/variants/${jpegFilename}` });
-  }
+  const variantResults = await Promise.all(applicableWidths.flatMap((w) => [
+    (async () => {
+      const filename = `${hash}-${w}.avif`;
+      const data = await sharp(normalizedBuffer).resize(w, undefined, { withoutEnlargement: true }).avif({ quality: 76, effort: 2 }).toBuffer();
+      await fs.writeFile(path.join(baseDir, 'variants', filename), data);
+      return { width: w, format: 'avif' as const, url: `/uploads/variants/${filename}` };
+    })(),
+    (async () => {
+      const filename = `${hash}-${w}.webp`;
+      const data = await sharp(normalizedBuffer).resize(w, undefined, { withoutEnlargement: true }).webp({ quality: 78, effort: 3 }).toBuffer();
+      await fs.writeFile(path.join(baseDir, 'variants', filename), data);
+      return { width: w, format: 'webp' as const, url: `/uploads/variants/${filename}` };
+    })(),
+    (async () => {
+      const filename = `${hash}-${w}.jpg`;
+      const data = await sharp(normalizedBuffer).resize(w, undefined, { withoutEnlargement: true }).jpeg({ quality: 82 }).toBuffer();
+      await fs.writeFile(path.join(baseDir, 'variants', filename), data);
+      return { width: w, format: 'jpeg' as const, url: `/uploads/variants/${filename}` };
+    })(),
+  ]));
+  variants.push(...variantResults);
 
   return {
     filename: mainFilename,

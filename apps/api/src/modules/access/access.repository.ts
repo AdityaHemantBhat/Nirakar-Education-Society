@@ -11,10 +11,7 @@ export class AccessRepository {
         snapStops: true,
         freeReadPolicyMagazine: true,
         freeReadCountMagazine: true,
-        freeReadPolicyPosts: true,
-        freeReadCountPosts: true,
         passDurationDays: true,
-        passAppliesTo: true,
         purposeText: true,
         tierLabels: true,
         thankYouMessages: true,
@@ -33,10 +30,7 @@ export class AccessRepository {
         snapStops: true,
         freeReadPolicyMagazine: true,
         freeReadCountMagazine: true,
-        freeReadPolicyPosts: true,
-        freeReadCountPosts: true,
         passDurationDays: true,
-        passAppliesTo: true,
         purposeText: true,
         tierLabels: true,
         thankYouMessages: true,
@@ -55,17 +49,11 @@ export class AccessRepository {
     return !!pass;
   }
 
-  async canMeteredRead(
-    userId?: string,
-    deviceId = 'anonymous',
-    itemType: 'MAGAZINE' | 'POST' = 'MAGAZINE',
-    itemId?: string
-  ): Promise<boolean> {
-    // If the reader has already read THIS specific item previously, it remains accessible forever
+  async canMeteredRead(userId?: string, deviceId = 'anonymous', itemId?: string): Promise<boolean> {
     if (itemId) {
       const alreadyRead = await prisma.readEvent.findFirst({
         where: {
-          itemType,
+          itemType: 'MAGAZINE',
           itemId,
           OR: [{ deviceId }, ...(userId ? [{ userId }] : [])],
         },
@@ -74,34 +62,27 @@ export class AccessRepository {
       if (alreadyRead) return true;
     }
 
-    // Count distinct items already read
     const settings = await this.getSettings();
-    const allowedFree =
-      itemType === 'MAGAZINE'
-        ? settings?.freeReadCountMagazine ?? 5
-        : settings?.freeReadCountPosts ?? 5;
-
     const count = await prisma.readEvent.count({
       where: {
-        itemType,
+        itemType: 'MAGAZINE',
         OR: [{ deviceId }, ...(userId ? [{ userId }] : [])],
       },
     });
 
-    return count < allowedFree;
+    return count < (settings?.freeReadCountMagazine ?? 5);
   }
 
   async recordReadEvent(
     userId?: string,
     deviceId = 'anonymous',
-    itemType: 'MAGAZINE' | 'POST' = 'MAGAZINE',
     itemId = ''
   ) {
     return prisma.readEvent.upsert({
       where: {
         deviceId_itemType_itemId: {
           deviceId,
-          itemType,
+          itemType: 'MAGAZINE',
           itemId,
         },
       },
@@ -111,7 +92,7 @@ export class AccessRepository {
       create: {
         deviceId,
         userId: userId || null,
-        itemType,
+        itemType: 'MAGAZINE',
         itemId,
       },
       select: { id: true, firstReadAt: true },

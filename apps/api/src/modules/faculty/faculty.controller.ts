@@ -12,7 +12,7 @@ export class FacultyController {
 
   getPublished = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const list = await this.service.listPublished(req.query.institutionCode as any);
+      const list = await this.service.listPublished(req.query.institutionCode as any, req.query.search as string);
       res.json({ success: true, data: list });
     } catch (err) {
       next(err);
@@ -55,8 +55,7 @@ export class FacultyController {
   saveDashboardProfile = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const input = FacultyProfileUpdateSchema.parse(req.body);
-      const targetId = req.user?.sub || (req.body as any).facultyId || (req.body as any).id || (req.body as any).userId;
-      const updated = await this.service.updateMyProfile(targetId, { ...input, ...req.body });
+      const updated = await this.service.updateMyProfile(req.user!.sub, input);
       broadcastFacultyUpdate('updated', updated);
       res.json({ success: true, data: updated });
     } catch (err) {
@@ -67,13 +66,21 @@ export class FacultyController {
   uploadPhoto = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { imageBase64 } = req.body;
-      if (!imageBase64) {
-        res.status(400).json({ error: { message: 'No image data provided' } });
+      if (typeof imageBase64 !== 'string' || imageBase64.length > 7_000_000) {
+        res.status(400).json({ error: { message: 'Provide an image smaller than 5 MB.' } });
         return;
       }
 
-      const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-      const buffer = matches ? Buffer.from(matches[2], 'base64') : Buffer.from(imageBase64, 'base64');
+      const matches = imageBase64.match(/^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/]+={0,2})$/i);
+      if (!matches) {
+        res.status(400).json({ error: { message: 'Use a valid JPEG, PNG, or WebP image.' } });
+        return;
+      }
+      const buffer = Buffer.from(matches[2], 'base64');
+      if (!buffer.length || buffer.length > 5 * 1024 * 1024) {
+        res.status(400).json({ error: { message: 'Provide an image smaller than 5 MB.' } });
+        return;
+      }
 
       const uploadsDir = path.resolve(config.STORAGE_LOCAL_PATH);
       if (!fs.existsSync(uploadsDir)) {
@@ -81,7 +88,7 @@ export class FacultyController {
       }
 
       const timestamp = Date.now();
-      const safeName = `faculty-${timestamp}.webp`;
+      const safeName = `faculty-${timestamp}-${Math.random().toString(36).slice(2, 10)}.webp`;
       const filePath = path.join(uploadsDir, safeName);
       await fs.promises.writeFile(filePath, buffer);
 

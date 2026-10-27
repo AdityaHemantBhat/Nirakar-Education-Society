@@ -278,7 +278,7 @@ export const WhyNirakar: React.FC = () => {
       className="relative w-full bg-[#FAF7F2] py-20 sm:py-28 overflow-hidden select-none"
     >
       {/* 1. GRAND EDITORIAL SECTION TITLE */}
-      <div className="w-full px-6 sm:px-10 md:px-14 lg:px-16 xl:px-20 2xl:px-28 mb-10 sm:mb-14">
+      <div className="w-full px-4 xs:px-6 sm:px-10 md:px-14 lg:px-16 xl:px-20 2xl:px-28 mb-10 sm:mb-14">
         <div className="max-w-4xl">
           <div className="flex items-center gap-2.5 mb-3 text-xs uppercase font-mono font-bold tracking-widest text-amber-700">
             <span className="w-2 h-2 rounded-full bg-amber-600 animate-pulse" />
@@ -296,8 +296,8 @@ export const WhyNirakar: React.FC = () => {
       </div>
 
       {/* 2. THE FOUNDER'S 1968 COVENANT ARCHIVAL MONOLITH (CLEAN & UNBOXED) */}
-      <div className="w-full px-6 sm:px-10 md:px-14 lg:px-16 xl:px-20 2xl:px-28 mb-12 sm:mb-16">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#07112c] via-[#0b132b] to-[#081330] p-8 sm:p-10 text-white shadow-2xl border border-white/10">
+      <div className="w-full px-4 xs:px-6 sm:px-10 md:px-14 lg:px-16 xl:px-20 2xl:px-28 mb-12 sm:mb-16">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#07112c] via-[#0b132b] to-[#081330] p-5 xs:p-6 sm:p-8 lg:p-10 text-white shadow-2xl border border-white/10">
           {/* Subtle gold hairline accent on top */}
           <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
 
@@ -344,14 +344,14 @@ export const WhyNirakar: React.FC = () => {
           </div>
 
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 sm:gap-8">
-            <div className="flex items-start gap-4 sm:gap-5 max-w-3xl">
-              <Quote size={30} className="text-amber-400 shrink-0 mt-1 stroke-[1.8]" />
+            <div className="flex items-start gap-3.5 sm:gap-5 max-w-3xl">
+              <Quote size={28} className="text-amber-400 shrink-0 mt-1 stroke-[1.8]" />
 
               <div className="space-y-2">
-                <div className="flex items-center gap-2.5 text-xs font-serif font-bold tracking-wider uppercase text-amber-300">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] sm:text-xs font-serif font-bold tracking-wider uppercase text-amber-300">
                   <span>Founder's Solemn Covenant</span>
-                  <span className="w-1 h-1 rounded-full bg-amber-400" />
-                  <span>Mashem, 1968</span>
+                  <span className="w-1 h-1 rounded-full bg-amber-400 shrink-0 hidden xs:inline-block" />
+                  <span className="text-amber-300/80">Mashem, 1968</span>
                 </div>
 
                 <blockquote className="font-serif text-lg sm:text-xl lg:text-2xl font-bold italic text-white leading-snug">
@@ -376,7 +376,7 @@ export const WhyNirakar: React.FC = () => {
       </div>
 
       {/* 3. NEW-AGE MASTER MONOGRAPH: THE SEVEN PILLARS SPATIAL EXHIBITION */}
-      <div className="w-full px-6 sm:px-10 md:px-14 lg:px-16 xl:px-20 2xl:px-28">
+      <div className="w-full px-4 xs:px-6 sm:px-10 md:px-14 lg:px-16 xl:px-20 2xl:px-28">
         
         {/* TOP: ARCHITECTURAL PILLARS DIAL (Desktop & Tablet Horizontal Station Selector) */}
         <div className="w-full overflow-x-auto pb-4 mb-8 scrollbar-none">

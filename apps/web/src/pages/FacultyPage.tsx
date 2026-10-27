@@ -158,7 +158,7 @@ export const FacultyPage: React.FC = () => {
   return (
     <div className="w-full min-h-screen bg-[#FAF7F2] text-stone-900 flex flex-col font-sans">
       <Helmet>
-        <title>Teaching & Administrative Faculty Directory | Shree Nirakar Education Society</title>
+        <title>Teaching & Administrative Faculty Directory | Shri Nirakar Education Society</title>
         <meta
           name="description"
           content="Meet the distinguished educators, subject specialists, and laboratory mentors across Shri Nirakar High School, Tudal High School, and S. S. Angle Higher Secondary School."
@@ -190,7 +190,7 @@ export const FacultyPage: React.FC = () => {
           </h1>
 
           <p className="text-stone-300 text-sm sm:text-base max-w-3xl leading-relaxed">
-            The foundation of Shree Nirakar Education Society's excellence. Meet the dedicated educators, department heads, and laboratory mentors shaping generations of scholars across Shri Nirakar High School (Mashem), Tudal High School (Gaondongrem), and S. S. Angle Higher Secondary School (Dapot).
+            The foundation of Shri Nirakar Education Society's excellence. Meet the dedicated educators, department heads, and laboratory mentors shaping generations of scholars across Shri Nirakar High School (Mashem), Tudal High School (Gaondongrem), and S. S. Angle Higher Secondary School (Dapot).
           </p>
         </div>
       </div>

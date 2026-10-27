@@ -183,7 +183,7 @@ export const HomePage: React.FC = () => {
             />
           </svg>
           <div className="relative z-10 flex w-full max-w-2xl flex-col items-center text-center text-[#0b132b]">
-            <div data-preloader-logo className="mb-7 flex h-48 w-48 items-center justify-center sm:h-60 sm:w-60">
+            <div data-preloader-logo className="mb-3 sm:mb-7 flex h-20 w-20 xs:h-24 xs:w-24 sm:h-48 sm:w-48 md:h-60 md:w-60 items-center justify-center shrink-0">
               <img
                 data-preloader-logo-image
                 src="/images/Logo.webp"
@@ -197,16 +197,21 @@ export const HomePage: React.FC = () => {
             <div className="mt-3 w-full py-1">
               <h1
                 aria-label="Shree Nirakar Education Society"
-                className="font-serif text-2xl font-semibold tracking-[0.04em] text-[#0b132b] sm:text-4xl"
+                className="font-serif text-sm sm:text-xl md:text-2xl lg:text-4xl font-semibold tracking-[0.02em] sm:tracking-[0.04em] text-[#0b132b] leading-snug"
               >
-                {'Shree Nirakar Education Society'.split('').map((letter, index) => (
-                  <span
-                    key={`${letter}-${index}`}
-                    data-preloader-title-letter
-                    aria-hidden="true"
-                    className="inline-block whitespace-pre"
-                  >
-                    {letter}
+                {['Shree', 'Nirakar', 'Education', 'Society'].map((word, wIndex) => (
+                  <span key={word} className="inline whitespace-pre">
+                    {word.split('').map((letter, index) => (
+                      <span
+                        key={`${word}-${letter}-${index}`}
+                        data-preloader-title-letter
+                        aria-hidden="true"
+                        className="inline-block"
+                      >
+                        {letter}
+                      </span>
+                    ))}
+                    {wIndex < 3 ? ' ' : ''}
                   </span>
                 ))}
               </h1>

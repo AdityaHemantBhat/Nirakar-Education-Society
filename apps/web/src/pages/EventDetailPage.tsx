@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
@@ -16,255 +17,102 @@ import {
   ArrowUpRight,
   Printer
 } from 'lucide-react';
-import { getSafeVideoEmbedUrl, CampusEvent, EventPhoto, EventDocument } from '../components/NewsAndEvents.js';
-import { slugify } from '../utils/slugify.js';
-
-const KNOWN_EVENTS: CampusEvent[] = [
-  {
-    id: 'e1',
-    title: 'Annual Inter-School Athletics & Sports Championship 2026',
-    dateStr: 'Wednesday, October 28, 2026',
-    rawStartDate: '2026-10-28T08:30:00',
-    rawEndDate: '2026-10-28T17:00:00',
-    day: '28',
-    month: 'OCT',
-    year: '2026',
-    weekday: 'Wednesday',
-    time: '08:30 AM – 05:00 PM',
-    location: 'Mashem Central Sports Pavilion & Athletics Field, Canacona',
-    campus: 'Shri Nirakar High School, Mashem',
-    institutionCode: 'NIRAKAR_HS',
-    category: 'Athletics & Sports',
-    coverImage: '/images/sports_champs.jpg',
-    photos: [
-      { url: '/images/sports_champs.jpg', caption: 'Volleyball state-level championship finals victory ceremony at Mashem pavilion. Photo: Society Sports Archive.', altText: 'Students celebrating volleyball tournament win' },
-      { url: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1600&q=80', caption: '100m sprint heats line-up at the central athletic track. Photo: Campus Chronicle.', altText: 'Runners on track' },
-      { url: 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=1600&q=80', caption: 'Inter-school kabaddi playoff finals between Nirakar HS and Tudal HS.', altText: 'Kabaddi match' },
-      { url: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1600&q=80', caption: 'Annual march-past parade led by the society brass band along the pavilion pavilion.', altText: 'Parade ceremony' }
-    ],
-    documents: [
-      { url: '/documents/athletics_schedule_2026.pdf', title: 'Official Championship Rulebook & Event Schedule 2026', size: '1.8 MB' },
-      { url: '/documents/track_route_map.pdf', title: 'Pavilion Ground Track Layout & Spectator Guidelines', size: '820 KB' }
-    ],
-    videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-    description: `The premier annual sporting spectacle of Shree Nirakar Education Society convenes more than 800 student-athletes across three premier institutions: Shri Nirakar High School (Mashem), Tudal High School (Gaondongrem), and S.S. Angle Higher Secondary School (Dapot).
-
-Field competitions include 100m, 200m, and 400m sprint heats, 4x100m campus relay, high jump, long jump, and shot put. The afternoon session hosts the state-level volleyball championship finals and the inter-school kabaddi championship playoffs.
-
-The proceedings commence with the ceremonial march-past parade inspected by the Chairman, Headmaster, and Directorate of Sports officials. All parents, alumni, and community elders from Mashem, Loliem, Polem, and Gaondongrem are cordially invited to celebrate student sportsmanship.`,
-    isUpcoming: true,
-  },
-  {
-    id: 'e2',
-    title: 'Goa Board Secondary & Higher Secondary Merit Felicitations',
-    dateStr: 'Thursday, November 12, 2026',
-    rawStartDate: '2026-11-12T10:00:00',
-    day: '12',
-    month: 'NOV',
-    year: '2026',
-    weekday: 'Thursday',
-    time: '10:00 AM – 01:30 PM',
-    location: 'Shree Nirakar Memorial Auditorium, Mashem Campus',
-    campus: 'Shri Nirakar High School, Mashem',
-    institutionCode: 'NIRAKAR_HS',
-    category: 'Academic Honor',
-    coverImage: '/images/campuses/nirakar_high_school_mashem.png',
-    photos: [
-      { url: '/images/campuses/nirakar_high_school_mashem.png', caption: 'Shree Nirakar High School historic academic courtyard in Mashem.', altText: 'Mashem campus' },
-      { url: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1600&q=80', caption: 'Honorary gold medal felicitation of Goa Board state distinction holders.', altText: 'Award ceremony' }
-    ],
-    documents: [
-      { url: '/documents/merit_roll_2026.pdf', title: 'Goa Board SSC & HSSC Society Merit Roll 2026', size: '2.1 MB' }
-    ],
-    videoUrl: null,
-    description: `Honoring distinction rankers, subject toppers, and our devoted faculty members who secured 100% pass percentages in the Goa Board of Secondary & Higher Secondary Education examinations.
-
-The ceremony recognizes student excellence across science, arts, commerce, and vocational streams. Special endowments from the Society Founder Trust will be conferred to first-generation rural achievers.`,
-    isUpcoming: true,
-  },
-  {
-    id: 'e3',
-    title: 'Grand Annual Alumni Reunion & Heritage Dialogue Assembly',
-    dateStr: 'Tuesday, December 22, 2026',
-    rawStartDate: '2026-12-22T16:00:00',
-    day: '22',
-    month: 'DEC',
-    year: '2026',
-    weekday: 'Tuesday',
-    time: '04:00 PM – 09:00 PM',
-    location: 'Society Central Open Amphitheater & Lawns, Mashem',
-    campus: 'Society Central, Mashem',
-    institutionCode: 'NIRAKAR_HS',
-    category: 'Alumni Gathering',
-    coverImage: '/images/campuses/ss_angle_higher_secondary_mashem.png',
-    photos: [
-      { url: '/images/campuses/ss_angle_higher_secondary_mashem.png', caption: 'S.S. Angle Higher Secondary campus grounds at sunset.', altText: 'Campus view' },
-      { url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1600&q=80', caption: 'Alumni from classes 1974 through 2025 gathered for heritage dialogue.', altText: 'Alumni reunion' }
-    ],
-    documents: [
-      { url: '/documents/alumni_agenda_2026.pdf', title: '50-Year Alumni Council Charter & Project Allocations', size: '1.4 MB' }
-    ],
-    videoUrl: null,
-    description: `Reconnecting classmates across five decades with authenticated directory verification, student career mentorship pledges, and cultural performances by alumni artists.
-
-The gathering includes an interactive dialogue on school infrastructure expansion, rural scholarship corpus growth, and digital learning initiatives in Canacona.`,
-    isUpcoming: true,
-  },
-  {
-    id: 'e4',
-    title: 'Annual Science, Mathematics & Robotics Taluka Exhibition',
-    dateStr: 'Friday, January 15, 2027',
-    rawStartDate: '2027-01-15T09:30:00',
-    day: '15',
-    month: 'JAN',
-    year: '2027',
-    weekday: 'Friday',
-    time: '09:30 AM – 04:30 PM',
-    location: 'S.S. Angle HSS Science Wings & Laboratories, Dapot',
-    campus: 'S.S. Angle Higher Secondary School, Dapot',
-    institutionCode: 'ANGLE_HSS',
-    category: 'Science & Innovation',
-    coverImage: 'https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=1600&q=80',
-    photos: [
-      { url: 'https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=1600&q=80', caption: 'Student robotics working prototypes demonstrating coastal micro-energy grids.', altText: 'Robotics exhibit' }
-    ],
-    documents: [
-      { url: '/documents/science_fair_guidelines.pdf', title: 'Exhibition Project Guidelines & Evaluation Rubric', size: '1.2 MB' }
-    ],
-    videoUrl: null,
-    description: `Showcasing 60+ interactive working models created by secondary and higher secondary students on coastal renewable energy, organic agro-science, and physics experiments.`,
-    isUpcoming: true,
-  },
-  {
-    id: 'e5',
-    title: 'All-Goa Inter-Collegiate Fugdi, Dhalo & Natak Folk Festival',
-    dateStr: 'Saturday, February 06, 2027',
-    rawStartDate: '2027-02-06T15:00:00',
-    day: '06',
-    month: 'FEB',
-    year: '2027',
-    weekday: 'Saturday',
-    time: '03:00 PM – 09:30 PM',
-    location: 'Tudal High School Open Air Cultural Grounds, Gaondongrem',
-    campus: 'Tudal High School, Gaondongrem',
-    institutionCode: 'TUDAL_HS',
-    category: 'Cultural Festival',
-    coverImage: '/images/campuses/tudal_high_school_gaodongrem.png',
-    photos: [
-      { url: '/images/campuses/tudal_high_school_gaodongrem.png', caption: 'Tudal High School nestled in the Western Ghats foothills.', altText: 'Tudal school campus' }
-    ],
-    documents: [
-      { url: '/documents/cultural_guidelines.pdf', title: 'Folk Dance Protocols & Judging Criteria', size: '940 KB' }
-    ],
-    videoUrl: null,
-    description: `Celebrating authentic Goan rural heritage with traditional Fugdi, Dhalo, and Konkani one-act natak presentations performed by student troupes across South Goa.`,
-    isUpcoming: true,
-  },
-  {
-    id: 'e6',
-    title: 'Directorate of Sports Goa State Volleyball Championship',
-    dateStr: 'Tuesday, March 10, 2027',
-    rawStartDate: '2027-03-10T08:00:00',
-    day: '10',
-    month: 'MAR',
-    year: '2027',
-    weekday: 'Tuesday',
-    time: '08:00 AM – 06:00 PM',
-    location: 'Mashem Central Sports Pavilion & Floodlit Court',
-    campus: 'Society Central, Mashem',
-    institutionCode: 'NIRAKAR_HS',
-    category: 'Athletics & Sports',
-    coverImage: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?auto=format&fit=crop&w=1600&q=80',
-    photos: [
-      { url: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?auto=format&fit=crop&w=1600&q=80', caption: 'State volleyball tournament quarterfinal match in progress.', altText: 'Volleyball match' }
-    ],
-    documents: [
-      { url: '/documents/volleyball_brackets.pdf', title: 'Official Tournament Fixtures & Match Pools', size: '1.1 MB' }
-    ],
-    videoUrl: null,
-    description: `Inter-district volleyball championship organized under the aegis of Directorate of Sports and Youth Affairs, Goa with top schools competing at Mashem.`,
-    isUpcoming: true,
-  }
-];
+import { getSafeVideoEmbedUrl, CampusEvent } from '../components/NewsAndEvents.js';
+import { fetchEvent, fetchEventComments, submitEventComment, type EventComment } from '../lib/content.js';
+import { useAuthCaptcha, AuthCaptchaNotice } from '../components/AuthCaptcha.js';
 
 export const EventDetailPage: React.FC = () => {
   const { slug, id } = useParams<{ slug?: string; id?: string }>();
   const routeParam = slug || id || '';
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   const [copiedShare, setCopiedShare] = useState(false);
+  const [commentForm, setCommentForm] = useState({ authorName: '', place: '', email: '', content: '' });
+  const [commentMessage, setCommentMessage] = useState('');
+  const [commentError, setCommentError] = useState('');
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const executeCaptcha = useAuthCaptcha();
+  const queryClient = useQueryClient();
 
-  // Fetch event by slug or ID from API
-  const { data: apiData } = useQuery({
+  /* The gathering itself, read from the registry. There is no second,
+     hand-written copy to fall back on: if the registry has no such
+     gathering, the page says so rather than showing something else in
+     its place. */
+  const { data: event, isLoading } = useQuery<CampusEvent | null>({
     queryKey: ['event', routeParam],
-    queryFn: async () => {
-      try {
-        const res = await fetch(`/api/content/events/${routeParam}`);
-        if (!res.ok) return null;
-        const json = await res.json();
-        return json?.data || null;
-      } catch {
-        return null;
-      }
-    },
+    queryFn: () => fetchEvent(routeParam),
+    enabled: Boolean(routeParam),
     staleTime: 60 * 1000,
   });
 
-  // Resolve matching event by slug, title slug, or ID
-  const event: CampusEvent = useMemo(() => {
-    if (apiData) {
-      let photos: EventPhoto[] = [];
-      if (Array.isArray(apiData.photos)) photos = apiData.photos;
-      else if (typeof apiData.photos === 'string') {
-        try { photos = JSON.parse(apiData.photos); } catch {}
-      }
+  const { data: comments = [] } = useQuery<EventComment[]>({
+    queryKey: ['event_comments', event?.id],
+    queryFn: () => fetchEventComments(event!.id),
+    enabled: Boolean(event?.id),
+    staleTime: 30 * 1000,
+  });
 
-      let documents: EventDocument[] = [];
-      if (Array.isArray(apiData.documents)) documents = apiData.documents;
-      else if (typeof apiData.documents === 'string') {
-        try { documents = JSON.parse(apiData.documents); } catch {}
-      }
-
-      const cover = apiData.coverUrl || apiData.image || photos[0]?.url || '/images/sports_champs.jpg';
-      if (photos.length === 0 && cover) {
-        photos = [{ url: cover, caption: `${apiData.title}. Photo: Society Archives.`, altText: apiData.title }];
-      }
-
-      return {
-        id: String(apiData.id),
-        title: apiData.title,
-        dateStr: apiData.startDate ? new Date(apiData.startDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'Wednesday, October 28, 2026',
-        rawStartDate: apiData.startDate,
-        rawEndDate: apiData.endDate,
-        day: apiData.startDate ? String(new Date(apiData.startDate).getDate()).padStart(2, '0') : '28',
-        month: apiData.startDate ? new Date(apiData.startDate).toLocaleString('en-US', { month: 'short' }).toUpperCase() : 'OCT',
-        year: apiData.startDate ? String(new Date(apiData.startDate).getFullYear()) : '2026',
-        weekday: apiData.startDate ? new Date(apiData.startDate).toLocaleDateString('en-US', { weekday: 'long' }) : 'Wednesday',
-        time: '08:30 AM – 05:00 PM',
-        location: apiData.location || 'Mashem Central Sports Pavilion & Athletics Field, Canacona',
-        campus: apiData.institutionCode === 'NIRAKAR_HS' ? 'Shri Nirakar High School, Mashem' : apiData.institutionCode === 'TUDAL_HS' ? 'Tudal High School, Gaondongrem' : apiData.institutionCode === 'ANGLE_HSS' ? 'S. S. Angle Higher Secondary School, Dapot' : 'Society Central, Mashem',
-        institutionCode: apiData.institutionCode || '',
-        category: apiData.category || 'Athletics & Sports',
-        coverImage: cover,
-        photos,
-        documents,
-        videoUrl: apiData.videoUrl || null,
-        pdfUrl: apiData.pdfUrl || (documents[0]?.url) || null,
-        description: apiData.description || 'Official campus gathering convened by Shree Nirakar Education Society.',
-        isUpcoming: apiData.isUpcoming ?? true,
-      };
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCommentError('');
+    setCommentMessage('');
+    setIsSubmittingComment(true);
+    try {
+      const captchaToken = await executeCaptcha('event_comment');
+      await submitEventComment({ eventId: event?.id || routeParam, ...commentForm, captchaToken });
+      setCommentForm({ authorName: '', place: '', email: '', content: '' });
+      setCommentMessage('Your comment has been published.');
+      await queryClient.invalidateQueries({ queryKey: ['event_comments', event?.id] });
+    } catch (error) {
+      setCommentError(error instanceof Error ? error.message : 'Could not publish your comment.');
+    } finally {
+      setIsSubmittingComment(false);
     }
+  };
 
-    if (routeParam) {
-      const match = KNOWN_EVENTS.find(
-        (e) => slugify(e.title) === routeParam || e.id === routeParam || routeParam.includes(e.id)
-      );
-      if (match) return match;
-    }
+  if (isLoading) {
+    return (
+      <div className="w-full min-h-screen bg-[#FDFBF7] text-stone-900 font-sans flex flex-col">
+        <Navbar />
+        <div className="flex min-h-[60vh] flex-1 flex-col items-center justify-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#0b132b] border-t-transparent" />
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-stone-500">
+            Opening the gathering
+          </p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
-    return KNOWN_EVENTS[0];
-  }, [apiData, routeParam]);
+  if (!event) {
+    return (
+      <div className="w-full min-h-screen bg-[#FDFBF7] text-stone-900 font-sans flex flex-col">
+        <Helmet>
+          <title>Gathering not found | Shri Nirakar Education Society</title>
+        </Helmet>
+        <Navbar />
+        <div className="flex min-h-[60vh] flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+          <FileText size={30} className="text-stone-300" />
+          <h1 className="font-serif text-2xl font-bold text-stone-800">Gathering not found</h1>
+          <p className="max-w-sm text-sm text-stone-500">
+            This gathering is not in the calendar. It may have been withdrawn, or the
+            address may be mistyped.
+          </p>
+          <Link
+            to="/events"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#0b132b] px-5 py-3 text-xs font-bold text-white transition hover:bg-stone-800"
+          >
+            <ArrowLeft size={14} />
+            Back to the calendar
+          </Link>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   const handleShare = async () => {
+    if (!event) return;
     const shareData = {
       title: event.title,
       text: `${event.title} • ${event.dateStr} at ${event.location}`,
@@ -311,7 +159,7 @@ export const EventDetailPage: React.FC = () => {
   return (
     <div className="w-full min-h-screen bg-[#FDFBF7] text-stone-900 font-sans selection:bg-amber-200 selection:text-stone-900">
       <Helmet>
-        <title>{`${event.title} | Shree Nirakar Education Society`}</title>
+        <title>{`${event.title} | Shri Nirakar Education Society`}</title>
         <meta name="description" content={event.description.slice(0, 160)} />
       </Helmet>
 
@@ -345,12 +193,12 @@ export const EventDetailPage: React.FC = () => {
         <header className="space-y-4">
           
           {/* Understated Editorial Kicker */}
-          <div className="text-xs sm:text-[13px] font-mono tracking-widest uppercase text-stone-500 font-semibold flex items-center gap-2">
-            <span>{event.campus}</span>
-            <span className="text-stone-300">•</span>
-            <span className="text-amber-800">{event.category}</span>
-            <span className="text-stone-300">•</span>
-            <span>{event.isUpcoming ? 'Scheduled Gathering' : 'Past Archive'}</span>
+          <div className="text-xs sm:text-[13px] font-mono tracking-widest uppercase text-stone-500 font-semibold flex flex-wrap items-center gap-x-2.5 gap-y-1.5 leading-relaxed">
+            <span className="shrink-0">{event.campus}</span>
+            <span className="text-stone-300 select-none">•</span>
+            <span className="text-amber-800 shrink-0">{event.category}</span>
+            <span className="text-stone-300 select-none">•</span>
+            <span className="shrink-0">{event.isUpcoming ? 'Scheduled Gathering' : 'Past Archive'}</span>
           </div>
 
           {/* Grand Editorial Serif Title */}
@@ -530,6 +378,56 @@ export const EventDetailPage: React.FC = () => {
               </div>
             )}
 
+            {/* Public discussion */}
+            <section className="space-y-6 pt-8 border-t border-stone-200" aria-labelledby="event-comments-heading">
+              <div>
+                <h2 id="event-comments-heading" className="font-serif text-2xl font-bold text-[#0b132b]">Discussion</h2>
+                <p className="mt-1 text-sm text-stone-500">Share a thoughtful note about this gathering.</p>
+              </div>
+
+              <div className="space-y-4">
+                {comments.length === 0 ? (
+                  <p className="text-sm text-stone-500">No comments yet. Be the first to join the discussion.</p>
+                ) : comments.map((comment) => (
+                  <article key={comment.id} className="rounded-xl border border-stone-200 bg-white p-4">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <p className="font-semibold text-stone-900">{comment.authorName}{comment.place ? ` · ${comment.place}` : ''}</p>
+                      <time className="text-xs text-stone-400" dateTime={comment.createdAt}>{new Date(comment.createdAt).toLocaleDateString()}</time>
+                    </div>
+                    <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-stone-700">{comment.content}</p>
+                  </article>
+                ))}
+              </div>
+
+              <form onSubmit={handleCommentSubmit} className="space-y-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {(['authorName', 'place', 'email'] as const).map((field) => (
+                    <label key={field} className={field === 'email' ? 'sm:col-span-2' : ''}>
+                      <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-stone-500">{field === 'authorName' ? 'Name' : field === 'place' ? 'Place' : 'Email'}</span>
+                      <input
+                        required={field !== 'place'}
+                        type={field === 'email' ? 'email' : 'text'}
+                        value={commentForm[field]}
+                        onChange={(e) => setCommentForm((current) => ({ ...current, [field]: e.target.value }))}
+                        maxLength={field === 'authorName' ? 120 : field === 'place' ? 120 : 254}
+                        className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-[#0b132b]"
+                      />
+                    </label>
+                  ))}
+                </div>
+                <label className="block">
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-stone-500">Comment</span>
+                  <textarea required minLength={3} maxLength={1000} rows={4} value={commentForm.content} onChange={(e) => setCommentForm((current) => ({ ...current, content: e.target.value }))} className="w-full resize-y rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-[#0b132b]" />
+                </label>
+                {commentError && <p className="text-sm text-rose-700" role="alert">{commentError}</p>}
+                {commentMessage && <p className="text-sm text-emerald-700" role="status">{commentMessage}</p>}
+                <AuthCaptchaNotice className="justify-start" />
+                <button type="submit" disabled={isSubmittingComment} className="rounded-lg bg-[#0b132b] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#16247e] disabled:cursor-not-allowed disabled:opacity-50">
+                  {isSubmittingComment ? 'Publishing…' : 'Publish comment'}
+                </button>
+              </form>
+            </section>
+
             {/* Back link */}
             <div className="pt-8 border-t border-stone-200">
               <Link
@@ -571,7 +469,7 @@ export const EventDetailPage: React.FC = () => {
                 <div>
                   <dt className="text-xs font-mono uppercase tracking-wider text-stone-400">Organised By</dt>
                   <dd className="text-xs font-medium text-stone-700 mt-0.5">
-                    Shree Nirakar Education Society Central Office, Mashem, Canacona
+                    Shri Nirakar Education Society Central Office, Mashem, Canacona
                   </dd>
                 </div>
 

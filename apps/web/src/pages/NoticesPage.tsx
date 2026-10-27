@@ -2,118 +2,23 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
-import { slugify } from '../utils/slugify.js';
-import { decodeNoticeMeta } from '../utils/noticeMeta.js';
+import { contentSlug } from '@nirakar/shared';
+import { fetchNotices } from '../lib/content.js';
+import type { NoticeItem } from '../components/NewsAndEvents.js';
 import { Navbar } from '../components/Navbar.js';
 import { SectionEdge } from '../components/SectionEdge.js';
 import { HeroWaves } from '../components/HeroWaves.js';
 import { Footer } from '../components/Footer.js';
 import { CustomSelect } from '../components/CustomSelect.js';
-import { 
-  FileText, 
-  Download, 
-  Calendar, 
-  Search, 
-  Filter, 
-  ShieldCheck, 
-  X, 
-  Printer, 
+import {
+  FileText,
+  Download,
+  Search,
+  X,
   ChevronRight,
   ChevronLeft,
-  ExternalLink,
-  Building2,
   AlertCircle,
-  Clock,
-  Sparkles,
-  ArrowRight
 } from 'lucide-react';
-
-const ALL_ARCHIVE_NOTICES = [
-  {
-    id: 'n1',
-    refNo: 'NIRAKAR/HS/CIR/0114',
-    title: 'Goa Board SSC Examination Form Submission & Document Verification',
-    date: '2026-10-18',
-    target: 'Shri Nirakar High School • Mashem',
-    campusCode: 'NIRAKAR_HS',
-    type: 'exam',
-    urgent: true,
-    fileSize: '1.4 MB',
-    pdfUrl: '/documents/ssc_form_notice_2026.pdf',
-    description: 'Mandatory submission of birth certificates, Aadhaar verification, and photograph endorsement for March 2027 Goa Board examinations. Please report to the central administrative counter by Oct 30.',
-    tapeColor: 'amber' as const,
-  },
-  {
-    id: 'n2',
-    refNo: 'ANGLE/HSS/CIR/0092',
-    title: 'Enrollment Open: S.S. Angle Higher Secondary (Science, Commerce & Arts)',
-    date: '2026-10-15',
-    target: 'S. S. Angle Higher Secondary School • Dapot',
-    campusCode: 'ANGLE_HSS',
-    type: 'admission',
-    urgent: true,
-    fileSize: '2.8 MB',
-    pdfUrl: '/documents/angle_prospectus_2026.pdf',
-    description: 'Prospectus, subject combination counseling, and integrated NEET/IIT-JEE foundation coaching enrollments available at the administrative block counter. Merit scholarships applicable.',
-    tapeColor: 'sage' as const,
-  },
-  {
-    id: 'n3',
-    refNo: 'TUDAL/HS/CIR/0078',
-    title: 'State Government Tribal & Rural Student Scholarship Disbursal 2026',
-    date: '2026-10-10',
-    target: 'Tudal High School • Gaondongrem',
-    campusCode: 'TUDAL_HS',
-    type: 'scholarship',
-    urgent: false,
-    fileSize: '950 KB',
-    pdfUrl: '/documents/tribal_scholarship_list.pdf',
-    description: 'Direct Benefit Transfer (DBT) verification for Goa Social Welfare tribal scholarship beneficiaries. Bank passbook validation and Aadhaar linkage required by end of month.',
-    tapeColor: 'lavender' as const,
-  },
-  {
-    id: 'n4',
-    refNo: 'SNES/CIR/0065',
-    title: 'First Term Examination Schedule for Secondary Standards (Std VIII–X)',
-    date: '2026-10-04',
-    target: 'All Society Campuses',
-    campusCode: 'ALL',
-    type: 'exam',
-    urgent: false,
-    fileSize: '1.1 MB',
-    pdfUrl: '/documents/first_term_timetable.pdf',
-    description: 'Detailed subject timetable, laboratory practical dates, and internal assessment guidelines published on central school boards and parent-teacher portal.',
-    tapeColor: 'amber' as const,
-  },
-  {
-    id: 'n5',
-    refNo: 'TUDAL/HS/CIR/0054',
-    title: 'Selection Trials for Directorate of Sports Goa State Volleyball Meet',
-    date: '2026-09-25',
-    target: 'Tudal High School • Gaondongrem',
-    campusCode: 'TUDAL_HS',
-    type: 'circular',
-    urgent: false,
-    fileSize: '780 KB',
-    pdfUrl: null,
-    description: 'Under-17 and Under-19 boys and girls volleyball trials scheduled at Tudal pavilion ground under supervision of physical education faculty.',
-    tapeColor: 'rose' as const,
-  },
-  {
-    id: 'n6',
-    refNo: 'SNES/CIR/0048',
-    title: 'National Cadet Corps (NCC) Navy & Army Wing Annual Enlistment',
-    date: '2026-09-12',
-    target: 'Shri Nirakar High School • Mashem',
-    campusCode: 'NIRAKAR_HS',
-    type: 'circular',
-    urgent: false,
-    fileSize: '1.6 MB',
-    pdfUrl: '/documents/ncc_enlistment.pdf',
-    description: 'Cadet enlistment drive for Class VIII and IX students with parade drills, camps at Naval Base Karwar, and B/C Certificate bonus points for higher education.',
-    tapeColor: 'sage' as const,
-  }
-];
 
 export const NoticesPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -124,96 +29,33 @@ export const NoticesPage: React.FC = () => {
   const ITEMS_PER_PAGE = 8;
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Fetch live notices from database API
-  const { data: apiNotices = [] } = useQuery<any[]>({
+  /* The circulars, exactly as the registry holds them. There is no
+     hand-written copy behind them, so what an administrator publishes is
+     what the board shows — and nothing else. */
+  const { data: notices = [] } = useQuery<NoticeItem[]>({
     queryKey: ['public_notices'],
-    queryFn: async () => {
-      try {
-        const res = await fetch('/api/v1/content/notices');
-        if (!res.ok) return [];
-        const json = await res.json();
-        return json.data || [];
-      } catch {
-        return [];
-      }
-    },
+    queryFn: fetchNotices,
     staleTime: 60 * 1000,
   });
 
-  // Combine dynamic API notices and archive notices
   const combinedNotices = useMemo(() => {
-    const formattedApi = apiNotices.map((n: any, idx: number) => {
-      let target = 'All Society Campuses';
-      let campusCode = 'ALL';
-      if (n.institutionCode === 'NIRAKAR_HS') {
-        target = 'Shri Nirakar High School • Mashem';
-        campusCode = 'NIRAKAR_HS';
-      } else if (n.institutionCode === 'TUDAL_HS') {
-        target = 'Tudal High School • Gaondongrem';
-        campusCode = 'TUDAL_HS';
-      } else if (n.institutionCode === 'ANGLE_HSS') {
-        target = 'S. S. Angle Higher Secondary School • Dapot';
-        campusCode = 'ANGLE_HSS';
-      }
-
-      let type: 'exam' | 'admission' | 'scholarship' | 'circular' = 'circular';
-      const tLower = (n.title || '').toLowerCase();
-      if (tLower.includes('exam') || tLower.includes('board') || tLower.includes('timetable') || tLower.includes('form') || tLower.includes('ssc') || tLower.includes('hssc')) {
-        type = 'exam';
-      } else if (tLower.includes('admission') || tLower.includes('enrollment') || tLower.includes('prospectus')) {
-        type = 'admission';
-      } else if (tLower.includes('scholarship') || tLower.includes('tribal') || tLower.includes('dbt') || tLower.includes('grant')) {
-        type = 'scholarship';
-      }
-
-      const decoded = decodeNoticeMeta(n.content);
-      const customRef = decoded.refNo || n.refNo;
-      const refNo = customRef && customRef.trim().length > 0
-        ? customRef.trim()
-        : n.institutionCode
-          ? `${n.institutionCode.replace('_', '/')}/CIR/${String(n.id).slice(-4).toUpperCase()}`
-          : `SNES/CIR/${String(n.id).slice(-4).toUpperCase()}`;
-
-      return {
-        id: String(n.id),
-        refNo,
-        title: n.title,
-        date: n.date || new Date().toISOString().split('T')[0],
-        target,
-        campusCode,
-        type,
-        urgent: n.urgent !== undefined ? Boolean(n.urgent) : decoded.urgent,
-        pinned: Boolean(n.pinned),
-        fileSize: n.pdfUrl ? 'Official PDF' : 'Circular',
-        pdfUrl: n.pdfUrl || null,
-        description: decoded.content || n.content || 'Authenticated circular issued by Shree Nirakar Education Society.',
-      };
-    });
-
-    if (formattedApi.length === 0) {
-      return ALL_ARCHIVE_NOTICES;
-    }
-
-    const apiTitles = new Set(formattedApi.map((a: any) => a.title.toLowerCase().trim()));
-    const remainingMock = ALL_ARCHIVE_NOTICES.filter(
-      (m) => !apiTitles.has(m.title.toLowerCase().trim())
-    );
-
-    return [...formattedApi, ...remainingMock].sort((a: any, b: any) => {
+    return [...notices].sort((a, b) => {
       if (a.pinned && !b.pinned) return -1;
       if (!a.pinned && b.pinned) return 1;
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     });
-  }, [apiNotices]);
+  }, [notices]);
 
   const filtered = useMemo(() => {
-    return combinedNotices.filter((n: any) => {
+    return combinedNotices.filter((n) => {
       const matchesType = filter === 'all' || n.type === filter;
-      const matchesCampus = campusFilter === 'all' || n.campusCode === campusFilter || n.campusCode === 'ALL';
+      const matchesCampus =
+        campusFilter === 'all' || n.institutionCode === campusFilter;
       const q = search.toLowerCase().trim();
-      const matchesSearch = !q || 
-        n.title.toLowerCase().includes(q) || 
-        n.description.toLowerCase().includes(q) || 
+      const matchesSearch =
+        !q ||
+        n.title.toLowerCase().includes(q) ||
+        n.description.toLowerCase().includes(q) ||
         n.refNo.toLowerCase().includes(q) ||
         n.target.toLowerCase().includes(q);
       return matchesType && matchesCampus && matchesSearch;
@@ -240,15 +82,15 @@ export const NoticesPage: React.FC = () => {
     }
   };
 
-  // Extract top urgent directive if available
+  // The directive that asks for action, if there is one.
   const priorityNotice = useMemo(() => {
-    return combinedNotices.find((n: any) => n.urgent);
+    return combinedNotices.find((n) => n.urgent);
   }, [combinedNotices]);
 
   return (
     <div className="w-full min-h-screen bg-[#FAF8F5] text-stone-900 flex flex-col font-sans">
       <Helmet>
-        <title>Official Notices & Central Gazette | Shree Nirakar Education Society</title>
+        <title>Official Notices & Central Gazette | Shri Nirakar Education Society</title>
         <meta name="description" content="Official repository of authenticated examination schedules, admissions circulars, and administrative orders." />
       </Helmet>
 
@@ -267,7 +109,7 @@ export const NoticesPage: React.FC = () => {
             Central Administrative Gazette & Notices Archive
           </h1>
           <p className="text-stone-300 text-sm sm:text-base max-w-3xl leading-relaxed">
-            The authenticated digital registry of board examinations, admission protocols, government scholarships, and official memoranda issued by Shree Nirakar Education Society.
+            The authenticated digital registry of board examinations, admission protocols, government scholarships, and official memoranda issued by Shri Nirakar Education Society.
           </p>
         </div>
       </div>
@@ -294,7 +136,7 @@ export const NoticesPage: React.FC = () => {
                 </span>
               </div>
               <h2 className="font-serif text-base sm:text-xl font-bold tracking-tight text-white hover:text-amber-200 transition-colors">
-                <Link to={`/notices/${slugify(priorityNotice.title)}`} className="text-white hover:text-amber-200">
+                <Link to={`/notices/${contentSlug(priorityNotice.title)}`} className="text-white hover:text-amber-200">
                   {priorityNotice.title}
                 </Link>
               </h2>
@@ -305,7 +147,7 @@ export const NoticesPage: React.FC = () => {
 
             <div className="flex items-center gap-2 shrink-0 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-white/10">
               <Link
-                to={`/notices/${slugify(priorityNotice.title)}`}
+                to={`/notices/${contentSlug(priorityNotice.title)}`}
                 className="flex-1 md:flex-initial text-center px-4 py-2 bg-amber-400 hover:bg-amber-300 text-[#0b132b] text-xs font-serif font-bold rounded-xl shadow-xs transition-colors"
               >
                 Read Directive
@@ -373,10 +215,10 @@ export const NoticesPage: React.FC = () => {
           <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 border-t border-stone-100 scrollbar-none">
             {[
               { key: 'all', label: 'All Notices', count: combinedNotices.length },
-              { key: 'exam', label: 'Board Exams', count: combinedNotices.filter((n: any) => n.type === 'exam').length },
-              { key: 'admission', label: 'Admissions', count: combinedNotices.filter((n: any) => n.type === 'admission').length },
-              { key: 'scholarship', label: 'Scholarships', count: combinedNotices.filter((n: any) => n.type === 'scholarship').length },
-              { key: 'circular', label: 'Circulars & Sports', count: combinedNotices.filter((n: any) => n.type === 'circular').length },
+              { key: 'exam', label: 'Board Exams', count: combinedNotices.filter((n) => n.type === 'exam').length },
+              { key: 'admission', label: 'Admissions', count: combinedNotices.filter((n) => n.type === 'admission').length },
+              { key: 'scholarship', label: 'Scholarships', count: combinedNotices.filter((n) => n.type === 'scholarship').length },
+              { key: 'circular', label: 'Circulars & Sports', count: combinedNotices.filter((n) => n.type === 'circular').length },
             ].map((tab) => {
               const isSelected = filter === tab.key;
               return (
@@ -427,7 +269,7 @@ export const NoticesPage: React.FC = () => {
         {/* NOTICES LIST - HEAVENLY MINIMAL GAZETTE STREAM (Ultra-clean, zero lag on 2GB RAM) */}
         {paginatedNotices.length > 0 ? (
           <div className="space-y-3.5">
-            {paginatedNotices.map((item: any) => (
+            {paginatedNotices.map((item) => (
               <div
                 key={item.id}
                 className="bg-white rounded-2xl p-5 sm:p-6 border border-stone-200/90 hover:border-amber-400 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 group"
@@ -435,13 +277,13 @@ export const NoticesPage: React.FC = () => {
                 {/* Left Date Ribbon */}
                 <div className="shrink-0 flex md:flex-col items-center justify-center bg-stone-50 group-hover:bg-amber-50/60 border border-stone-200/80 rounded-xl px-3 py-2 text-center min-w-[76px] transition-colors gap-1.5 md:gap-0">
                   <span className="font-mono text-base sm:text-lg font-black text-stone-900">
-                    {item.date.split('-')[2] || '18'}
+                    {item.date.split('-')[2] || ''}
                   </span>
                   <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-amber-800">
                     {new Date(item.date).toLocaleString('en-US', { month: 'short' }).toUpperCase()}
                   </span>
                   <span className="font-mono text-[9px] text-stone-400 hidden md:block">
-                    {item.date.split('-')[0] || '2026'}
+                    {item.date.split('-')[0] || ''}
                   </span>
                 </div>
 
@@ -483,8 +325,8 @@ export const NoticesPage: React.FC = () => {
                     </span>
                   </div>
 
-                  <Link 
-                    to={`/notices/${slugify(item.title)}`}
+                  <Link
+                    to={`/notices/${contentSlug(item.title)}`}
                     className="font-serif text-base sm:text-lg font-bold text-stone-900 group-hover:text-[#0b132b] transition-colors line-clamp-1 block no-underline"
                   >
                     {item.title}
@@ -498,7 +340,7 @@ export const NoticesPage: React.FC = () => {
                 {/* Right Action Buttons */}
                 <div className="shrink-0 flex items-center gap-2 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-stone-100 justify-end">
                   <Link
-                    to={`/notices/${slugify(item.title)}`}
+                    to={`/notices/${contentSlug(item.title)}`}
                     className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl text-xs font-serif font-bold text-stone-700 hover:text-white bg-stone-100 hover:bg-[#0b132b] transition-colors cursor-pointer"
                   >
                     <span>Read Circular</span>

@@ -1,16 +1,18 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { io, Socket } from 'socket.io-client';
+import { socketOrigin } from '../lib/api.js';
 
 let socketInstance: Socket | null = null;
 
 function getSocket(): Socket {
   if (!socketInstance) {
-    socketInstance = io({
+    socketInstance = io(socketOrigin(), {
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: 15,
       reconnectionDelay: 1500,
+      withCredentials: true,
     });
   }
   return socketInstance;

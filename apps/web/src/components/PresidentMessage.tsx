@@ -12,7 +12,7 @@ export const PresidentMessage: React.FC = () => {
               <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-full overflow-hidden border-4 border-brand-100 shadow-xl">
                 <img
                   src="https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80"
-                  alt="President, Shree Nirakar Education Society"
+                  alt="President, Shri Nirakar Education Society"
                   className="w-full h-full object-cover object-top"
                 />
               </div>
@@ -24,7 +24,7 @@ export const PresidentMessage: React.FC = () => {
             <div className="mt-6">
               <h3 className="font-serif text-xl font-bold text-ink">From the President’s Desk</h3>
               <p className="text-xs font-semibold text-accent-700 tracking-wider uppercase mt-1">
-                Shree Nirakar Education Society
+                Shri Nirakar Education Society
               </p>
               <p className="text-[11px] text-stone-500 font-sans mt-0.5">
                 Mashem, Canacona, South Goa

@@ -3,7 +3,7 @@ import { extractClassicalKeywords, extractExtractiveExcerpt } from '../lib/pdf.j
 
 describe('Deterministic Classical PDF Text & Keyword Analytics', () => {
   const sampleArticleText = `
-    Shree Nirakar Education Society celebrated its annual founders day in Mashem Canacona.
+    Shri Nirakar Education Society celebrated its annual founders day in Mashem Canacona.
     The ceremony witnessed outstanding academic distinctions awarded to SSC and HSSC merit rankers.
     Distinguished alumni highlighted the importance of mathematics and scientific research in rural Goa.
     The governing committee announced new laboratory facilities and scholarship endowments for deserving students.
@@ -22,6 +22,6 @@ describe('Deterministic Classical PDF Text & Keyword Analytics', () => {
     const excerpt = extractExtractiveExcerpt(sampleArticleText, 150);
     expect(excerpt).toBeTypeOf('string');
     expect(excerpt.length).toBeLessThanOrEqual(160);
-    expect(excerpt).toContain('Shree Nirakar Education Society');
+    expect(excerpt).toContain('Shri Nirakar Education Society');
   });
 });

@@ -20,7 +20,7 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ): void {
-  logger.error(err, 'Unhandled error or AppError in request pipeline');
+  logger.error({ err }, 'Unhandled error in request pipeline');
 
   if (err instanceof AppError) {
     res.status(err.statusCode).json({
@@ -51,9 +51,7 @@ export function errorHandler(
   res.status(500).json({
     error: {
       code: 'INTERNAL_SERVER_ERROR',
-      message: err.message || 'An internal server error occurred',
-      stack: err.stack,
+      message: 'An internal server error occurred',
     },
   });
 }
-

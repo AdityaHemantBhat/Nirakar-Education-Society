@@ -8,6 +8,7 @@ import {
   updateApplicationStatusSchema,
 } from './admissions.validator.js';
 import { generateAdmissionApplicationPdf } from './admissions.pdf.js';
+import { PRIVATE_STORAGE_PATH } from '../../config/index.js';
 
 export class AdmissionsController {
   constructor(private service = new AdmissionsService()) {}
@@ -38,7 +39,7 @@ export class AdmissionsController {
   submitApplication = async (req: Request, res: Response) => {
     try {
       const parsed = submitAdmissionSchema.parse(req.body);
-      const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '';
+       const ip = req.ip || req.socket.remoteAddress || '';
       const application = await this.service.createApplication(parsed, ip);
 
       return res.status(201).json({
@@ -93,7 +94,7 @@ export class AdmissionsController {
       let photoBuffer: Buffer | null = null;
       let signatureBuffer: Buffer | null = null;
 
-      const admissionsUploadsDir = path.resolve('./uploads/admissions');
+       const admissionsUploadsDir = path.resolve(PRIVATE_STORAGE_PATH, 'admissions');
       const photoPath = path.join(admissionsUploadsDir, `${app.id}_photo.jpg`);
       const sigPath = path.join(admissionsUploadsDir, `${app.id}_signature.png`);
 
@@ -120,6 +121,21 @@ export class AdmissionsController {
     } catch (err: any) {
       console.error('[AdmissionsController.downloadPdf]', err);
       return res.status(404).json({ success: false, error: 'Failed to generate application PDF' });
+    }
+  };
+
+  downloadMedia = async (req: Request, res: Response) => {
+    try {
+      const media = await this.service.getApplicationMedia(req.params.id, req.params.kind);
+      res.set({
+        'Cache-Control': 'private, no-store',
+        'X-Content-Type-Options': 'nosniff',
+        'Content-Type': media.mimeType,
+        'Content-Disposition': `inline; filename="${media.filename}"`,
+      });
+      return res.sendFile(media.path);
+    } catch {
+      return res.status(404).json({ success: false, error: 'Application media not found' });
     }
   };
 

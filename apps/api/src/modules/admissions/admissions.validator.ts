@@ -78,6 +78,7 @@ export const updateAdmissionConfigSchema = z.object({
   isOpen: z.boolean(),
   academicYear: z.string().min(4, 'Academic year is required (e.g. 2026–2027)').max(25),
   announcementText: z.string().max(500).optional().nullable(),
+  announcementVisible: z.boolean().optional(),
   guidelinesUrl: z.string().max(300).optional().nullable(),
 });
 

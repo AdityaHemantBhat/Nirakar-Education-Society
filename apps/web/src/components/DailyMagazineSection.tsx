@@ -88,40 +88,14 @@ export const DailyMagazineSection: React.FC<DailyMagazineSectionProps> = ({ issu
   const coverImage = issue?.coverUrl || issue?.coverImage || '/images/nirakar_daily_magazine_cover.jpg';
   const magazineUrl = `/magazine/${issue?.id || 'today'}`;
 
-  // Authentic student & classroom stories (dynamically combined with any articles uploaded by admin)
-  const defaultDispatches = [
-    {
-      category: 'Assembly & Innovation',
-      title: 'Secondary Students Present Experiential Science Projects at Mashem Campus',
-      pageNo: 'Page 03',
-      snippet: 'Class IX and X scholars present hands-on experiments in energy conservation and water testing in the laboratory.',
-      readingTime: '3 min read',
-    },
-    {
-      category: 'Student Literature',
-      title: 'Sahyadri Reflections: Original Student Poems & Goan Folklore',
-      pageNo: 'Page 07',
-      snippet: 'Selected literary works written by our secondary students celebrating local heritage, village life, and monsoon rivers.',
-      readingTime: '4 min read',
-    },
-    {
-      category: 'Sports & Circulars',
-      title: 'Inter-House Volleyball Tournament Schedule & SSC Practical Timetable',
-      pageNo: 'Page 12',
-      snippet: 'Daily morning practice times on the school ground, morning assembly notices, and academic mentorship hours.',
-      readingTime: '2 min read',
-    },
-  ];
-
-  const stories = issue?.articles && issue.articles.length > 0 
-    ? issue.articles.map((a, idx) => ({
-        category: a.category || 'Classroom News',
-        title: a.title,
-        pageNo: `Page ${String(a.pageNo || idx + 3).padStart(2, '0')}`,
-        snippet: a.snippet || 'Classroom dispatches and morning assembly notes published in today’s print circulation.',
-        readingTime: '3 min read',
-      }))
-    : defaultDispatches;
+  // Dispatches come only from the currently published issue. Never show placeholder stories.
+  const stories = (issue?.articles || []).map((article, idx) => ({
+    category: article.category || 'Classroom News',
+    title: article.title,
+    pageNo: `Page ${String(article.pageNo || idx + 1).padStart(2, '0')}`,
+    snippet: article.snippet || '',
+    readingTime: '3 min read',
+  }));
 
   // GSAP ScrollTrigger & SVG Morphing Orchestration
   useEffect(() => {
@@ -190,7 +164,7 @@ export const DailyMagazineSection: React.FC<DailyMagazineSectionProps> = ({ issu
     <section
       ref={sectionRef}
       id="daily-magazine"
-      className="relative w-full bg-[#FAF7F2] text-[#0b132b] py-20 sm:py-24 lg:py-28 overflow-hidden"
+      className="relative w-full bg-[#FAF7F2] text-[#0b132b] py-14 sm:py-20 lg:py-28 overflow-hidden"
     >
       {/* Background Topographic Morphing Contour SVG */}
       <div className="absolute inset-0 pointer-events-none select-none opacity-30 -z-10 overflow-hidden">
@@ -212,17 +186,17 @@ export const DailyMagazineSection: React.FC<DailyMagazineSectionProps> = ({ issu
       </div>
 
       {/* Full-Width Stretched Container across the viewport matching other homepage sections */}
-      <div className="w-full px-6 sm:px-10 md:px-14 lg:px-16 xl:px-20 2xl:px-28">
-        <div ref={contentFadeRef} className="space-y-12 sm:space-y-16">
+      <div className="w-full px-4 sm:px-8 md:px-12 lg:px-16 xl:px-20 2xl:px-28">
+        <div ref={contentFadeRef} className="space-y-8 sm:space-y-12 lg:space-y-16">
 
           {/* 1. TOP EDITORIAL WIRELINE (Clean, Minimalist Broadsheet Header) */}
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 text-xs font-mono uppercase tracking-widest text-stone-500">
-              <div className="flex items-center gap-2.5 text-[#111b5e] font-bold">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 pb-2 sm:pb-3 text-[11px] sm:text-xs font-mono uppercase tracking-wider sm:tracking-widest text-stone-500">
+              <div className="flex items-center gap-2 sm:gap-2.5 text-[#111b5e] font-bold">
                 <span className="w-2 h-2 rounded-full bg-amber-600 inline-block animate-pulse" />
                 <span>Shri Nirakar Vidyalaya (High School) • Mashem, Canacona</span>
               </div>
-              <div className="flex items-center gap-3 sm:gap-4 text-stone-600">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-stone-600">
                 <span>Estd. 1968</span>
                 <span className="text-stone-300">•</span>
                 <span>Morning Circulation</span>
@@ -232,9 +206,9 @@ export const DailyMagazineSection: React.FC<DailyMagazineSectionProps> = ({ issu
             </div>
 
             {/* Main Headline & Narrative Lead */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-baseline">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6 items-baseline">
               <div className="lg:col-span-7">
-                <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-[#0b132b] tracking-tight leading-[1.12]">
+                <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-black text-[#0b132b] tracking-tight leading-[1.12]">
                   Shri Nirakar Daily Magazine
                 </h2>
               </div>
@@ -268,34 +242,31 @@ export const DailyMagazineSection: React.FC<DailyMagazineSectionProps> = ({ issu
                   {/* Left Spine Fold Gradient */}
                   <div className="absolute top-0 bottom-0 left-0 w-2.5 bg-gradient-to-r from-stone-400/25 via-transparent to-transparent z-20 pointer-events-none" />
 
-                  {/* Cover Photo */}
-                  <div className="relative aspect-[16/11] w-full overflow-hidden bg-stone-100 border-b border-stone-200">
+                  {/* Magazine Cover Preview - Proportional, Compact & Not Elongated */}
+                  <div className="relative w-full h-[240px] sm:h-[280px] lg:h-[310px] bg-stone-100/90 border-b border-stone-200 flex items-center justify-center p-3 sm:p-4 overflow-hidden">
                     <img
                       src={coverImage}
                       alt={title}
-                      className="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-700 ease-out"
+                      className="w-full h-full object-contain rounded-md shadow-xs group-hover:scale-[1.01] transition-transform duration-500 ease-out"
                       onError={(e) => {
                         e.currentTarget.src = '/images/nirakar_vidyalaya_real.jpg';
                       }}
                     />
 
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0b132b]/85 via-transparent to-transparent pointer-events-none" />
-
-                    {/* Bottom Details on Cover */}
-                    <div className="absolute bottom-3 left-4 right-4 z-20 text-white space-y-0.5">
-                      <div className="text-[10px] font-mono text-amber-300 font-semibold uppercase tracking-wider">
+                    {/* Non-intrusive Top Status Pill */}
+                    <div className="absolute top-3 left-3 z-20">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-900 bg-amber-100/95 backdrop-blur-xs px-2.5 py-0.5 rounded-full border border-amber-300/80 shadow-xs">
                         {pageCount} Pages • {readingMinutes} Min Read
-                      </div>
-                      <h3 className="font-serif text-base sm:text-lg font-bold text-white leading-snug drop-shadow-xs">
-                        {title}
-                      </h3>
+                      </span>
                     </div>
                   </div>
 
-                  {/* Summary & Click Prompt */}
-                  <div className="p-5 sm:p-6 space-y-3.5 bg-white">
-                    <p className="text-xs sm:text-sm font-sans text-stone-600 leading-relaxed">
+                  {/* Summary & Click Prompt - Tidy and Compact */}
+                  <div className="p-4 sm:p-5 space-y-2.5 bg-white">
+                    <h3 className="font-serif text-base sm:text-lg font-bold text-[#0b132b] leading-snug line-clamp-1">
+                      {title}
+                    </h3>
+                    <p className="text-xs sm:text-sm font-sans text-stone-600 leading-relaxed line-clamp-2">
                       {excerpt}
                     </p>
 
@@ -314,10 +285,10 @@ export const DailyMagazineSection: React.FC<DailyMagazineSectionProps> = ({ issu
               </div>
 
               {/* Minimalist Action Controls */}
-              <div className="flex flex-col sm:flex-row items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
                 <a
                   href={magazineUrl}
-                  className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-[#111b5e] hover:bg-[#070f38] text-white font-mono text-xs font-semibold uppercase tracking-wider py-3.5 px-5 rounded-xl shadow-xs transition-colors cursor-pointer"
+                  className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 bg-[#111b5e] hover:bg-[#070f38] text-white font-mono text-xs font-semibold uppercase tracking-wider py-3 sm:py-3.5 px-4 sm:px-5 rounded-xl shadow-xs transition-colors cursor-pointer text-center"
                 >
                   <BookOpen size={14} />
                   <span>Read Today's Daily Magazine</span>
@@ -325,7 +296,7 @@ export const DailyMagazineSection: React.FC<DailyMagazineSectionProps> = ({ issu
 
                 <a
                   href="/magazine"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-stone-50 text-stone-800 border border-stone-300 font-mono text-xs font-semibold py-3.5 px-4 rounded-xl transition-colors cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white hover:bg-stone-50 text-stone-800 border border-stone-300 font-mono text-xs font-semibold py-3 sm:py-3.5 px-4 rounded-xl transition-colors cursor-pointer text-center"
                   title="Browse past editions archive calendar"
                 >
                   <Calendar size={14} className="text-[#111b5e]" />
@@ -336,14 +307,14 @@ export const DailyMagazineSection: React.FC<DailyMagazineSectionProps> = ({ issu
             </div>
 
             {/* RIGHT: MINIMAL DISPATCH DESK & ASSEMBLY THOUGHT */}
-            <div className="lg:col-span-7 space-y-6">
+            <div className="lg:col-span-7 space-y-5 sm:space-y-6">
 
               {/* 1. Morning Assembly Reflection & Interactive Audio Dispatch */}
-              <div className="bg-white rounded-2xl border border-stone-200/90 p-5 sm:p-6 shadow-xs space-y-3.5">
-                <div className="flex items-center justify-between gap-3">
+              <div className="bg-white rounded-2xl border border-stone-200/90 p-4 sm:p-6 shadow-xs space-y-3 sm:space-y-3.5">
+                <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
                   <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
-                    <span className="text-[11px] font-mono font-bold tracking-widest uppercase text-amber-800">
+                    <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wider sm:tracking-widest uppercase text-amber-800">
                       Morning Assembly Reflection
                     </span>
                   </div>
@@ -415,7 +386,11 @@ export const DailyMagazineSection: React.FC<DailyMagazineSectionProps> = ({ issu
 
                 {/* Article Dispatches */}
                 <div className="divide-y divide-stone-100">
-                  {stories.map((story, idx) => {
+                  {stories.length === 0 ? (
+                    <div className="px-2 py-8 text-center text-sm text-stone-500">
+                      Today’s circulation is being prepared by the editorial board.
+                    </div>
+                  ) : stories.map((story, idx) => {
                     const isActive = idx === activeStoryIdx;
                     return (
                       <div
@@ -469,12 +444,12 @@ export const DailyMagazineSection: React.FC<DailyMagazineSectionProps> = ({ issu
               </div>
 
               {/* Colophon Note */}
-              <div className="px-1 flex items-center justify-between text-xs font-mono text-stone-500">
+              <div className="px-1 flex flex-col sm:flex-row sm:items-center justify-between text-xs font-mono text-stone-500 gap-1.5 sm:gap-4">
                 <div className="flex items-center gap-2">
-                  <Feather size={12} className="text-stone-400" />
+                  <Feather size={12} className="text-stone-400 shrink-0" />
                   <span>Student Editorial Board • Shri Nirakar High School</span>
                 </div>
-                <span>450 Copies Distributed Daily</span>
+                <span className="self-start sm:self-auto text-stone-400">450 Copies Distributed Daily</span>
               </div>
 
             </div>

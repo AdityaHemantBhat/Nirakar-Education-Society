@@ -15,7 +15,7 @@ const WHY_POINTS: AccordionItem[] = [
     number: '01',
     title: '54+ Years of Proven Educational Heritage',
     summary:
-      'Established in 1968, Shree Nirakar Education Society has built an unshakeable institutional reputation in Canacona, South Goa.',
+      'Established in 1968, Shri Nirakar Education Society has built an unshakeable institutional reputation in Canacona, South Goa.',
     details: [
       'Pioneered secondary education in the rural taluka of Canacona.',
       'Generations of alumni serving as teachers, administrators, and entrepreneurs.',

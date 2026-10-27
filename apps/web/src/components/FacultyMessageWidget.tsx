@@ -1,12 +1,12 @@
 import React, { FormEvent, useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ReCaptchaProvider, useReCaptcha } from '@wojtekmaj/react-recaptcha-v3';
+import { useReCaptcha } from '@wojtekmaj/react-recaptcha-v3';
 import { ArrowLeft, Check, Download, MessageCircle, Paperclip, Send, X } from 'lucide-react';
 import { Navbar } from './Navbar.js';
 import { Footer } from './Footer.js';
 import { HeroWaves } from './HeroWaves.js';
 import { SectionEdge } from './SectionEdge.js';
-import { AuthCaptchaNotice } from './AuthCaptcha.js';
+import { AuthCaptchaNotice, useArmCaptcha } from './AuthCaptcha.js';
 import { LocalMessageImagePreview, RemoteMessageImagePreview } from './FacultyMessageImagePreview.js';
 
 interface FacultyMessage {
@@ -120,12 +120,20 @@ export const FacultyMessageWidget: React.FC<{
 }> = (props) => {
   const [isOpen, setIsOpen] = useState(false);
   const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+  /* The application-wide reCAPTCHA provider is shared; this widget only
+     asks for it to be armed rather than mounting a second provider, which
+     would tear the shared instance down and break token requests. */
+  const armCaptcha = useArmCaptcha();
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get('message') === '1') {
       setIsOpen(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (isOpen) armCaptcha();
+  }, [isOpen, armCaptcha]);
 
   if (!siteKey) {
     return (
@@ -154,9 +162,7 @@ export const FacultyMessageWidget: React.FC<{
         <span>Message</span>
       </button>
       {isOpen && (
-        <ReCaptchaProvider reCaptchaKey={siteKey}>
-          <FacultyMessageConversation {...props} onClose={() => setIsOpen(false)} />
-        </ReCaptchaProvider>
+        <FacultyMessageConversation {...props} onClose={() => setIsOpen(false)} />
       )}
     </>
   );

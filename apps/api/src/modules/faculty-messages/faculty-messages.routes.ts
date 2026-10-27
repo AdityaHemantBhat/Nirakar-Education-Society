@@ -11,7 +11,7 @@ import {
 
 const router = Router();
 const controller = new FacultyMessagesController();
-const adminAccess = [authenticate, requireRole('SUPER_ADMIN', 'ADMIN', 'EDITOR')];
+const adminAccess = [authenticate, requireRole('SUPER_ADMIN', 'ADMIN')];
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024, files: 5, fields: 12, parts: 20 },

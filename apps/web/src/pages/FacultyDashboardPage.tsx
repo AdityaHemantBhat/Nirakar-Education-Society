@@ -412,7 +412,7 @@ export const FacultyDashboardPage: React.FC = () => {
   return (
     <div className="w-full min-h-screen bg-[#FAF7F2] text-stone-900 flex flex-col font-sans">
       <Helmet>
-        <title>{`Faculty Dossier Management | ${profile.name} | Shree Nirakar Education Society`}</title>
+        <title>{`Faculty Dossier Management | ${profile.name} | Shri Nirakar Education Society`}</title>
         <meta name="description" content="Manage your official academic profile, research citations, and office hours." />
       </Helmet>
 

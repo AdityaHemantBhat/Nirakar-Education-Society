@@ -21,6 +21,7 @@ import {
   Save,
 } from 'lucide-react';
 import { io } from 'socket.io-client';
+import { socketOrigin } from '../lib/api.js';
 
 const DEFAULT_DEPARTMENTS = [
   'Science & Laboratories',
@@ -228,7 +229,7 @@ export const FacultyManagerPage: React.FC = () => {
 
   // Socket.IO listener for live updates
   useEffect(() => {
-    const socket = io();
+      const socket = io(socketOrigin(), { withCredentials: true });
     socket.on('faculty:reordered', (data: { facultyIds: string[] }) => {
       const newList = data.facultyIds
         .map((id) => orderedFaculty.find((f) => f.id === id))
@@ -417,7 +418,7 @@ export const FacultyManagerPage: React.FC = () => {
       case 'ANGLE_HSS':
         return 'S. S. Angle HSS';
       default:
-        return code || 'Shree Nirakar Education Society';
+        return code || 'Shri Nirakar Education Society';
     }
   };
 

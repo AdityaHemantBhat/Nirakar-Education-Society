@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { io } from 'socket.io-client';
+import { socketOrigin } from '../lib/api.js';
 import {
   Award,
   CheckCircle2,
@@ -14,6 +15,7 @@ import {
   UserRound,
   Users,
 } from 'lucide-react';
+import { getPublicSiteUrl } from '../lib/site.js';
 
 type VerificationLevel = 'UNVERIFIED' | 'EMAIL_VERIFIED' | 'VERIFIED' | 'TRUSTED';
 type AlumniVerificationRecord = {
@@ -46,19 +48,8 @@ function getAlumniName(alumnus: AlumniVerificationRecord) {
     .join(' ');
 }
 
-function getPublicSiteUrl() {
-  const { hostname, origin, protocol } = window.location;
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return `${protocol}//${hostname}:5000`;
-  }
-  return origin;
-}
-
 function getSocketUrl() {
-  const localHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-  return localHost
-    ? `${window.location.protocol}//${window.location.hostname}:4000`
-    : '/';
+  return socketOrigin();
 }
 
 async function fetchWithAdminSession(input: RequestInfo | URL, init: RequestInit = {}) {
@@ -151,6 +142,7 @@ export const AlumniManagerPage: React.FC = () => {
       reconnection: true,
       reconnectionAttempts: 15,
       reconnectionDelay: 1500,
+      withCredentials: true,
     });
     const handleAlumniUpdate = (event: AlumniDirectoryEvent) => {
       if (event.data?.id) {

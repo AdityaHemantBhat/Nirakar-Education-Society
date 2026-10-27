@@ -99,7 +99,7 @@ export const AlumniProfilePage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#FAF7F2] text-stone-900 flex flex-col font-sans">
         <Helmet>
-          <title>Alumni Profile Unavailable | Shree Nirakar Education Society</title>
+          <title>Alumni Profile Unavailable | Shri Nirakar Education Society</title>
         </Helmet>
         <Navbar />
         <main className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4 py-24">
@@ -127,7 +127,7 @@ export const AlumniProfilePage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#FAF7F2] text-stone-900 flex flex-col font-sans">
         <Helmet>
-          <title>Alumni Profile Not Found | Shree Nirakar Education Society</title>
+          <title>Alumni Profile Not Found | Shri Nirakar Education Society</title>
         </Helmet>
         <Navbar />
         <main className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4 py-24">
@@ -153,7 +153,7 @@ export const AlumniProfilePage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>{`${fullName} | Verified Alumni | Shree Nirakar Education Society`}</title>
+        <title>{`${fullName} | Verified Alumni | Shri Nirakar Education Society`}</title>
         <meta
           name="description"
           content={`Profile of ${fullName}, Class of ${profile?.batchYear || 'Alumni'} from ${schoolName}.`}
@@ -282,7 +282,7 @@ export const AlumniProfilePage: React.FC = () => {
                 About & Professional Journey
               </h2>
               <p className="text-sm sm:text-base font-sans text-stone-700 leading-relaxed whitespace-pre-line">
-                {profile.bio || 'Proud alumnus of Shree Nirakar Education Society, contributing to professional excellence and community advancement while carrying forward our institutional values.'}
+                {profile.bio || 'Proud alumnus of Shri Nirakar Education Society, contributing to professional excellence and community advancement while carrying forward our institutional values.'}
               </p>
             </div>
 
@@ -361,8 +361,8 @@ export const AlumniProfilePage: React.FC = () => {
               </div>
               <p className="text-xs text-stone-700 font-sans leading-relaxed">
                 {verificationLevel === 'UNVERIFIED'
-                  ? 'This alumni profile is awaiting review by Shree Nirakar Education Society administration. Verification is granted only after the school record has been checked.'
-                  : 'This alumni profile has been reviewed by Shree Nirakar Education Society administration against available school records.'}{' '}
+                  ? 'This alumni profile is awaiting review by Shri Nirakar Education Society administration. Verification is granted only after the school record has been checked.'
+                  : 'This alumni profile has been reviewed by Shri Nirakar Education Society administration against available school records.'}{' '}
                 Personal contact details are not displayed on this profile.
               </p>
               {profile.vouches && profile.vouches.length > 0 && (

@@ -15,19 +15,16 @@ export const AccessSettingsUpdateSchema = z.object({
   snapStops: z.array(z.number().int()).default([10, 20, 50, 100, 250, 500, 1000]),
   freeReadPolicyMagazine: z.nativeEnum(FREE_READ_POLICIES).default(FREE_READ_POLICIES.METERED_N),
   freeReadCountMagazine: z.number().int().min(0).default(5),
-  freeReadPolicyPosts: z.nativeEnum(FREE_READ_POLICIES).default(FREE_READ_POLICIES.METERED_N),
-  freeReadCountPosts: z.number().int().min(0).default(5),
   passDurationDays: z.number().int().positive().nullable().default(null),
-  passAppliesTo: z.enum(['MAGAZINE', 'POSTS', 'BOTH']).default('BOTH'),
   purposeText: z.string().min(10),
-  tierLabels: z.record(z.string()).default({}),
-  thankYouMessages: z.record(z.string()).default({}),
+  tierLabels: z.record(z.string(), z.string()).default({}),
+  thankYouMessages: z.record(z.string(), z.string()).default({}),
 });
 
 export type AccessSettingsUpdateInput = z.infer<typeof AccessSettingsUpdateSchema>;
 
 export const TrackReadEventSchema = z.object({
-  itemType: z.enum(['MAGAZINE', 'POST']),
+  itemType: z.literal('MAGAZINE'),
   itemId: z.string().cuid(),
   deviceId: z.string().optional(),
 });

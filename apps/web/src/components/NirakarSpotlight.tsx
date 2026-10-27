@@ -1,34 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
-
-/**
- * Authentic school and campus photography to showcase inside the illuminated letters.
- */
-const CAMPUS_IMAGES = [
-  {
-    url: '/images/mashem_campus.jpg',
-    title: 'Shri Nirakar Vidyalaya, Mashem',
-  },
-  {
-    url: '/images/angle_campus.jpg',
-    title: 'S.S. Angle Higher Secondary School, Dapot',
-  },
-  {
-    url: '/images/tudal_campus.jpg',
-    title: 'Tudal High School, Gaondongrem',
-  },
-  {
-    url: '/images/nirakar_students_real1.jpg',
-    title: 'Mashem Scholars & Classrooms',
-  },
-  {
-    url: '/images/sports_champs.jpg',
-    title: 'Annual Sports & Athletic Champions',
-  },
-  {
-    url: '/images/science_lab.jpg',
-    title: 'Science & Innovation Labs',
-  },
-];
+import React, { useRef, useState } from 'react';
 
 /**
  * NirakarSpotlight
@@ -44,32 +14,28 @@ const CAMPUS_IMAGES = [
 export const NirakarSpotlight: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const [activeImageIdx, setActiveImageIdx] = useState(0);
+  const [activeColor, setActiveColor] = useState('rgba(17, 27, 94, 0.72)');
 
-  // Preload all campus imagery for zero latency
-  useEffect(() => {
-    CAMPUS_IMAGES.forEach((item) => {
-      const img = new Image();
-      img.src = item.url;
-    });
-  }, []);
+  const spotlightColors = [
+    'rgba(17, 27, 94, 0.72)',
+    'rgba(217, 119, 6, 0.72)',
+    'rgba(29, 53, 216, 0.72)',
+  ];
 
-  // Gracefully rotate to the next campus photograph every 5.5 seconds
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveImageIdx((prev) => (prev + 1) % CAMPUS_IMAGES.length);
-    }, 5500);
-    return () => clearInterval(timer);
-  }, []);
+  const rafIdRef = useRef<number | null>(null);
 
   const updateCoordinates = (clientX: number, clientY: number) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
+    if (rafIdRef.current) return;
+    rafIdRef.current = requestAnimationFrame(() => {
+      rafIdRef.current = null;
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
 
-    containerRef.current.style.setProperty('--mouse-x', `${x}px`);
-    containerRef.current.style.setProperty('--mouse-y', `${y}px`);
+      containerRef.current.style.setProperty('--mouse-x', `${x}px`);
+      containerRef.current.style.setProperty('--mouse-y', `${y}px`);
+    });
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -93,11 +59,12 @@ export const NirakarSpotlight: React.FC = () => {
     setIsHovered(false);
   };
 
-  const handleCycleImage = () => {
-    setActiveImageIdx((prev) => (prev + 1) % CAMPUS_IMAGES.length);
+  const handleCycleColor = () => {
+    setActiveColor((current) => {
+      const index = spotlightColors.indexOf(current);
+      return spotlightColors[(index + 1) % spotlightColors.length];
+    });
   };
-
-  const currentImage = CAMPUS_IMAGES[activeImageIdx];
 
   return (
     <section
@@ -108,9 +75,9 @@ export const NirakarSpotlight: React.FC = () => {
       onTouchStart={handleTouchMove}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleMouseLeave}
-      onClick={handleCycleImage}
+      onClick={handleCycleColor}
       aria-label="Nirakar Brand Wordmark"
-      className="relative w-full bg-[#FAF7F2] py-20 sm:py-28 lg:py-36 flex items-center justify-center overflow-hidden cursor-default select-none border-0"
+      className="relative w-full bg-[#FAF7F2] py-12 sm:py-20 md:py-28 lg:py-36 flex items-center justify-center overflow-hidden cursor-default select-none border-0"
       style={
         {
           '--mouse-x': '50%',
@@ -124,10 +91,10 @@ export const NirakarSpotlight: React.FC = () => {
         {/* Layer 1: Base State (Hollow Outline on Smooth Cream Canvas) */}
         <div className="w-full flex items-center justify-center pointer-events-none">
           <span
-            className="font-sans font-black tracking-tighter leading-none text-center select-none text-[15vw] sm:text-[16.5vw] lg:text-[18vw] block whitespace-nowrap"
+            className="font-sans font-black tracking-tighter leading-none text-center select-none text-[22vw] xs:text-[20vw] sm:text-[16.5vw] lg:text-[18vw] block whitespace-nowrap"
             style={{
               color: 'transparent',
-              WebkitTextStroke: '1.5px rgba(17, 27, 94, 0.22)',
+              WebkitTextStroke: '1.2px rgba(17, 27, 94, 0.24)',
             }}
           >
             NIRAKAR
@@ -146,18 +113,13 @@ export const NirakarSpotlight: React.FC = () => {
           }}
         >
           <span
-            className="font-sans font-black tracking-tighter leading-none text-center select-none text-[15vw] sm:text-[16.5vw] lg:text-[18vw] block whitespace-nowrap transition-all duration-700 ease-out"
+            className="font-sans font-black tracking-tighter leading-none text-center select-none text-[22vw] xs:text-[20vw] sm:text-[16.5vw] lg:text-[18vw] block whitespace-nowrap transition-all duration-700 ease-out"
             style={{
-              backgroundImage: `
-                radial-gradient(circle 320px at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(29, 53, 216, 0.22) 0%, rgba(17, 27, 94, 0.42) 48%, rgba(11, 19, 43, 0.72) 100%),
-                url('${currentImage.url}')
-              `,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
+              backgroundImage: `radial-gradient(circle 320px at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(245, 158, 11, 0.28) 0%, ${activeColor} 52%, rgba(11, 19, 43, 0.88) 100%)`,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               color: '#111b5e',
-              WebkitTextStroke: '1.5px #111b5e',
+              WebkitTextStroke: '1px #111b5e',
               filter: 'drop-shadow(0 0 25px rgba(29, 53, 216, 0.35))',
             }}
           >

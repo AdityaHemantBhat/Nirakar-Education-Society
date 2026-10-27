@@ -51,6 +51,7 @@ export class AuthRepository {
             institutionCode: true,
             designation: true,
             department: true,
+            publicContactToggles: true,
             status: true,
           },
         },
@@ -153,6 +154,13 @@ export class AuthRepository {
   async revokeAllUserRefreshTokens(userId: string) {
     return prisma.refreshToken.updateMany({
       where: { userId },
+      data: { revoked: true },
+    });
+  }
+
+  async revokeRefreshTokenByHash(tokenHash: string) {
+    return prisma.refreshToken.updateMany({
+      where: { tokenHash, revoked: false },
       data: { revoked: true },
     });
   }

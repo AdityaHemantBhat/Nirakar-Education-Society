@@ -72,10 +72,10 @@ export const FacultyRegisterPage: React.FC = () => {
   return (
     <div className="w-full min-h-screen bg-[#FAF7F2] text-stone-900 flex flex-col font-sans">
       <Helmet>
-        <title>Educator Registration & Onboarding | Shree Nirakar Education Society</title>
+        <title>Educator Registration & Onboarding | Shri Nirakar Education Society</title>
         <meta
           name="description"
-          content="Official faculty onboarding application for teaching and administrative personnel joining Shree Nirakar Education Society institutions."
+          content="Official faculty onboarding application for teaching and administrative personnel joining Shri Nirakar Education Society institutions."
         />
       </Helmet>
 
@@ -103,16 +103,16 @@ export const FacultyRegisterPage: React.FC = () => {
       {/* SVG Curve finishing the hero banner with smooth organic transition */}
       <SectionEdge variant="scoop" color="#FAF7F2" bgColor="#0b132b" height={36} withGoldLine />
 
-      <main className="w-full flex-1 flex items-center justify-center px-4 py-8 sm:py-14">
-        <div className="w-full max-w-2xl bg-white rounded-3xl border border-stone-200/90 p-8 sm:p-12 shadow-xl space-y-8">
+      <main className="w-full flex-1 flex items-center justify-center px-4 sm:px-6 py-6 sm:py-14">
+        <div className="w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 p-5 sm:p-8 md:p-12 shadow-xl space-y-6 sm:space-y-8">
           <div className="text-center space-y-2">
-            <div className="w-14 h-14 rounded-2xl bg-[#0b132b] border border-amber-400/40 text-amber-300 flex items-center justify-center mx-auto shadow-md">
-              <GraduationCap size={26} />
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#0b132b] border border-amber-400/40 text-amber-300 flex items-center justify-center mx-auto shadow-md">
+              <GraduationCap size={24} className="sm:w-6 sm:h-6" />
             </div>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
+            <h2 className="font-serif text-xl sm:text-2xl md:text-3xl font-bold text-stone-900 leading-tight">
               Educator Registration Form
             </h2>
-            <p className="text-xs sm:text-sm text-stone-500 font-sans max-w-md mx-auto">
+            <p className="text-xs sm:text-sm text-stone-500 font-sans max-w-md mx-auto leading-relaxed">
               Please enter your official personnel credentials as recorded in the Society Administrative Registry.
             </p>
           </div>
@@ -349,7 +349,7 @@ export const FacultyRegisterPage: React.FC = () => {
                     className="mt-0.5 rounded text-amber-600 focus:ring-amber-500 border-stone-300"
                   />
                   <span className="leading-relaxed">
-                    I solemnly declare that the credentials provided are accurate and that I adhere to the <strong>Shree Nirakar Education Society Academic Integrity & Student Welfare Charter</strong>.
+                    I solemnly declare that the credentials provided are accurate and that I adhere to the <strong>Shri Nirakar Education Society Academic Integrity & Student Welfare Charter</strong>.
                   </span>
                 </label>
               </div>

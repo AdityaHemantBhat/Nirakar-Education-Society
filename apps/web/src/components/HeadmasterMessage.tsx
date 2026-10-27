@@ -155,13 +155,15 @@ export const HeadmasterMessage: React.FC = () => {
           <div ref={textRef} className="lg:col-span-7 xl:col-span-7 space-y-6">
 
             {/* Overline Badge */}
-            <div className="flex items-center gap-3">
-              <span className="w-8 h-px bg-amber-600/70" />
-              <span className="text-xs uppercase font-mono font-bold tracking-widest text-amber-700">
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+              <span className="w-6 sm:w-8 h-px bg-amber-600/70 shrink-0" />
+              <span className="text-[11px] sm:text-xs uppercase font-mono font-bold tracking-widest text-amber-700">
                 From the Headmistress's Desk
               </span>
-              <span className="text-stone-300">•</span>
-              <span className="text-xs text-stone-500 font-sans">Shri Nirakar High School</span>
+              <span className="text-stone-300 hidden xs:inline">•</span>
+              <span className="text-[11px] sm:text-xs text-stone-500 font-sans">
+                Shri Nirakar High School
+              </span>
             </div>
 
             {/* Main Headline */}

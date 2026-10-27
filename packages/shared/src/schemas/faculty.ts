@@ -22,7 +22,7 @@ export const FacultyProfileUpdateSchema = z.object({
       officeHours: z.string().optional().nullable(),
       officeLocation: z.string().optional().nullable(),
       publications: z.array(z.string()).optional().nullable(),
-      socialLinks: z.record(z.any()).optional().nullable(),
+       socialLinks: z.record(z.string(), z.any()).optional().nullable(),
       isHead: z.boolean().optional(),
     })
     .passthrough()

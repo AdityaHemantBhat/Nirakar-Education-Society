@@ -73,7 +73,7 @@ export const RegisterPage: React.FC = () => {
   return (
     <div className="w-full min-h-screen bg-[#FAF7F2] flex flex-col font-sans">
       <Helmet>
-        <title>Alumni Registration | Shree Nirakar Education Society</title>
+        <title>Alumni Registration | Shri Nirakar Education Society</title>
         <meta name="description" content="Register as an alumnus of Shri Nirakar High School, Tudal High School, or S.S. Angle Higher Secondary School." />
       </Helmet>
 
@@ -100,14 +100,14 @@ export const RegisterPage: React.FC = () => {
       {/* Organic Section Transition */}
       <SectionEdge variant="scoop" color="#FAF7F2" bgColor="#0b132b" height={36} withGoldLine />
 
-      <main className="w-full flex-1 flex items-center justify-center px-4 py-8 sm:py-14">
-        <div className="w-full max-w-xl bg-white rounded-3xl border border-stone-200/90 p-8 sm:p-10 shadow-xl space-y-6">
+      <main className="w-full flex-1 flex items-center justify-center px-4 sm:px-6 py-6 sm:py-14">
+        <div className="w-full max-w-xl bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 p-5 sm:p-8 md:p-10 shadow-xl space-y-5 sm:space-y-6">
           <div className="text-center space-y-2">
-            <div className="w-14 h-14 rounded-2xl bg-[#0b132b] border border-amber-400/40 text-amber-300 flex items-center justify-center mx-auto shadow-md">
-              <UserPlus size={26} />
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#0b132b] border border-amber-400/40 text-amber-300 flex items-center justify-center mx-auto shadow-md">
+              <UserPlus size={24} className="sm:w-6 sm:h-6" />
             </div>
-            <h2 className="font-serif text-2xl font-bold text-stone-900">Alumni Enrollment</h2>
-            <p className="text-xs text-stone-500 font-sans max-w-sm mx-auto">
+            <h2 className="font-serif text-xl sm:text-2xl font-bold text-stone-900 leading-tight">Alumni Enrollment</h2>
+            <p className="text-xs sm:text-sm text-stone-500 font-sans max-w-sm mx-auto leading-relaxed">
               Please enter your academic credentials to ensure verified alumnus status.
             </p>
           </div>

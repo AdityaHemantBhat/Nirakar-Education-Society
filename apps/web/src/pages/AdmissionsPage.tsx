@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { apiUrl } from '../lib/api.js';
 import { Helmet } from 'react-helmet-async';
 import { Navbar } from '../components/Navbar.js';
 import { Footer } from '../components/Footer.js';
@@ -7,6 +8,7 @@ import { SectionEdge } from '../components/SectionEdge.js';
 import { HeroWaves } from '../components/HeroWaves.js';
 import { HumanVerificationCaptcha } from '../components/HumanVerificationCaptcha.js';
 import { useAdmissionsSocket } from '../hooks/useAdmissionsSocket.js';
+import { CustomSelect, type SelectOption } from '../components/CustomSelect.js';
 import {
   Download,
   CheckCircle2,
@@ -36,96 +38,7 @@ import {
   Sliders,
 } from 'lucide-react';
 
-interface CustomSelectOption {
-  value: string;
-  label: string;
-}
 
-interface CustomSelectProps {
-  value: string;
-  onChange: (val: string) => void;
-  options: CustomSelectOption[];
-  placeholder?: string;
-  id?: string;
-}
-
-const CustomSelect: React.FC<CustomSelectProps> = ({
-  value,
-  onChange,
-  options,
-  placeholder = 'Select an option...',
-  id,
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    if (isOpen) {
-      document.addEventListener('mousedown', handleOutsideClick);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
-    };
-  }, [isOpen]);
-
-  const selected = options.find((o) => o.value === value);
-
-  return (
-    <div ref={dropdownRef} className="relative w-full">
-      <button
-        id={id}
-        type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
-        className={`w-full flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 rounded-xl border bg-white text-sm sm:text-base font-sans text-left transition-all cursor-pointer ${
-          isOpen
-            ? 'border-[#111b5e] ring-2 ring-[#111b5e]/20 shadow-sm'
-            : 'border-stone-300 hover:border-stone-400 shadow-xs'
-        }`}
-      >
-        <span className={selected ? 'font-medium text-stone-900 truncate' : 'text-stone-400 truncate'}>
-          {selected ? selected.label : placeholder}
-        </span>
-        <ChevronDown
-          size={18}
-          className={`text-stone-400 shrink-0 ml-2 transition-transform duration-200 ${
-            isOpen ? 'rotate-180 text-[#111b5e]' : ''
-          }`}
-        />
-      </button>
-
-      {isOpen && (
-        <div className="absolute z-50 left-0 right-0 mt-1.5 bg-white rounded-xl border border-stone-200 shadow-xl overflow-hidden py-1 max-h-60 overflow-y-auto">
-          {options.map((opt) => {
-            const isSelected = opt.value === value;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => {
-                  onChange(opt.value);
-                  setIsOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-4 sm:px-5 py-3 text-left text-sm sm:text-base font-sans transition-colors cursor-pointer ${
-                  isSelected
-                    ? 'bg-[#111b5e]/10 text-[#111b5e] font-semibold'
-                    : 'text-stone-800 hover:bg-stone-50'
-                }`}
-              >
-                <span>{opt.label}</span>
-                {isSelected && <Check size={16} className="text-[#111b5e] shrink-0 ml-2" />}
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-};
 
 interface GoogleDatePickerProps {
   value: string; // YYYY-MM-DD
@@ -531,7 +444,7 @@ const GoogleDatePicker: React.FC<GoogleDatePickerProps> = ({
   );
 };
 
-const secondaryClassOptions: CustomSelectOption[] = [
+const secondaryClassOptions: SelectOption[] = [
   { value: 'Class V', label: 'Class V' },
   { value: 'Class VI', label: 'Class VI' },
   { value: 'Class VII', label: 'Class VII' },
@@ -540,24 +453,24 @@ const secondaryClassOptions: CustomSelectOption[] = [
   { value: 'Class X', label: 'Class X (SSC)' },
 ];
 
-const higherSecondaryClassOptions: CustomSelectOption[] = [
+const higherSecondaryClassOptions: SelectOption[] = [
   { value: 'Class XI', label: 'Class XI' },
   { value: 'Class XII', label: 'Class XII' },
 ];
 
-const secondLanguageOptions: CustomSelectOption[] = [
+const secondLanguageOptions: SelectOption[] = [
   { value: 'Marathi', label: 'Marathi (Second Language)' },
   { value: 'Hindi', label: 'Hindi (Second Language)' },
   { value: 'Konkani', label: 'Konkani (Second Language)' },
 ];
 
-const genderOptions: CustomSelectOption[] = [
+const genderOptions: SelectOption[] = [
   { value: 'MALE', label: 'Male' },
   { value: 'FEMALE', label: 'Female' },
   { value: 'OTHER', label: 'Other' },
 ];
 
-const motherTongueOptions: CustomSelectOption[] = [
+const motherTongueOptions: SelectOption[] = [
   { value: 'Konkani', label: 'Konkani' },
   { value: 'Marathi', label: 'Marathi' },
   { value: 'Hindi', label: 'Hindi' },
@@ -565,7 +478,7 @@ const motherTongueOptions: CustomSelectOption[] = [
   { value: 'Other', label: 'Other' },
 ];
 
-const categoryOptions: CustomSelectOption[] = [
+const categoryOptions: SelectOption[] = [
   { value: 'GENERAL', label: 'General' },
   { value: 'OBC', label: 'Other Backward Class (OBC)' },
   { value: 'ST', label: 'Scheduled Tribe (ST)' },
@@ -1386,6 +1299,10 @@ export const AdmissionsPage: React.FC = () => {
   });
 
   const academicYear = config?.academicYear || '2026–2027';
+  const announcementText =
+    typeof config?.announcementText === 'string' && config.announcementText.trim()
+      ? config.announcementText.trim()
+      : DEFAULT_ADMISSION_PAGE_CONFIG.announcementText;
   const isOpen = config ? config.isOpen === true : true;
 
   // Cached draft for instant, non-destructive state hydration
@@ -1990,7 +1907,7 @@ export const AdmissionsPage: React.FC = () => {
   return (
     <div className="w-full min-h-screen bg-[#FAF7F2] text-ink flex flex-col font-sans">
       <Helmet>
-        <title>Student Admissions {academicYear} | Shree Nirakar Education Society</title>
+        <title>Student Admissions {academicYear} | Shri Nirakar Education Society</title>
         <meta
           name="description"
           content={`Official online admission application for Academic Session ${academicYear} across Shri Nirakar High School, S.S. Angle Higher Secondary, and Tudal High School in Canacona, Goa.`}
@@ -2189,9 +2106,9 @@ export const AdmissionsPage: React.FC = () => {
           {/* Thread-like curve wave strips in light orange / amber */}
           <HeroWaves opacity={0.85} />
 
-          <div className="w-full max-w-7xl mx-auto space-y-4 relative z-10">
-            <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm font-mono text-stone-300">
-              <span className="font-semibold text-amber-300">Shree Nirakar Education Society</span>
+          <div className="w-full max-w-5xl mx-auto space-y-4 relative z-10 flex flex-col items-center text-center">
+            <div className="flex flex-wrap items-center justify-center gap-2 text-xs sm:text-sm font-mono text-stone-300">
+              <span className="font-semibold text-amber-300">Shri Nirakar Education Society</span>
               <span className="text-stone-500">•</span>
               <span className="text-stone-300">Canacona, South Goa</span>
               <span className="text-stone-500">•</span>
@@ -2205,11 +2122,9 @@ export const AdmissionsPage: React.FC = () => {
               <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.15]">
                 Student Admission Application Form
               </h1>
-              {/* Refined Gold Flourish Accent */}
-              <div className="w-28 h-1 bg-gradient-to-r from-amber-400 via-amber-300 to-transparent rounded-full" />
             </div>
 
-            <p className="font-sans text-base sm:text-lg text-stone-300 max-w-4xl leading-relaxed">
+            <p className="font-sans text-base sm:text-lg text-stone-300 max-w-3xl leading-relaxed mx-auto text-center">
               Official online application for admission to secondary classes (Shri Nirakar High School, Tudal High School) and higher secondary streams (S.S. Angle Higher Secondary School).
             </p>
           </div>
@@ -2276,7 +2191,7 @@ export const AdmissionsPage: React.FC = () => {
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
                   <a
-                    href={`/api/v1/admissions/applications/${submittedData.id}/pdf`}
+                    href={apiUrl(`/api/v1/admissions/applications/${submittedData.id}/pdf`)}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center justify-center gap-2 bg-[#111b5e] hover:bg-[#0b132b] text-white px-4.5 py-2.5 rounded-lg text-xs sm:text-sm font-semibold shadow-sm hover:shadow transition-all whitespace-nowrap cursor-pointer active:translate-y-0.5"
@@ -2370,7 +2285,7 @@ export const AdmissionsPage: React.FC = () => {
                   {/* Institutional Top Header */}
                   <div className="text-center py-1.5 border-b border-black space-y-1 bg-white">
                     <h1 className="font-serif text-xl sm:text-2xl font-black text-black tracking-tight uppercase">
-                      Shree Nirakar Education Society
+                      Shri Nirakar Education Society
                     </h1>
                     <p className="font-sans font-bold text-xs sm:text-sm text-black tracking-wide uppercase">
                       Canacona, South Goa — 403728
@@ -2772,7 +2687,7 @@ export const AdmissionsPage: React.FC = () => {
                       Select Institution & Standard Applied For
                     </h2>
                     <p className="text-sm sm:text-base text-stone-600 mt-1.5 font-sans">
-                      Choose the school under Shree Nirakar Education Society for Academic Session {academicYear}.
+                      Choose the school under Shri Nirakar Education Society for Academic Session {academicYear}.
                     </p>
                   </div>
 
@@ -3113,6 +3028,7 @@ export const AdmissionsPage: React.FC = () => {
                           onChange={(val) => updateHssSelection(selectedBaseStream, val)}
                           options={secondLanguageOptions}
                           placeholder="Select Second Language..."
+                          className="w-full"
                         />
                         <span className="text-xs text-stone-500 mt-1.5 block font-sans">
                           English is compulsory for all students as Language I. Select your compulsory second language.
@@ -3217,6 +3133,7 @@ export const AdmissionsPage: React.FC = () => {
                         value={gradeApplied}
                         onChange={(val) => setGradeApplied(val)}
                         options={secondaryClassOptions}
+                        className="w-full"
                       />
                     </div>
                   )}
@@ -3285,6 +3202,7 @@ export const AdmissionsPage: React.FC = () => {
                         value={gender}
                         onChange={(val) => setGender(val as any)}
                         options={genderOptions}
+                        className="w-full"
                       />
                     </div>
 
@@ -3317,6 +3235,7 @@ export const AdmissionsPage: React.FC = () => {
                         value={motherTongue}
                         onChange={(val) => setMotherTongue(val)}
                         options={motherTongueOptions}
+                        className="w-full"
                       />
                     </div>
 
@@ -3329,6 +3248,7 @@ export const AdmissionsPage: React.FC = () => {
                         value={category}
                         onChange={(val) => setCategory(val)}
                         options={categoryOptions}
+                        className="w-full"
                       />
                     </div>
 
@@ -4082,7 +4002,7 @@ export const AdmissionsPage: React.FC = () => {
                         className="mt-1 w-5 h-5 rounded text-[#111b5e] focus:ring-[#111b5e]"
                       />
                       <span className="text-sm sm:text-base text-stone-800 leading-relaxed font-sans">
-                        I hereby declare that the particulars provided in this admission application are true and correct to the best of my knowledge. I agree to abide by the rules of Shree Nirakar Education Society and present original documentation upon request. <span className="text-red-500">*</span>
+                        I hereby declare that the particulars provided in this admission application are true and correct to the best of my knowledge. I agree to abide by the rules of Shri Nirakar Education Society and present original documentation upon request. <span className="text-red-500">*</span>
                       </span>
                     </label>
                   </div>

@@ -3,17 +3,102 @@ import { ContentService } from './content.service.js';
 import {
   BlogCreateSchema,
   CommentCreateSchema,
+  EventCommentCreateSchema,
   ContactMessageSchema,
   NoticeCreateSchema,
   NoticeUpdateSchema,
   EventCreateSchema,
   EventUpdateSchema,
+  EventFilterSchema,
   PageCreateSchema,
+  InstitutionUpdateSchema,
+  CommitteeCreateSchema,
+  CommitteeMemberWriteSchema,
+  CommitteeMemberOrderSchema,
 } from '@nirakar/shared';
 import { AppError } from '../../middleware/error.js';
+import { verifyRecaptchaToken } from '../../lib/recaptcha.js';
+import { recordAudit, AUDIT_ACTIONS } from '../../lib/audit.js';
 
 export class ContentController {
   constructor(private service = new ContentService()) {}
+
+  getAdminInstitutions = async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data = await this.service.getAdminInstitutions();
+      res.json({ success: true, data });
+    } catch (err) { next(err); }
+  };
+
+  updateInstitution = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const input = InstitutionUpdateSchema.parse(req.body);
+      const data = await this.service.updateInstitution(req.params.id, input);
+      recordAudit(req, { action: AUDIT_ACTIONS.UPDATE, entity: 'Institution', entityId: data.id, summary: `Updated institution profile: ${data.name}`, details: { institutionCode: data.code } });
+      res.json({ success: true, data });
+    } catch (err) { next(err); }
+  };
+
+  createCommittee = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const input = CommitteeCreateSchema.parse(req.body);
+      const data = await this.service.createCommittee(req.params.id, input);
+      recordAudit(req, { action: AUDIT_ACTIONS.CREATE, entity: 'Committee', entityId: data.id, summary: `Created committee: ${data.name}`, details: { institutionId: req.params.id } });
+      res.status(201).json({ success: true, data });
+    } catch (err) { next(err); }
+  };
+
+  updateCommittee = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const input = CommitteeCreateSchema.parse(req.body);
+      const data = await this.service.updateCommittee(req.params.id, input);
+      recordAudit(req, { action: AUDIT_ACTIONS.UPDATE, entity: 'Committee', entityId: data.id, summary: `Updated committee: ${data.name}` });
+      res.json({ success: true, data });
+    } catch (err) { next(err); }
+  };
+
+  deleteCommittee = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await this.service.deleteCommittee(req.params.id);
+      recordAudit(req, { action: AUDIT_ACTIONS.DELETE, entity: 'Committee', entityId: req.params.id, summary: 'Deleted a committee and its roster' });
+      res.json({ success: true, data: { id: req.params.id } });
+    } catch (err) { next(err); }
+  };
+
+  createCommitteeMember = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const input = CommitteeMemberWriteSchema.parse(req.body);
+      const data = await this.service.createCommitteeMember(req.params.committeeId, input);
+      recordAudit(req, { action: AUDIT_ACTIONS.CREATE, entity: 'CommitteeMember', entityId: data.id, summary: `Added committee member: ${data.name}` });
+      res.status(201).json({ success: true, data });
+    } catch (err) { next(err); }
+  };
+
+  updateCommitteeMember = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const input = CommitteeMemberWriteSchema.parse(req.body);
+      const data = await this.service.updateCommitteeMember(req.params.id, input);
+      recordAudit(req, { action: AUDIT_ACTIONS.UPDATE, entity: 'CommitteeMember', entityId: data.id, summary: `Updated committee member: ${data.name}` });
+      res.json({ success: true, data });
+    } catch (err) { next(err); }
+  };
+
+  deleteCommitteeMember = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await this.service.deleteCommitteeMember(req.params.id);
+      recordAudit(req, { action: AUDIT_ACTIONS.DELETE, entity: 'CommitteeMember', entityId: req.params.id, summary: 'Removed a committee member' });
+      res.json({ success: true, data: { id: req.params.id } });
+    } catch (err) { next(err); }
+  };
+
+  reorderCommitteeMembers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const input = CommitteeMemberOrderSchema.parse(req.body);
+      const data = await this.service.reorderCommitteeMembers(req.params.committeeId, input.memberIds);
+      recordAudit(req, { action: AUDIT_ACTIONS.UPDATE, entity: 'CommitteeMember', entityId: req.params.committeeId, summary: 'Reordered committee members' });
+      res.json({ success: true, data });
+    } catch (err) { next(err); }
+  };
 
   getInstitutions = async (_req: Request, res: Response, next: NextFunction) => {
     try {
@@ -82,8 +167,11 @@ export class ContentController {
 
   getEvents = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const upcoming = req.query.upcoming !== undefined ? req.query.upcoming === 'true' : undefined;
-      const data = await this.service.getEvents(upcoming, req.query.institutionCode as any);
+      const requestedFilter = req.query.filter;
+      const filter = requestedFilter === undefined
+        ? req.query.upcoming === 'true' ? 'upcoming' : req.query.upcoming === 'false' ? 'past' : 'all'
+        : EventFilterSchema.parse(requestedFilter);
+      const data = await this.service.getEvents(filter, req.query.institutionCode as any);
       res.json({ success: true, data });
     } catch (err) {
       next(err);
@@ -146,12 +234,28 @@ export class ContentController {
     }
   };
 
-  getBatchPhotos = async (req: Request, res: Response, next: NextFunction) => {
+  createGalleryAlbum = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const school = req.params.school;
-      const batchYear = req.query.batchYear ? parseInt(req.query.batchYear as string) : undefined;
-      const data = await this.service.getBatchPhotos(school as any, batchYear);
+      const data = await this.service.createGalleryAlbum(req.body);
+      res.status(201).json({ success: true, data });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  updateGalleryAlbum = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data = await this.service.updateGalleryAlbum(req.params.id, req.body);
       res.json({ success: true, data });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  deleteGalleryAlbum = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await this.service.deleteGalleryAlbum(req.params.id);
+      res.json({ success: true, message: 'Gallery album deleted successfully' });
     } catch (err) {
       next(err);
     }
@@ -185,10 +289,44 @@ export class ContentController {
     }
   };
 
+  getAdminComments = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data = await this.service.getAdminComments(req.query.targetType as string | undefined);
+      res.json({ success: true, data });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  deleteComment = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data = await this.service.deleteComment(req.params.id);
+      recordAudit(req, {
+        action: AUDIT_ACTIONS.DELETE,
+        entity: 'Comment',
+        entityId: data.id,
+        summary: 'Deleted a public comment',
+        details: { targetType: data.targetType, targetId: data.targetId },
+      });
+      res.json({ success: true, data: { id: data.id } });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   createComment = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const input = CommentCreateSchema.parse(req.body);
-      const data = await this.service.createComment(input);
+      const isEventComment = req.body?.targetType === 'EVENT';
+      if (isEventComment) {
+        const input = EventCommentCreateSchema.parse(req.body);
+        await verifyRecaptchaToken(input.captchaToken, 'event_comment');
+        const data = await this.service.createComment(input);
+        res.status(201).json({ success: true, data });
+        return;
+      }
+
+      const comment = CommentCreateSchema.parse(req.body);
+      const data = await this.service.createComment(comment);
       res.status(201).json({ success: true, data });
     } catch (err) {
       next(err);
@@ -253,6 +391,28 @@ export class ContentController {
   listMedia = async (_req: Request, res: Response, next: NextFunction) => {
     try {
       const data = await this.service.listMedia();
+      res.json({ success: true, data });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  getHeroSlides = async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data = await this.service.getHeroSlides();
+      res.json({ success: true, data });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  saveHeroSlides = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const slides = req.body.slides || req.body;
+      if (!Array.isArray(slides)) {
+        throw new AppError('BAD_REQUEST', 'Slides array is required', 400);
+      }
+      const data = await this.service.saveHeroSlides(slides);
       res.json({ success: true, data });
     } catch (err) {
       next(err);

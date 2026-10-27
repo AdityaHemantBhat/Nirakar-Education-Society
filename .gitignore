@@ -26,3 +26,10 @@ dist-ssr
 *.sln
 *.sw?
 .dyad/
+
+# Runtime uploads (library PDFs and rendered page images)
+apps/api/uploads/
+
+# The original PDFs of the library volumes. These are never served over
+# HTTP, so they are kept out of the public uploads directory entirely.
+apps/api/private-uploads/

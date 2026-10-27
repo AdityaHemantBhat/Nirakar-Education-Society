@@ -23,6 +23,10 @@ import {
   Clock,
   Layers,
   Search,
+  School,
+  BookOpen,
+  Edit3,
+  Save,
 } from 'lucide-react';
 import {
   getDynamicDepartments,
@@ -51,7 +55,7 @@ export const AdminConsolePage: React.FC = () => {
     currentUser?.email === 'admin@nirakar.org';
 
   // Active top-level admin tab
-  const [activeTab, setActiveTab] = useState<'faculty' | 'alumni'>('faculty');
+  const [activeTab, setActiveTab] = useState<'faculty' | 'alumni' | 'institutions'>('institutions');
 
   // ==================== FACULTY MANAGEMENT STATE ====================
   // 1. Pending faculty applications
@@ -238,6 +242,108 @@ export const AdminConsolePage: React.FC = () => {
     setCurrentUser(adminUser);
   };
 
+  // ==================== INSTITUTION MANAGEMENT STATE ====================
+  const [selectedInstSlug, setSelectedInstSlug] = useState<string>('nirakar-high-school');
+  const [institutionsList, setInstitutionsList] = useState<any[]>([]);
+  const [loadingInsts, setLoadingInsts] = useState(false);
+  const [savingInst, setSavingInst] = useState(false);
+  const [instFeedback, setInstFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Form edit fields for selected institution
+  const [editTagline, setEditTagline] = useState('');
+  const [editVision, setEditVision] = useState('');
+  const [editHistory, setEditHistory] = useState('');
+  const [editCommitments, setEditCommitments] = useState('');
+  const [editInfrastructure, setEditInfrastructure] = useState('');
+  const [editRules, setEditRules] = useState('');
+  const [editAdmissions, setEditAdmissions] = useState('');
+  const [editCourses, setEditCourses] = useState('');
+  const [editActivities, setEditActivities] = useState('');
+
+  // Fetch institutions
+  const fetchInstitutions = async () => {
+    try {
+      setLoadingInsts(true);
+      const res = await fetch('/api/v1/content/institutions');
+      const payload = await res.json();
+      if (payload?.data && Array.isArray(payload.data)) {
+        setInstitutionsList(payload.data);
+      }
+    } catch (err) {
+      console.error('Failed to load institutions:', err);
+    } finally {
+      setLoadingInsts(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInstitutions();
+  }, []);
+
+  // When selected institution changes, load its data into edit fields
+  useEffect(() => {
+    if (!selectedInstSlug) return;
+    const current = institutionsList.find((i) => i.slug === selectedInstSlug);
+    if (current) {
+      setEditTagline(current.tagline || '');
+      setEditVision(current.vision || '');
+      setEditHistory(current.history || '');
+      const prof = current.profile || {};
+      setEditCommitments(typeof prof.commitments === 'string' ? prof.commitments : '');
+      setEditInfrastructure(Array.isArray(prof.infrastructure) ? prof.infrastructure.join('\n') : '');
+      setEditRules(Array.isArray(prof.rules) ? prof.rules.join('\n') : '');
+      setEditAdmissions(Array.isArray(prof.admissions) ? prof.admissions.join('\n') : '');
+      setEditCourses(Array.isArray(prof.courses) ? prof.courses.join('\n') : '');
+      setEditActivities(Array.isArray(prof.activities) ? prof.activities.join('\n') : '');
+    }
+  }, [selectedInstSlug, institutionsList]);
+
+  // Save institution updates
+  const handleSaveInstitution = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const current = institutionsList.find((i) => i.slug === selectedInstSlug);
+    if (!current) return;
+
+    try {
+      setSavingInst(true);
+      setInstFeedback(null);
+      const token = localStorage.getItem('nirakar_access_token');
+      const res = await fetch(`/api/v1/content/admin/institutions/${encodeURIComponent(current.id)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          tagline: editTagline.trim(),
+          history: editHistory.trim(),
+          vision: editVision.trim(),
+          bannerUrl: current.bannerUrl || null,
+          profile: {
+            commitments: editCommitments.trim(),
+            infrastructure: editInfrastructure.split('\n').map((s) => s.trim()).filter(Boolean),
+            rules: editRules.split('\n').map((s) => s.trim()).filter(Boolean),
+            admissions: editAdmissions.split('\n').map((s) => s.trim()).filter(Boolean),
+            courses: editCourses.split('\n').map((s) => s.trim()).filter(Boolean),
+            activities: editActivities.split('\n').map((s) => s.trim()).filter(Boolean),
+          },
+        }),
+      });
+
+      const payload = await res.json();
+      if (!res.ok) {
+        throw new Error(payload?.error?.message || payload?.message || 'Failed to update institution');
+      }
+
+      setInstFeedback({ type: 'success', message: `${current.name} updated successfully! Public pages are synchronized.` });
+      await fetchInstitutions();
+    } catch (err: any) {
+      setInstFeedback({ type: 'error', message: err.message || 'An error occurred while saving.' });
+    } finally {
+      setSavingInst(false);
+    }
+  };
+
   const handleAdminLogout = () => {
     localStorage.removeItem('nirakar_auth_user');
     setCurrentUser(null);
@@ -248,7 +354,7 @@ export const AdminConsolePage: React.FC = () => {
     return (
       <div className="w-full min-h-screen bg-[#FAF7F2] text-stone-900 flex flex-col font-sans">
         <Helmet>
-          <title>Administrative Governance Gate | Shree Nirakar Education Society</title>
+          <title>Administrative Governance Gate | Shri Nirakar Education Society</title>
         </Helmet>
         <Navbar />
 
@@ -308,7 +414,7 @@ export const AdminConsolePage: React.FC = () => {
   return (
     <div className="w-full min-h-screen bg-[#FAF7F2] text-stone-900 flex flex-col font-sans">
       <Helmet>
-        <title>Central Administrative Governance | Shree Nirakar Education Society</title>
+        <title>Central Administrative Governance | Shri Nirakar Education Society</title>
         <meta name="description" content="Official administrative management for faculty onboarding and alumni verification." />
       </Helmet>
 
@@ -361,6 +467,19 @@ export const AdminConsolePage: React.FC = () => {
           <div className="flex items-center gap-3 bg-white p-1.5 rounded-2xl border border-stone-200 shadow-sm">
             <button
               type="button"
+              onClick={() => setActiveTab('institutions')}
+              className={`px-5 py-2.5 rounded-xl font-serif font-bold text-xs sm:text-sm transition-all flex items-center gap-2 cursor-pointer ${
+                activeTab === 'institutions'
+                  ? 'bg-[#0b132b] text-amber-300 shadow-md'
+                  : 'text-stone-600 hover:text-stone-900'
+              }`}
+            >
+              <School size={16} />
+              <span>Schools & Institutional Governance</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setActiveTab('faculty')}
               className={`px-5 py-2.5 rounded-xl font-serif font-bold text-xs sm:text-sm transition-all flex items-center gap-2 cursor-pointer ${
                 activeTab === 'faculty'
@@ -392,9 +511,279 @@ export const AdminConsolePage: React.FC = () => {
           </div>
 
           <div className="text-xs text-stone-500 font-mono">
-            {activeTab === 'faculty' ? 'Faculty Governance Mode' : 'Alumni Verification Mode'}
+            {activeTab === 'institutions'
+              ? 'Institution & Governance Management'
+              : activeTab === 'faculty'
+              ? 'Faculty Governance Mode'
+              : 'Alumni Verification Mode'}
           </div>
         </div>
+
+        {/* ========================================================================= */}
+        {/* TAB 0: SCHOOLS & INSTITUTIONAL GOVERNANCE MANAGEMENT                     */}
+        {/* ========================================================================= */}
+        {activeTab === 'institutions' && (
+          <div className="space-y-10">
+            {/* School Selector Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 sm:p-6 rounded-3xl border border-stone-200/90 shadow-sm">
+              <div className="space-y-1">
+                <span className="text-[11px] font-serif font-bold uppercase tracking-wider text-amber-800">
+                  Select Campus & Institution
+                </span>
+                <h3 className="font-serif text-xl sm:text-2xl font-bold text-stone-900">
+                  Manage History, Policies, Rules & Committees
+                </h3>
+                <p className="text-xs text-stone-500">
+                  All changes are dynamically updated in the database and immediately reflected across public school profile pages.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {[
+                  { slug: 'nirakar-high-school', label: 'Shri Nirakar Vidyalaya' },
+                  { slug: 'angle-higher-secondary', label: 'S. S. Angle HSS' },
+                  { slug: 'tudal-high-school', label: 'Tudal High School' },
+                ].map((s) => (
+                  <button
+                    key={s.slug}
+                    type="button"
+                    onClick={() => setSelectedInstSlug(s.slug)}
+                    className={`px-4 py-2.5 rounded-xl font-serif font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+                      selectedInstSlug === s.slug
+                        ? 'bg-[#0b132b] text-amber-300 shadow-sm'
+                        : 'bg-stone-50 text-stone-600 hover:text-stone-900 hover:bg-stone-100 border border-stone-200'
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Status feedback message */}
+            {instFeedback && (
+              <div
+                className={`p-4 rounded-2xl border text-xs sm:text-sm font-sans flex items-center justify-between ${
+                  instFeedback.type === 'success'
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                    : 'bg-rose-50 text-rose-800 border-rose-200'
+                }`}
+              >
+                <div className="flex items-center gap-2 font-medium">
+                  {instFeedback.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                  <span>{instFeedback.message}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setInstFeedback(null)}
+                  className="font-bold underline text-xs cursor-pointer ml-3"
+                >
+                  Dismiss
+                </button>
+              </div>
+            )}
+
+            {/* Edit form */}
+            <form onSubmit={handleSaveInstitution} className="bg-white rounded-3xl p-6 sm:p-10 border border-stone-200/90 shadow-sm space-y-8">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-100 pb-5">
+                <div>
+                  <h3 className="font-serif text-xl sm:text-2xl font-bold text-stone-900 flex items-center gap-2">
+                    <Edit3 size={20} className="text-amber-600" />
+                    <span>
+                      Editing: {institutionsList.find((i) => i.slug === selectedInstSlug)?.name || 'Loading institution...'}
+                    </span>
+                  </h3>
+                  <p className="text-xs text-stone-500 mt-1">
+                    Live dynamic data stored in the database. Updating will affect public school pages immediately.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Link
+                    to={`/institutions/${selectedInstSlug}`}
+                    target="_blank"
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 text-xs font-bold font-serif transition"
+                  >
+                    <span>View Public Page</span>
+                    <ExternalLink size={13} />
+                  </Link>
+
+                  <button
+                    type="submit"
+                    disabled={savingInst}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#0b132b] hover:bg-[#16247e] text-amber-300 font-serif font-bold text-xs sm:text-sm shadow-md transition disabled:opacity-50 cursor-pointer"
+                  >
+                    <Save size={15} />
+                    <span>{savingInst ? 'Saving changes…' : 'Save Institutional Data'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Tagline & Vision */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-serif font-bold uppercase tracking-wider text-stone-700">
+                    Institutional Tagline
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editTagline}
+                    onChange={(e) => setEditTagline(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-stone-50 border border-stone-200 text-stone-900 text-sm focus:bg-white focus:border-amber-600 outline-none transition"
+                    placeholder="e.g. Excellence in Secondary Education, Mashem, Canacona"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-serif font-bold uppercase tracking-wider text-stone-700">
+                    Vision Statement
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editVision}
+                    onChange={(e) => setEditVision(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-stone-50 border border-stone-200 text-stone-900 text-sm focus:bg-white focus:border-amber-600 outline-none transition"
+                    placeholder="Institutional vision and pedagogical goals..."
+                  />
+                </div>
+              </div>
+
+              {/* History */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-serif font-bold uppercase tracking-wider text-stone-700">
+                    School History & Archival Narrative
+                  </label>
+                  <span className="text-[11px] text-stone-400 font-mono">Paragraphs separated by empty lines</span>
+                </div>
+                <textarea
+                  rows={8}
+                  value={editHistory}
+                  onChange={(e) => setEditHistory(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-stone-50 border border-stone-200 text-stone-900 text-xs sm:text-sm font-sans focus:bg-white focus:border-amber-600 outline-none transition leading-relaxed"
+                  placeholder="Enter the complete historical narrative of the school..."
+                />
+              </div>
+
+              {/* Commitments */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-serif font-bold uppercase tracking-wider text-stone-700">
+                    "We Are Committed To" / Guiding Values
+                  </label>
+                  <span className="text-[11px] text-stone-400 font-mono">Displayed prominently on campus profile</span>
+                </div>
+                <textarea
+                  rows={5}
+                  value={editCommitments}
+                  onChange={(e) => setEditCommitments(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-stone-50 border border-stone-200 text-stone-900 text-xs sm:text-sm font-sans focus:bg-white focus:border-amber-600 outline-none transition leading-relaxed"
+                  placeholder="Welcome messages, holistic development values, and educational commitments..."
+                />
+              </div>
+
+              {/* Rules & Regulations and Admission Policy (2 columns) */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-serif font-bold uppercase tracking-wider text-stone-700">
+                      Rules & Regulations
+                    </label>
+                    <span className="text-[10px] text-stone-400 font-mono">1 rule per line</span>
+                  </div>
+                  <textarea
+                    rows={8}
+                    value={editRules}
+                    onChange={(e) => setEditRules(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-stone-50 border border-stone-200 text-stone-900 text-xs font-sans focus:bg-white focus:border-amber-600 outline-none transition leading-relaxed"
+                    placeholder="Enter school rules (timings, uniform, attendance, discipline)..."
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-serif font-bold uppercase tracking-wider text-stone-700">
+                      Admission Policy & Guidelines
+                    </label>
+                    <span className="text-[10px] text-stone-400 font-mono">1 guideline per line</span>
+                  </div>
+                  <textarea
+                    rows={8}
+                    value={editAdmissions}
+                    onChange={(e) => setEditAdmissions(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-stone-50 border border-stone-200 text-stone-900 text-xs font-sans focus:bg-white focus:border-amber-600 outline-none transition leading-relaxed"
+                    placeholder="Enter admission criteria, documents required, eligibility, and fee structure..."
+                  />
+                </div>
+              </div>
+
+              {/* Infrastructure & Courses (2 columns) */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-serif font-bold uppercase tracking-wider text-stone-700">
+                      Campus Infrastructure & Amenities
+                    </label>
+                    <span className="text-[10px] text-stone-400 font-mono">1 amenity per line</span>
+                  </div>
+                  <textarea
+                    rows={6}
+                    value={editInfrastructure}
+                    onChange={(e) => setEditInfrastructure(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-stone-50 border border-stone-200 text-stone-900 text-xs font-sans focus:bg-white focus:border-amber-600 outline-none transition leading-relaxed"
+                    placeholder="Enter infrastructure facilities (buildings, labs, library, grounds, AV room)..."
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-serif font-bold uppercase tracking-wider text-stone-700">
+                      Courses of Study & Streams
+                    </label>
+                    <span className="text-[10px] text-stone-400 font-mono">1 course per line</span>
+                  </div>
+                  <textarea
+                    rows={6}
+                    value={editCourses}
+                    onChange={(e) => setEditCourses(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-stone-50 border border-stone-200 text-stone-900 text-xs font-sans focus:bg-white focus:border-amber-600 outline-none transition leading-relaxed"
+                    placeholder="Enter streams, subject combinations, scholastic areas, and grading..."
+                  />
+                </div>
+              </div>
+
+              {/* Key Features & Activities */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-serif font-bold uppercase tracking-wider text-stone-700">
+                    Key Features, Co-Curricular & Student Units
+                  </label>
+                  <span className="text-[10px] text-stone-400 font-mono">1 feature per line</span>
+                </div>
+                <textarea
+                  rows={5}
+                  value={editActivities}
+                  onChange={(e) => setEditActivities(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-stone-50 border border-stone-200 text-stone-900 text-xs font-sans focus:bg-white focus:border-amber-600 outline-none transition leading-relaxed"
+                  placeholder="Enter extracurricular features (Students Council, IBT, Jagor Club, Nature Conservation, Camps)..."
+                />
+              </div>
+
+              <div className="pt-4 border-t border-stone-100 flex items-center justify-end">
+                <button
+                  type="submit"
+                  disabled={savingInst}
+                  className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-[#0b132b] hover:bg-[#16247e] text-amber-300 font-serif font-bold text-sm shadow-md transition disabled:opacity-50 cursor-pointer"
+                >
+                  <Save size={16} />
+                  <span>{savingInst ? 'Saving changes…' : 'Save Institutional Data'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
         {/* ========================================================================= */}
         {/* TAB 1: FACULTY GOVERNANCE & ONBOARDING APPROVALS                         */}
@@ -846,5 +1235,4 @@ export const AdminConsolePage: React.FC = () => {
     </div>
   );
 };
-
 export default AdminConsolePage;

@@ -6,8 +6,13 @@ export interface CurrentAuthUser {
   username: string;
   role: string;
   email?: string;
-  facultyProfile?: { id: string } | null;
-  alumniProfile?: { username?: string } | null;
+  facultyProfile?: {
+    id: string;
+    designation?: string | null;
+    department?: string | null;
+    publicContactToggles?: unknown;
+  } | null;
+  alumniProfile?: { firstName?: string | null; lastName?: string | null; username?: string | null } | null;
 }
 
 async function fetchCurrentUser(): Promise<CurrentAuthUser | null> {

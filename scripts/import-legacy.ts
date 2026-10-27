@@ -1,5 +1,5 @@
 /**
- * Legacy Content Importer for Shree Nirakar Education Society
+ * Legacy Content Importer for Shri Nirakar Education Society
  * Crawls and imports public legacy data from https://www.nirakar.org
  * Preserves historical accuracy, strips tracking, and stores no alumni passwords/unconsented personal data.
  */

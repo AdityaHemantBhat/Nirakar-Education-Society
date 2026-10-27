@@ -11,9 +11,21 @@ export const SmoothScroll: React.FC<{ children: React.ReactNode }> = ({ children
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
-    // 1. Initialize Lenis once with butter-smooth 60/120fps kinetics
+    // Detect low-spec / low-RAM device (<= 2GB RAM or low hardware concurrency) or mobile touch
+    const deviceMemory = 'deviceMemory' in navigator ? Number((navigator as any).deviceMemory) : 4;
+    const hardwareConcurrency = navigator.hardwareConcurrency || 4;
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    const isLowEndDevice = deviceMemory <= 2 || hardwareConcurrency <= 2;
+
+    // On ultra-low-memory mobile phones (<= 2GB RAM), native mobile touch scrolling is much lighter and uses 0 JS thread ticks
+    if (isLowEndDevice && isMobile) {
+      // Keep ScrollTrigger listening to native window scroll
+      return;
+    }
+
+    // 1. Initialize Lenis with lightweight kinetics
     const lenis = new Lenis({
-      duration: 0.95,
+      duration: isMobile ? 0.7 : 0.95,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       syncTouch: false,

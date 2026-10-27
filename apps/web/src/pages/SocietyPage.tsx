@@ -106,10 +106,10 @@ export const SocietyPage: React.FC = () => {
   return (
     <div className="w-full min-h-screen bg-[#FDFBF7] text-stone-900 flex flex-col font-sans">
       <Helmet>
-        <title>About Society | Shree Nirakar Education Society, Canacona, Goa</title>
+        <title>About Society | Shri Nirakar Education Society, Canacona, Goa</title>
         <meta
           name="description"
-          content="History, vision statement, presidential address, and institutional chronicles of Shree Nirakar Education Society since 1924. Giving Akar to the future of Goa."
+          content="History, vision statement, presidential address, and institutional chronicles of Shri Nirakar Education Society since 1924. Giving Akar to the future of Goa."
         />
       </Helmet>
 
@@ -129,7 +129,7 @@ export const SocietyPage: React.FC = () => {
           </div>
 
           <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight text-white">
-            Shree Nirakar Education Society
+            Shri Nirakar Education Society
           </h1>
 
           <p className="font-serif italic text-lg sm:text-2xl text-amber-300/90 font-medium">
@@ -249,7 +249,7 @@ export const SocietyPage: React.FC = () => {
                   <h3 className="font-serif text-lg sm:text-xl font-bold text-stone-900 leading-snug">
                     To strive for excellence in education by developing intellectual potential of students
                   </h3>
-                  <p className="text-xs sm:text-sm text-stone-600 font-sans leading-relaxed">
+                  <p className="text-sm sm:text-base text-stone-600 font-sans leading-relaxed">
                     Fostering critical thinking, scientific curiosity, scholastic discipline, and board exam laurels.
                   </p>
                 </div>
@@ -265,7 +265,7 @@ export const SocietyPage: React.FC = () => {
                   <h3 className="font-serif text-lg sm:text-xl font-bold text-stone-900 leading-snug">
                     To impart quality education through innovative learning practices in keeping with time
                   </h3>
-                  <p className="text-xs sm:text-sm text-stone-600 font-sans leading-relaxed">
+                  <p className="text-sm sm:text-base text-stone-600 font-sans leading-relaxed">
                     Integrating modern Atal Tinkering Labs, robotics, digital classrooms, and continuous comprehensive evaluation.
                   </p>
                 </div>
@@ -281,7 +281,7 @@ export const SocietyPage: React.FC = () => {
                   <h3 className="font-serif text-lg sm:text-xl font-bold text-stone-900 leading-snug">
                     To provide creative environment to tap and nurture talent for development of professional skills
                   </h3>
-                  <p className="text-xs sm:text-sm text-stone-600 font-sans leading-relaxed">
+                  <p className="text-sm sm:text-base text-stone-600 font-sans leading-relaxed">
                     Equipping students with vocational acumen, sports proficiency, stage confidence, and technological readiness.
                   </p>
                 </div>
@@ -297,7 +297,7 @@ export const SocietyPage: React.FC = () => {
                   <h3 className="font-serif text-lg sm:text-xl font-bold text-stone-900 leading-snug">
                     To inculcate high moral values and sense of nationalism in keeping with the glorious heritage of Nirakar Education Society
                   </h3>
-                  <p className="text-xs sm:text-sm text-stone-600 font-sans leading-relaxed">
+                  <p className="text-sm sm:text-base text-stone-600 font-sans leading-relaxed">
                     Preserving Goan cultural identity, patriotic devotion, civic ethics, and selfless service to the motherland.
                   </p>
                 </div>
@@ -465,7 +465,7 @@ export const SocietyPage: React.FC = () => {
                 World-Class Learning & Sports Amenities
               </h3>
               <p className="text-sm sm:text-base text-stone-200 leading-relaxed font-sans w-full">
-                In addition, the Nirakar Education Society is today well equipped with one of the best playgrounds – <strong id="sports-pavilion">Nirakar Maidan</strong> – at Dapot, an <strong>Indoor Stadium</strong>, as well as a <strong>Hostel</strong> for the needy students. Nirakar Education Society has proved to be one of the best institutes today in Goa, just not in Canacona, to give Akar (shape) to the student community.
+                In addition, the Nirakar Education Society is today well equipped with one of the best playgrounds – <strong id="sports-pavilion">Nirakar Maidan</strong> – at Dapot and an <strong>Indoor Stadium</strong>. Nirakar Education Society has proved to be one of the best institutes today in Goa, just not in Canacona, to give Akar (shape) to the student community.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-2 text-xs font-sans">
@@ -479,7 +479,7 @@ export const SocietyPage: React.FC = () => {
                 </div>
                 <div className="bg-white/5 p-4 rounded-2xl border border-white/10 flex items-center gap-3">
                   <CheckCircle2 size={18} className="text-amber-400 shrink-0" />
-                  <span>Hostel for Disadvantaged & Remote Students</span>
+                  <span>Student Library & Digital Learning Archives</span>
                 </div>
                 <div className="bg-white/5 p-4 rounded-2xl border border-white/10 flex items-center gap-3">
                   <CheckCircle2 size={18} className="text-amber-400 shrink-0" />
@@ -512,21 +512,21 @@ export const SocietyPage: React.FC = () => {
                 LET’S DO IT TOGETHER
               </h2>
               <p className="text-xs sm:text-sm text-stone-600 font-sans">
-                From the Desk of Mr. Prashant Naik, President / Chairperson, Shree Nirakar Education Society
+                From the Desk of Mr. Prashant Naik, President / Chairperson, Shri Nirakar Education Society
               </p>
             </div>
 
-            {/* 2-Column Layout: Big Paragraphs on Left, Enlarged Photo on Right */}
+            {/* Layout: Photo first on mobile (order-1 lg:order-2), Text paragraphs below photo on mobile (order-2 lg:order-1) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-              {/* Left Column: Big Paragraphs (lg:col-span-7 xl:col-span-8) */}
-              <div className="lg:col-span-7 xl:col-span-8 space-y-4 text-xs sm:text-sm md:text-base text-stone-800 leading-relaxed font-sans">
+              {/* Text Column: order-2 on mobile, order-1 on desktop (lg:col-span-7 xl:col-span-8) */}
+              <div className="order-2 lg:order-1 lg:col-span-7 xl:col-span-8 space-y-5 text-base sm:text-base md:text-[16.5px] text-stone-800 leading-[1.8] font-sans">
                 {/* Lead Quote */}
-                <div className="rounded-2xl bg-amber-50/80 border border-amber-200/80 p-5 italic text-stone-900 font-serif text-sm sm:text-base shadow-2xs">
+                <div className="rounded-2xl bg-amber-50/80 border border-amber-200/80 p-5 sm:p-6 italic text-stone-900 font-serif text-base sm:text-lg leading-relaxed shadow-2xs">
                   "The mission of our society was to consciously espouse and promote the values of self-reliance, patriotism, civil liberties and freedom from colonial bondage. Today, our focus is to guarantee quality education coupled with life-oriented skills, ensuring young learners remain tied to the values of the soil as they soar to rise to their full potential."
                 </div>
 
                 <p>
-                  As I pen these lines, I recollect the patriotic fervour surrounding the formation of the Sri Nirakar Education Society. Those were the days of struggle for liberation and education was regarded as a powerful vehicle in the march towards political freedom. The mission of our society was to consciously espouse and promote the values of self-reliance, patriotism, civil liberties and freedom from colonial bondage.
+                  As I pen these lines, I recollect the patriotic fervour surrounding the formation of the Shri Nirakar Education Society. Those were the days of struggle for liberation and education was regarded as a powerful vehicle in the march towards political freedom. The mission of our society was to consciously espouse and promote the values of self-reliance, patriotism, civil liberties and freedom from colonial bondage.
                 </p>
 
                 <p>
@@ -568,7 +568,7 @@ export const SocietyPage: React.FC = () => {
                       Mr. Prashant Naik
                     </span>
                     <span className="text-xs text-amber-900 font-mono font-bold block mt-0.5">
-                      President / Chairperson, Shree Nirakar Education Society
+                      President / Chairperson, Shri Nirakar Education Society
                     </span>
                     <span className="text-xs text-stone-500 font-mono block">
                       Mashem Campus, Canacona, South Goa
@@ -577,8 +577,8 @@ export const SocietyPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Right Column: Enlarged Prominent Photo of Mr. Prashant Naik */}
-              <div className="lg:col-span-5 xl:col-span-4 space-y-4">
+              {/* Right Column: Enlarged Prominent Photo of Mr. Prashant Naik (order-1 on mobile, order-2 on desktop) */}
+              <div className="order-1 lg:order-2 lg:col-span-5 xl:col-span-4 space-y-4">
                 <div className="bg-[#FAF7F2] rounded-3xl border-2 border-amber-400/80 p-4 sm:p-5 shadow-lg space-y-4">
                   {/* Big Enlarged Photo */}
                   <div className="w-full h-80 sm:h-96 lg:h-[440px] rounded-2xl overflow-hidden border border-amber-300 shadow-md bg-stone-100 relative group">
@@ -598,7 +598,7 @@ export const SocietyPage: React.FC = () => {
                       Mr. Prashant Naik
                     </h3>
                     <p className="text-xs font-bold text-amber-900 font-mono tracking-wide uppercase">
-                      President, Shree Nirakar Education Society
+                      President, Shri Nirakar Education Society
                     </p>
                     <p className="text-[11px] text-stone-500 font-sans">
                       Leading the Society & Young Brigade Renaissance Since 1991
@@ -649,21 +649,21 @@ export const SocietyPage: React.FC = () => {
 
             {/* 85+ Years & Centenary Milestone (1939–2026) */}
             <div id="milestones" className="bg-gradient-to-r from-amber-900/10 via-amber-50 to-amber-100/40 rounded-2xl border-2 border-amber-500/60 shadow-md p-6 sm:p-8 space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-300/60 pb-3">
-                <div className="flex items-center gap-3">
-                  <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-600 text-white shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 border-b border-amber-300/60 pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                  <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-600 text-white shadow-xs shrink-0 whitespace-nowrap w-fit">
                     1939 – 2026 (85+ YEARS)
                   </span>
-                  <h3 className="font-serif font-black text-xl sm:text-2xl text-stone-900">
+                  <h3 className="font-serif font-black text-lg sm:text-2xl text-stone-900 leading-snug">
                     85+ Years of Dedicated Service & Centenary Legacy
                   </h3>
                 </div>
-                <span className="text-xs font-mono font-bold text-amber-900 bg-amber-200/70 px-2.5 py-0.5 rounded-full">
+                <span className="text-xs font-mono font-bold text-amber-900 bg-amber-200/70 px-2.5 py-1 rounded-full shrink-0 whitespace-nowrap w-fit self-start sm:self-auto">
                   Mushtifund Centenary (1924–2024)
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-stone-800 leading-relaxed font-sans">
-                From the first regular classes begun in the temple Agrashala in 1939, Shree Nirakar Education Society has rendered over 85 years of uninterrupted, dedicated educational service to Canacona Taluka. Marking a full century since the original 1924 Mushtifund genesis, the Society today educates over 2,400 active scholars across three campuses, with a global alumni fraternity exceeding 16,500 graduates.
+              <p className="text-sm sm:text-base text-stone-800 leading-relaxed font-sans">
+                From the first regular classes begun in the temple Agrashala in 1939, Shri Nirakar Education Society has rendered over 85 years of uninterrupted, dedicated educational service to Canacona Taluka. Marking a full century since the original 1924 Mushtifund genesis, the Society today educates over 2,400 active scholars across three campuses, with a global alumni fraternity exceeding 16,500 graduates.
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-center">
                 <div className="bg-white/80 rounded-xl p-3 border border-amber-200">
@@ -689,9 +689,9 @@ export const SocietyPage: React.FC = () => {
             <div className="space-y-4">
               {/* 1924 */}
               <div id="pioneers" className="bg-white rounded-2xl border border-stone-200/90 shadow-xs hover:border-amber-400 hover:shadow-md transition-all p-6 sm:p-8 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200/80 pb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 border-b border-stone-200/80 pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center items-start gap-2 sm:gap-3">
+                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80 shrink-0 whitespace-nowrap">
                       1924
                     </span>
                     <h3 className="font-serif font-bold text-lg sm:text-xl text-stone-900">
@@ -700,22 +700,22 @@ export const SocietyPage: React.FC = () => {
                   </div>
                   <span className="text-[11px] font-mono text-stone-500">Pre-Liberation Portuguese Era</span>
                 </div>
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
+                <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-sans">
                   The history of Nirakar Education Society goes back to the pre-liberation Portuguese era when people concerned about educational prosperity came forward to start Marathi medium schools in the village of Loliem in Canacona taluka, the southernmost taluka on Goa-Karnataka border (then Goa-India border). With the blessings of His Holiness Gokarn Partagal Mathadheesh Indirakant Teerth Swamiji, in 1924, the villagers came together to set up three schools – No 1 in Loliem, No 2 in Mashem and No 3 at Panaskhandem, on the border of Poinguinim village. They started as primary schools, from Standard I to IV.
                 </p>
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
+                <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-sans">
                   The concept to run the schools was Mushtifund. A handful of rice each student would contribute and the dedicated teachers would teach the students with the ‘salary of rice’. There was no independent school premises. The village temple was also the temple of knowledge and education. The school No 1 was thus running in Shree Keshav temple, No 2 in Shree Nirakar temple and No 3 in Shree Venkatesh temple.
                 </p>
-                <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-sans italic">
+                <p className="text-sm sm:text-base text-stone-600 leading-relaxed font-sans italic">
                   Eventually, the School No 3 at Panaskhandem closed down. But School No 1 was converted into today’s Shree Damodar Vidyalaya, Loliem and School No 2 into Shree Nirakar Vidyalaya, Mashem. The Shree Nirakar Vidyalaya kept on shifting its classes from temple to Agrashala, depending on the festivities.
                 </p>
               </div>
 
               {/* 1939 - 1950 */}
               <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xs hover:border-amber-400 hover:shadow-md transition-all p-6 sm:p-8 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200/80 pb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 border-b border-stone-200/80 pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center items-start gap-2 sm:gap-3">
+                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80 shrink-0 whitespace-nowrap">
                       1939 & 1950
                     </span>
                     <h3 className="font-serif font-bold text-lg sm:text-xl text-stone-900">
@@ -724,16 +724,16 @@ export const SocietyPage: React.FC = () => {
                   </div>
                   <span className="text-[11px] font-mono text-stone-500">First Independent Building</span>
                 </div>
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
+                <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-sans">
                   After struggling for the first 15 years, the Nirakar Vidyalaya started working with regular classes from Nirakar Devalaya’s Agrashala from 1939. But the school was shifted to its independent premises only in 1950. This was just a building of four rooms, what we see today from left side, where Headmaster’s chamber is located.
                 </p>
               </div>
 
               {/* 1958 */}
               <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xs hover:border-amber-400 hover:shadow-md transition-all p-6 sm:p-8 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200/80 pb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 border-b border-stone-200/80 pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center items-start gap-2 sm:gap-3">
+                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80 shrink-0 whitespace-nowrap">
                       1958
                     </span>
                     <h3 className="font-serif font-bold text-lg sm:text-xl text-stone-900">
@@ -742,16 +742,16 @@ export const SocietyPage: React.FC = () => {
                   </div>
                   <span className="text-[11px] font-mono text-stone-500">Full-Fledged High School</span>
                 </div>
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
+                <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-sans">
                   The building was later extended with more rooms in 1958. The then NES president late Tukaram Lolayekar, an eminent businessman and social worker, took initiative to take up this task at his own cost. The building had become mandatory to get recognition from the Pune Board of Education, Maharashtra to start a full-fledged High School with the batches of SSC (Std XI in those days). Nirakar Vidyalaya was the second institution in the whole of Canacona taluka, after Mallikarjun Vidyalaya, Char Rasta, Canacona, to start full-fledged classes.
                 </p>
               </div>
 
               {/* 1962-63 */}
               <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xs hover:border-amber-400 hover:shadow-md transition-all p-6 sm:p-8 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200/80 pb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 border-b border-stone-200/80 pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center items-start gap-2 sm:gap-3">
+                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80 shrink-0 whitespace-nowrap">
                       1962-63
                     </span>
                     <h3 className="font-serif font-bold text-lg sm:text-xl text-stone-900">
@@ -760,16 +760,16 @@ export const SocietyPage: React.FC = () => {
                   </div>
                   <span className="text-[11px] font-mono text-stone-500">Post-Liberation Laurel</span>
                 </div>
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
+                <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-sans">
                   With the accomplishment of this Herculean task, the first batch of SSC passed out from Nirakar High School in the academic year 1962-63, soon after Goa’s liberation in 1961. It was a matter of pride for the school that the result of the first batch was 100 per cent, with all the 17 students studying in SSC passed out. Till then, the students of Nirakar High School were going for their higher studies across the border, either at Majali or Karwar.
                 </p>
               </div>
 
               {/* 1961-65 */}
               <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xs hover:border-amber-400 hover:shadow-md transition-all p-6 sm:p-8 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200/80 pb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 border-b border-stone-200/80 pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center items-start gap-2 sm:gap-3">
+                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80 shrink-0 whitespace-nowrap">
                       1961–1965
                     </span>
                     <h3 className="font-serif font-bold text-lg sm:text-xl text-stone-900">
@@ -778,22 +778,22 @@ export const SocietyPage: React.FC = () => {
                   </div>
                   <span className="text-[11px] font-mono text-stone-500">Civic & Campus Growth</span>
                 </div>
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
+                <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-sans">
                   The Nirakar Education Society then took up construction of two rooms in 1961, which are the small rooms of today’s school hall. The Nirakar Education Society as well as the Loliem-Pollem Village Panchayat started functioning from these two rooms of the hall. The Panchayat was later shifted to its own premises in Loliem in 1963.
                 </p>
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
+                <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-sans">
                   Later on, a hall – called Samaj Mandir – was constructed in 1963, adjacent to these two rooms, leaving half of its area open. It was inaugurated at the hands of then Lt Governor Mr M R Sachdev. (The hall area was extended and fully covered with proper roofing as well as walls in 1989-90.) This was followed by annexe building on the hill top with six rooms, two of which were big rooms, in 1963-64. The need was felt as the strength of students started increasing with its best performance in academics as well as all-round development of the students in co-curricular activities.
                 </p>
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
+                <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-sans">
                   The school then continued progressing while celebrating its Silver Jubilee (25 years) in 1964-65. The grand celebration was honoured by Goa’s first Chief Minister late Bhausaheb alias Dayanand Bandodkar.
                 </p>
               </div>
 
               {/* 1991 */}
               <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xs hover:border-amber-400 hover:shadow-md transition-all p-6 sm:p-8 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200/80 pb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 border-b border-stone-200/80 pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center items-start gap-2 sm:gap-3">
+                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80 shrink-0 whitespace-nowrap">
                       1991
                     </span>
                     <h3 className="font-serif font-bold text-lg sm:text-xl text-stone-900">
@@ -802,16 +802,16 @@ export const SocietyPage: React.FC = () => {
                   </div>
                   <span className="text-[11px] font-mono text-stone-500">Young Leadership Renaissance</span>
                 </div>
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
+                <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-sans">
                   1991 was the year of a major transformation that took place in the history of Nirakar Education Society. The Young Brigade, which had passed out from the school in recent times, took over the management of the Society with an aim to upgrade the quality of education and rise to new heights. Mr Prashant Naik took over as the President of Nirakar Education Society at the age of 28 while Mr Prasad Lolayekar took over as the Chairman of the Managing Committee at the age of 23. Most of the members of the newly elected committee were around the same age.
                 </p>
               </div>
 
               {/* 1993 - 1996 */}
               <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xs hover:border-amber-400 hover:shadow-md transition-all p-6 sm:p-8 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200/80 pb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 border-b border-stone-200/80 pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center items-start gap-2 sm:gap-3">
+                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80 shrink-0 whitespace-nowrap">
                       1993–1996
                     </span>
                     <h3 className="font-serif font-bold text-lg sm:text-xl text-stone-900">
@@ -820,16 +820,16 @@ export const SocietyPage: React.FC = () => {
                   </div>
                   <span className="text-[11px] font-mono text-stone-500">Collegiate Expansion</span>
                 </div>
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
+                <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-sans">
                   The young management then took a major step to set up S S Angle Higher Secondary School in 1993. With the financial support rendered by a Margao-based businessman and social worker Mr Ramakant Angle, the premises was shifted to a new venue at Dapot in Mashem in 1995-96. The higher secondary made its mark at the state level by producing the best talent which is making its presence felt in different areas of Goa’s social, cultural, literary, sports and educational fields.
                 </p>
               </div>
 
               {/* 1998 - 1999 */}
               <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xs hover:border-amber-400 hover:shadow-md transition-all p-6 sm:p-8 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200/80 pb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 border-b border-stone-200/80 pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center items-start gap-2 sm:gap-3">
+                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80 shrink-0 whitespace-nowrap">
                       1998–1999
                     </span>
                     <h3 className="font-serif font-bold text-lg sm:text-xl text-stone-900">
@@ -838,19 +838,19 @@ export const SocietyPage: React.FC = () => {
                   </div>
                   <span className="text-[11px] font-mono text-stone-500">37-Year Void Resolved</span>
                 </div>
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
+                <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-sans">
                   Yet another major step was then taken by the Young Brigade when it responded to the advertisement by the Education Department, Government of Goa, to come forward to set up a High School in a remote area of Tudal in Gaodongri village in Canacona. This predominantly tribal area of Canacona did not have a High School for 37 years even after Goa’s liberation.
                 </p>
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
+                <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-sans">
                   The Nirakar Education Society thus spread its tentacles outside Loliem village by setting up Tudal High School in 1998-99. While classes were started in Saraswati Mandir, the Young Brigade also constructed its first building, with four classrooms, within one year.
                 </p>
               </div>
 
               {/* 1999-2000 */}
               <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xs hover:border-amber-400 hover:shadow-md transition-all p-6 sm:p-8 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200/80 pb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 border-b border-stone-200/80 pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center items-start gap-2 sm:gap-3">
+                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80 shrink-0 whitespace-nowrap">
                       1999–2000
                     </span>
                     <h3 className="font-serif font-bold text-lg sm:text-xl text-stone-900">
@@ -859,16 +859,16 @@ export const SocietyPage: React.FC = () => {
                   </div>
                   <span className="text-[11px] font-mono text-stone-500">Eminent Nuclear Scientist</span>
                 </div>
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
+                <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-sans">
                   This was the year – 1999-2000, when Nirakar Education Society celebrated its Diamond Jubilee. India’s eminent scientist of Goan origin, Dr Anil Kakodkar, graced the occasion while series of programmes were also held this year to upgrade the academic standard of the teaching faculty.
                 </p>
               </div>
 
               {/* 2002 to Present */}
               <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xs hover:border-amber-400 hover:shadow-md transition-all p-6 sm:p-8 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200/80 pb-3">
-                  <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 border-b border-stone-200/80 pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center items-start gap-2 sm:gap-3">
+                    <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-amber-100/80 text-amber-900 border border-amber-200/80 shrink-0 whitespace-nowrap">
                       2002 to Present
                     </span>
                     <h3 className="font-serif font-bold text-lg sm:text-xl text-stone-900">
@@ -877,14 +877,14 @@ export const SocietyPage: React.FC = () => {
                   </div>
                   <span className="text-[11px] font-mono text-stone-500">Modern State-of-the-Art Hub</span>
                 </div>
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
+                <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-sans">
                   By 2002-03, Tudal High School constructed a two-storied full-fledged building. The school has made its mark with best performance in the academic as well as in the co-curricular field.
                 </p>
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
+                <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-sans">
                   By 2011-12, the S S Angle Higher Secondary School took yet another important step by starting a Science stream. In 2012-13, Tudal High School was granted permission by the Education Department to start a Primary School in Konkani medium.
                 </p>
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans font-medium">
-                  In addition, the Nirakar Education Society is today well equipped with one of the best playground – Nirakar Maidan – at Dapot, an Indoor Stadium as well as a Hostel for the needy students. Nirakar Education Society has proved to be one of the best institutes today in Goa, just not in Canacona, to give Akar (shape) to the student community.
+                <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-sans font-medium">
+                  In addition, the Nirakar Education Society is today well equipped with one of the best playground – Nirakar Maidan – at Dapot and an Indoor Stadium. Nirakar Education Society has proved to be one of the best institutes today in Goa, just not in Canacona, to give Akar (shape) to the student community.
                 </p>
               </div>
             </div>
@@ -896,35 +896,43 @@ export const SocietyPage: React.FC = () => {
         {/* ========================================================= */}
         {activeTab === 'institutions' && (
           <div className="w-full space-y-8">
-            {/* Rounded Pill Sub-Tabs */}
-            <div className="flex flex-wrap items-center gap-2 bg-white p-2.5 rounded-full border border-stone-200/90 shadow-2xs">
-              <button
-                onClick={() => setInstitutionSubTab('nirakar')}
-                className={`px-5 py-2 rounded-full text-xs sm:text-sm font-serif font-bold transition-all cursor-pointer ${institutionSubTab === 'nirakar'
-                    ? 'bg-[#111b5e] text-white shadow-xs'
-                    : 'text-stone-700 hover:text-stone-900 hover:bg-stone-100'
-                  }`}
-              >
-                Shri Nirakar High School History
-              </button>
-              <button
-                onClick={() => setInstitutionSubTab('angle')}
-                className={`px-5 py-2 rounded-full text-xs sm:text-sm font-serif font-bold transition-all cursor-pointer ${institutionSubTab === 'angle'
-                    ? 'bg-[#111b5e] text-white shadow-xs'
-                    : 'text-stone-700 hover:text-stone-900 hover:bg-stone-100'
-                  }`}
-              >
-                Angle Higher Secondary School History
-              </button>
-              <button
-                onClick={() => setInstitutionSubTab('tudal')}
-                className={`px-5 py-2 rounded-full text-xs sm:text-sm font-serif font-bold transition-all cursor-pointer ${institutionSubTab === 'tudal'
-                    ? 'bg-[#111b5e] text-white shadow-xs'
-                    : 'text-stone-700 hover:text-stone-900 hover:bg-stone-100'
-                  }`}
-              >
-                Tudal High School History
-              </button>
+            {/* Responsive Sub-Tabs with generous breathing gap */}
+            <div className="w-full overflow-x-auto scrollbar-none pt-1 pb-3 mb-6 sm:mb-8">
+              <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-white p-1.5 sm:p-2 rounded-full border border-stone-200/90 shadow-2xs min-w-max">
+                <button
+                  type="button"
+                  onClick={() => setInstitutionSubTab('nirakar')}
+                  className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-serif font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${institutionSubTab === 'nirakar'
+                      ? 'bg-[#111b5e] text-white shadow-xs'
+                      : 'text-stone-700 hover:text-stone-900 hover:bg-stone-100'
+                    }`}
+                >
+                  <span className="sm:inline hidden">Shri Nirakar High School History</span>
+                  <span className="sm:hidden">Shri Nirakar High School</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInstitutionSubTab('angle')}
+                  className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-serif font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${institutionSubTab === 'angle'
+                      ? 'bg-[#111b5e] text-white shadow-xs'
+                      : 'text-stone-700 hover:text-stone-900 hover:bg-stone-100'
+                    }`}
+                >
+                  <span className="sm:inline hidden">Angle Higher Secondary School History</span>
+                  <span className="sm:hidden">Angle Higher Secondary School</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInstitutionSubTab('tudal')}
+                  className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-serif font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${institutionSubTab === 'tudal'
+                      ? 'bg-[#111b5e] text-white shadow-xs'
+                      : 'text-stone-700 hover:text-stone-900 hover:bg-stone-100'
+                    }`}
+                >
+                  <span className="sm:inline hidden">Tudal High School History</span>
+                  <span className="sm:hidden">Tudal High School</span>
+                </button>
+              </div>
             </div>
 
             {/* Sub-Tab 1: Shri Nirakar High School History */}
@@ -987,7 +995,7 @@ export const SocietyPage: React.FC = () => {
                   </p>
 
                   <p>
-                    After liberation, that is from the year 1961 the school was upgraded to impart quality education upto S.S.C level. The full fledged school was run under the leadership of <strong>Shri Suresh Kanekar</strong>, <strong>Shri Ravindra Pai Raiturkar</strong> and <strong>Shri Ram V. Bhat</strong>. From the year 1964 to 1970 the school was under the tutelage of <strong>Shri Ramdas N. Phene</strong>, whose competency brought in great stability and many accomplishments. In the year 1971 <strong>Shri Suresh Prabhugaonkar</strong> was appointed the headmaster of the school. The school celebrated its golden Jubilee during his leadership. <strong>Mr. Jairam Gaonkar</strong> was appointed as the Headmaster of this institution in the year 1998. Many innovative methods of teaching were carried out in school during his tenure. The society also started a hostel for students coming from disadvantaged backgrounds. Students not only from Canacona but from different parts of Goa are availing this facility. Presently the school is run under the able leadership of <strong>Mr. Hemant Kamat</strong>. Plans for developments are ongoing and every effort is made by NES to provide the best facilities.
+                    After liberation, that is from the year 1961 the school was upgraded to impart quality education upto S.S.C level. The full fledged school was run under the leadership of <strong>Shri Suresh Kanekar</strong>, <strong>Shri Ravindra Pai Raiturkar</strong> and <strong>Shri Ram V. Bhat</strong>. From the year 1964 to 1970 the school was under the tutelage of <strong>Shri Ramdas N. Phene</strong>, whose competency brought in great stability and many accomplishments. In the year 1971 <strong>Shri Suresh Prabhugaonkar</strong> was appointed the headmaster of the school. The school celebrated its golden Jubilee during his leadership. <strong>Mr. Jairam Gaonkar</strong> was appointed as the Headmaster of this institution in the year 1998. Many innovative methods of teaching were carried out in school during his tenure. The society also provided extensive support for students coming from disadvantaged backgrounds. Students not only from Canacona but from different parts of Goa are availing education at this institution. Presently the school is run under the able leadership of <strong>Mr. Hemant Kamat</strong>. Plans for developments are ongoing and every effort is made by NES to provide the best facilities.
                   </p>
 
                   <div className="rounded-2xl bg-amber-50/80 border border-amber-200/80 p-6 sm:p-8 italic text-stone-900 font-serif text-base sm:text-lg leading-relaxed shadow-xs">
@@ -1040,7 +1048,7 @@ export const SocietyPage: React.FC = () => {
                 {/* Full-Width Institutional Text */}
                 <div className="w-full space-y-6 text-sm sm:text-base lg:text-[17px] text-stone-800 leading-relaxed font-sans">
                   <p>
-                    Inspired by a young and energetic team of management members, Shree Nirakar Education Society’s <strong>Satyawati Soiru Angle Higher Secondary School</strong> commenced classes in June 1993 in the premises of Shree Nirakar Vidyalaya under the dynamic leadership of <strong>Dr. Narayan B Desai</strong>. The avowed aim was to enable individuals to develop academic and social skills, strength of character, resourcefulness and creativity necessary to become successful family members, citizens and workers, by providing a happy, intellectually stimulating and caring environment in which everyone is given the opportunity to reach their full potential.
+                    Inspired by a young and energetic team of management members, Shri Nirakar Education Society’s <strong>Satyawati Soiru Angle Higher Secondary School</strong> commenced classes in June 1993 in the premises of Shree Nirakar Vidyalaya under the dynamic leadership of <strong>Dr. Narayan B Desai</strong>. The avowed aim was to enable individuals to develop academic and social skills, strength of character, resourcefulness and creativity necessary to become successful family members, citizens and workers, by providing a happy, intellectually stimulating and caring environment in which everyone is given the opportunity to reach their full potential.
                   </p>
 
                   <p>
@@ -1052,7 +1060,7 @@ export const SocietyPage: React.FC = () => {
                   </p>
 
                   <p>
-                    Thanks to the goodwill and sustained commitment of these and many other visionary people, Angle Higher Secondary School has come a long way to grow in its stature as one of the leading rural institutions in the state. On <strong>June 21st 1998</strong> the spacious new building of Shree Nirakar Education Society’s S. S. Angle Higher Secondary School was inaugurated by then Governor of Goa <strong>H.E. Lt. General J. F. R. Jacob (PVSM)</strong> on the sprawling Nirakar Maidan marking another important milestone in the history of the Society.
+                    Thanks to the goodwill and sustained commitment of these and many other visionary people, Angle Higher Secondary School has come a long way to grow in its stature as one of the leading rural institutions in the state. On <strong>June 21st 1998</strong> the spacious new building of Shri Nirakar Education Society’s S. S. Angle Higher Secondary School was inaugurated by then Governor of Goa <strong>H.E. Lt. General J. F. R. Jacob (PVSM)</strong> on the sprawling Nirakar Maidan marking another important milestone in the history of the Society.
                   </p>
 
                   <p>
@@ -1063,10 +1071,10 @@ export const SocietyPage: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                     <div className="rounded-2xl border border-stone-200/90 bg-[#FAF7F2] p-6 space-y-3">
                       <span className="text-xs font-mono font-bold uppercase text-amber-900 block">
-                        MR. PRASHANT NAIK • CHAIRMAN, SHREE NIRAKAR EDUCATION SOCIETY
+                        MR. PRASHANT NAIK • CHAIRMAN, SHRI NIRAKAR EDUCATION SOCIETY
                       </span>
                       <p className="font-serif italic text-sm sm:text-base text-stone-800 leading-relaxed">
-                        “The Higher Secondary has grown to be one of the top rural institutions in the state and can boast of infrastructural facilities that match the best in the country that include a spacious premises/ new building, Full length hall besides a mini hall, Indoor cricket pitch, Boys Hostel, Sprawling Football/Cricket Ground, well equipped gymnasium, Volleyball Court, Baseball Ground, Recreation Room, Computer Lab, state of the art laboratories, Audio-Visual Room, Library, Music Room, NSS Room, Agriculture plot, and a DEITI centre. The society has big expansion plans and will continue to make the rural institution into a centre for excellence.”
+                        “The Higher Secondary has grown to be one of the top rural institutions in the state and can boast of infrastructural facilities that match the best in the country that include a spacious premises/ new building, Full length hall besides a mini hall, Indoor cricket pitch, Sprawling Football/Cricket Ground, well equipped gymnasium, Volleyball Court, Baseball Ground, Recreation Room, Computer Lab, state of the art laboratories, Audio-Visual Room, Library, Music Room, NSS Room, Agriculture plot, and a DEITI centre. The society has big expansion plans and will continue to make the rural institution into a centre for excellence.”
                       </p>
                     </div>
 
@@ -1252,7 +1260,7 @@ export const SocietyPage: React.FC = () => {
                   </span>
                   <h3 className="font-serif text-lg font-bold text-stone-900 mt-2">Society Administrative Office</h3>
                   <p className="text-xs text-stone-600 mt-1 font-sans">
-                    Shree Nirakar Education Society Central Office, Mashem, Canacona, South Goa 403728
+                    Shri Nirakar Education Society Central Office, Mashem, Canacona, South Goa 403728
                   </p>
                 </div>
                 <div className="pt-3 border-t border-stone-200/80 space-y-1.5 text-xs text-stone-700 font-mono">
@@ -1284,7 +1292,7 @@ export const SocietyPage: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-sans">
-                Shree Nirakar Education Society operates as an officially registered educational trust under the Societies Registration Act (Registration No. 128/Goa). The Society convenes regular Annual General Body Meetings (AGBM) of registered life members and trustees at the Mashem Headquarters to present audited financial statements, review academic directorate milestones, ratify infrastructure development resolutions, and sanction welfare endowments.
+                Shri Nirakar Education Society operates as an officially registered educational trust under the Societies Registration Act (Registration No. 128/Goa). The Society convenes regular Annual General Body Meetings (AGBM) of registered life members and trustees at the Mashem Headquarters to present audited financial statements, review academic directorate milestones, ratify infrastructure development resolutions, and sanction welfare endowments.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs font-sans">
                 <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200">

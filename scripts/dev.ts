@@ -1,5 +1,5 @@
 /**
- * One-Command Development Orchestrator for Shree Nirakar Education Society
+ * One-Command Development Orchestrator for Shri Nirakar Education Society
  *
  * Automatically:
  * 1. Creates .env from .env.example if missing
@@ -84,6 +84,26 @@ function freePorts(ports: number[]) {
 
 const childProcesses: any[] = [];
 
+/**
+ * Waits until the API answers its health check, so the web and admin dev
+ * servers never start against a closed port.
+ */
+async function waitForApi(timeoutMs = 60_000): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      const response = await fetch('http://127.0.0.1:4000/healthz', {
+        signal: AbortSignal.timeout(2000),
+      });
+      if (response.ok) return true;
+    } catch {
+      /* The API is not up yet — keep waiting. */
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  return false;
+}
+
 function cleanupAndExit() {
   for (const proc of childProcesses) {
     try {
@@ -143,7 +163,7 @@ function spawnWithPrefix(name: string, prefix: string, command: string, args: st
 
 async function main() {
   console.log(`${COLORS.sys} ==============================================================`);
-  console.log(`${COLORS.sys} Starting Shree Nirakar Education Society Monorepo (Dev Mode)`);
+  console.log(`${COLORS.sys} Starting Shri Nirakar Education Society Monorepo (Dev Mode)`);
   console.log(`${COLORS.sys} ==============================================================`);
 
   // Ensure ports 4000, 5000, 5001 are free
@@ -164,6 +184,21 @@ async function main() {
 
   // Start API (Port 4000)
   spawnWithPrefix('API', COLORS.api, 'npm', ['run', 'dev'], path.join(rootDir, 'apps/api'));
+
+  /* The web and admin dev servers proxy /api and /socket.io to the API. If
+     they boot before the API is listening, Vite logs a stream of
+     "ws proxy error: connect ECONNREFUSED 127.0.0.1:4000" while the page
+     tries to open its socket. Waiting for the API's health check removes
+     that noise and the spurious console errors that come with it. */
+  console.log(`${COLORS.sys} Waiting for the API to accept connections...`);
+  const apiReady = await waitForApi();
+  if (apiReady) {
+    console.log(`${COLORS.sys} API is up — starting the web and admin servers.`);
+  } else {
+    console.warn(
+      `${COLORS.sys} API did not respond in time; starting the web and admin servers anyway.`,
+    );
+  }
 
   // Start Public Web (Port 5000)
   spawnWithPrefix('WEB', COLORS.web, 'npm', ['run', 'dev'], path.join(rootDir, 'apps/web'));

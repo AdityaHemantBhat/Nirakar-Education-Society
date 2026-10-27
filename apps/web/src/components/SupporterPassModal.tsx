@@ -44,8 +44,8 @@ export const SupporterPassModal: React.FC<SupporterPassModalProps> = ({
           key: orderData.keyId,
           amount: orderData.amount * 100,
           currency: 'INR',
-          name: 'Shree Nirakar Education Society',
-          description: 'Supporter Pass (Unlocks all Daily Magazine & Alumni Posts)',
+          name: 'Shri Nirakar Education Society',
+          description: 'Supporter Pass (supports the Daily Magazine archive)',
           order_id: orderData.razorpayOrderId,
           handler: async (response: any) => {
             // Emulate instant dev webhook confirmation

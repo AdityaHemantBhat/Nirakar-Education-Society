@@ -397,7 +397,7 @@ export const FacultyDetailPage: React.FC = () => {
     return (
       <div className="w-full min-h-screen bg-[#FAF7F2] text-stone-900 flex flex-col font-sans">
         <Helmet>
-          <title>Educator Not Found | Shree Nirakar Education Society</title>
+          <title>Educator Not Found | Shri Nirakar Education Society</title>
         </Helmet>
         <Navbar />
         <main className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4 py-24">
@@ -425,7 +425,7 @@ export const FacultyDetailPage: React.FC = () => {
   return (
     <div className="w-full min-h-screen bg-[#FAF7F2] text-stone-900 flex flex-col font-sans">
       <Helmet>
-        <title>{`${educator.name} | Faculty Credentials & Chronicle | Shree Nirakar Education Society`}</title>
+        <title>{`${educator.name} | Faculty Credentials & Chronicle | Shri Nirakar Education Society`}</title>
         <meta
           name="description"
           content={`${educator.name}, ${educator.designation} in ${educator.department} at ${educator.institutionName}. ${educator.bio || ''}`}
@@ -667,7 +667,7 @@ export const FacultyDetailPage: React.FC = () => {
                   {educator.qualification}
                 </p>
                 <p className="text-xs text-stone-500 font-sans leading-relaxed">
-                  Credentials verified by the Directorate of Education, Government of Goa, and Shree Nirakar Education Society Academic Verification Board.
+                  Credentials verified by the Directorate of Education, Government of Goa, and Shri Nirakar Education Society Academic Verification Board.
                 </p>
               </div>
             )}
@@ -792,7 +792,7 @@ export const FacultyDetailPage: React.FC = () => {
                 Faculty Portal Self-Service
               </span>
               <h3 className="font-serif text-xl sm:text-2xl font-bold text-white">
-                Are you an educator at Shree Nirakar Education Society?
+                Are you an educator at Shri Nirakar Education Society?
               </h3>
               <p className="text-xs sm:text-sm text-stone-300 font-sans leading-relaxed">
                 Log in to your authenticated Faculty Dashboard to update your verified credentials, research publications, consultation hours, and official links.

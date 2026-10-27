@@ -20,7 +20,7 @@ export const AGENT_PRITAM_PATH =
 
 /**
  * Pure Single-Color Light SVG Page Transition from agentPritam47/svg-page-transition.
- * Features official Shree Nirakar Education Society emblem & prominent typography in the center.
+ * Features official Shri Nirakar Education Society emblem & prominent typography in the center.
  * Light pastel blue (#82A0FF), zero yellow, clean, airy, 60fps GPU Composited.
  */
 export const Transition = forwardRef<TransitionHandle, TransitionProps>(
@@ -185,29 +185,29 @@ export const Transition = forwardRef<TransitionHandle, TransitionProps>(
           />
         </svg>
 
-        {/* Centered Institutional Logo & Name (Slightly Big, Zero Yellow, High Contrast) */}
-        <div ref={badgeRef} className="svg-transition-badge opacity-0">
-          {/* Official Emblem Image - Sized prominently in clean white card */}
-          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-white p-2.5 shadow-2xl border-2 border-white/80 mb-3 flex items-center justify-center transform hover:scale-105 transition-transform duration-300">
+        {/* Centered Institutional Logo & Name (Fully responsive for small screens, foldables, tablets and desktop) */}
+        <div ref={badgeRef} className="svg-transition-badge opacity-0 w-full px-4 max-w-none sm:max-w-md md:max-w-xl">
+          {/* Official Emblem Image - Sized responsively in clean white card */}
+          <div className="w-16 h-16 xs:w-20 xs:h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-2xl sm:rounded-3xl bg-white p-2 sm:p-2.5 shadow-2xl border-2 border-white/80 mb-2.5 sm:mb-3 flex items-center justify-center transform hover:scale-105 transition-transform duration-300">
             <img
               src="/images/Logo.jpg"
-              alt="Shree Nirakar Education Society Official Emblem"
-              className="w-full h-full object-contain rounded-2xl"
+              alt="Shri Nirakar Education Society Official Emblem"
+              className="w-full h-full object-contain rounded-xl sm:rounded-2xl"
             />
           </div>
 
           {/* Prominent Society Title */}
-          <div className="text-white font-serif font-black text-xl sm:text-2xl md:text-3xl tracking-wide uppercase mb-1 drop-shadow-lg text-center px-4 leading-tight">
-            Shree Nirakar Education Society
+          <div className="text-white font-serif font-black text-sm sm:text-xl md:text-2xl lg:text-4xl tracking-wide uppercase mb-1 drop-shadow-lg text-center px-2 sm:px-4 whitespace-nowrap">
+            Shri Nirakar Education Society
           </div>
 
           {/* Sanskrit Motto */}
-          <div className="text-white/95 font-serif text-sm sm:text-base font-semibold tracking-widest drop-shadow-md text-center">
+          <div className="text-white/95 font-serif text-xs sm:text-base font-semibold tracking-widest drop-shadow-md text-center">
             ।। तमसो मा ज्योतिर्गमय ।।
           </div>
 
           {/* Location & Legacy Tagline */}
-          <div className="mt-1.5 text-white/85 text-xs sm:text-sm font-sans uppercase tracking-widest font-semibold text-center drop-shadow-sm">
+          <div className="mt-1 sm:mt-1.5 text-white/85 text-[10px] xs:text-xs sm:text-sm font-sans uppercase tracking-widest font-semibold text-center drop-shadow-sm">
             Mashem, Canacona, South Goa • Estd. 1939
           </div>
         </div>

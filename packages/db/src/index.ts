@@ -23,7 +23,7 @@ if (!process.env.DATABASE_URL && process.loadEnvFile) {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
+   
   var prismaGlobal: PrismaClient | undefined;
 }
 

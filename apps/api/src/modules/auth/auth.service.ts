@@ -43,7 +43,7 @@ export class AuthService {
     };
 
     const accessToken = generateAccessToken(payload);
-    const { token: rawRefreshToken, hash: refreshHash, expiresAt } = generateRefreshToken();
+    const { token: rawRefreshToken, hash: refreshHash, expiresAt } = await generateRefreshToken();
 
     await this.repo.saveRefreshToken(user.id, refreshHash, expiresAt);
 
@@ -58,6 +58,7 @@ export class AuthService {
       },
       accessToken,
       refreshToken: rawRefreshToken,
+      refreshExpiresAt: expiresAt,
     };
   }
 
@@ -93,7 +94,7 @@ export class AuthService {
     };
 
     const accessToken = generateAccessToken(payload);
-    const { token: rawRefreshToken, hash: refreshHash, expiresAt } = generateRefreshToken();
+    const { token: rawRefreshToken, hash: refreshHash, expiresAt } = await generateRefreshToken();
     await this.repo.saveRefreshToken(user.id, refreshHash, expiresAt);
 
     return {
@@ -103,6 +104,7 @@ export class AuthService {
       },
       accessToken,
       refreshToken: rawRefreshToken,
+      refreshExpiresAt: expiresAt,
     };
   }
 
@@ -125,13 +127,19 @@ export class AuthService {
     };
 
     const newAccessToken = generateAccessToken(payload);
-    const { token: nextRawRefreshToken, hash: nextRefreshHash, expiresAt } = generateRefreshToken();
+    const { token: nextRawRefreshToken, hash: nextRefreshHash, expiresAt } = await generateRefreshToken();
     await this.repo.saveRefreshToken(record.user.id, nextRefreshHash, expiresAt);
 
     return {
       accessToken: newAccessToken,
       refreshToken: nextRawRefreshToken,
+      refreshExpiresAt: expiresAt,
     };
+  }
+
+  async logout(rawRefreshToken?: string) {
+    if (!rawRefreshToken) return;
+    await this.repo.revokeRefreshTokenByHash(hashRefreshToken(rawRefreshToken));
   }
 
   async getMe(userId: string) {

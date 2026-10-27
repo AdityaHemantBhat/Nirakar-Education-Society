@@ -20,6 +20,10 @@ import {
   Save,
 } from 'lucide-react';
 import { io } from 'socket.io-client';
+import { socketOrigin } from '../lib/api.js';
+import { getPublicSiteUrl } from '../lib/site.js';
+import { fetchWithAdminSession } from '../lib/admissions.js';
+import { AdminSelect } from '../components/AdminSelect.js';
 
 const DEFAULT_DEPARTMENTS = [
   'Science & Laboratories',
@@ -53,7 +57,7 @@ export const FacultyManagerPage: React.FC = () => {
     queryKey: ['admin_faculty_pending'],
     queryFn: async () => {
       try {
-        const res = await fetch('/api/v1/faculty/pending');
+        const res = await fetchWithAdminSession('/api/v1/faculty/pending');
         if (!res.ok) throw new Error('Failed to fetch pending faculty');
         const json = await res.json();
         return json.data || [];
@@ -72,7 +76,7 @@ export const FacultyManagerPage: React.FC = () => {
     queryKey: ['admin_faculty_departments'],
     queryFn: async () => {
       try {
-        const res = await fetch('/api/v1/faculty/departments');
+        const res = await fetchWithAdminSession('/api/v1/faculty/departments');
         if (!res.ok) throw new Error('Failed to fetch departments');
         const json = await res.json();
         if (json.data && Array.isArray(json.data) && json.data.length > 0) {
@@ -113,7 +117,7 @@ export const FacultyManagerPage: React.FC = () => {
   const { data: storedOrder = [] } = useQuery({
     queryKey: ['faculty_order'],
     queryFn: async () => {
-      const res = await fetch('/api/v1/faculty/admin/order');
+      const res = await fetchWithAdminSession('/api/v1/faculty/admin/order');
       if (!res.ok) return [];
       const json = await res.json();
       return json.data || [];
@@ -152,13 +156,10 @@ export const FacultyManagerPage: React.FC = () => {
 
   // Socket.IO listener for live updates
   useEffect(() => {
-    const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-    const socketUrl = isLocal
-      ? `${window.location.protocol}//${window.location.hostname}:4000`
-      : '/';
-    const socket = io(socketUrl, {
+    const socket = io(socketOrigin(), {
       transports: ['websocket', 'polling'],
       reconnection: true,
+      withCredentials: true,
     });
     socket.on('faculty:reordered', (data: { facultyIds: string[] }) => {
       setOrderedFaculty((current) => {
@@ -181,7 +182,7 @@ export const FacultyManagerPage: React.FC = () => {
   const handleApprove = async (appId: string) => {
     setActionLoadingId(appId);
     try {
-      await fetch(`/api/v1/faculty/admin/approve/${appId}`, {
+      await fetchWithAdminSession(`/api/v1/faculty/admin/approve/${appId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: appId }),
@@ -207,7 +208,7 @@ export const FacultyManagerPage: React.FC = () => {
   const handleReject = async (appId: string) => {
     setActionLoadingId(appId);
     try {
-      await fetch(`/api/v1/faculty/admin/reject/${appId}`, {
+      await fetchWithAdminSession(`/api/v1/faculty/admin/reject/${appId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: appId }),
@@ -235,7 +236,7 @@ export const FacultyManagerPage: React.FC = () => {
 
     setActionLoadingId(id);
     try {
-      const res = await fetch(`/api/v1/faculty/${id}`, {
+      const res = await fetchWithAdminSession(`/api/v1/faculty/${id}`, {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error('Failed to delete faculty member');
@@ -261,7 +262,7 @@ export const FacultyManagerPage: React.FC = () => {
 
     const updated = [...departments, trimmed];
     try {
-      await fetch('/api/v1/faculty/departments', {
+      await fetchWithAdminSession('/api/v1/faculty/departments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ departments: updated }),
@@ -281,7 +282,7 @@ export const FacultyManagerPage: React.FC = () => {
   const handleRemoveDepartment = async (deptToRemove: string) => {
     const updated = departments.filter((d: string) => d !== deptToRemove);
     try {
-      await fetch('/api/v1/faculty/departments', {
+      await fetchWithAdminSession('/api/v1/faculty/departments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ departments: updated }),
@@ -324,7 +325,7 @@ export const FacultyManagerPage: React.FC = () => {
   const handleSaveOrder = async () => {
     setIsSaving(true);
     try {
-      const res = await fetch('/api/v1/faculty/admin/reorder', {
+      const res = await fetchWithAdminSession('/api/v1/faculty/admin/reorder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ facultyIds: orderedFaculty.map((f) => f.id) }),
@@ -360,7 +361,7 @@ export const FacultyManagerPage: React.FC = () => {
       case 'ANGLE_HSS':
         return 'S. S. Angle HSS';
       default:
-        return code || 'Shree Nirakar Education Society';
+        return code || 'Shri Nirakar Education Society';
     }
   };
 
@@ -667,16 +668,19 @@ export const FacultyManagerPage: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-              <select
-                value={campusFilter}
-                onChange={(e) => setCampusFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-lg border border-stone-200 text-xs bg-stone-50 text-stone-700 focus:outline-none"
-              >
-                <option value="ALL">All Schools</option>
-                <option value="NIRAKAR_HS">Shri Nirakar Vidyalaya</option>
-                <option value="TUDAL_HS">Tudal High School</option>
-                <option value="ANGLE_HSS">S. S. Angle HSS</option>
-              </select>
+              <div className="w-full sm:w-52">
+                <AdminSelect
+                  value={campusFilter}
+                  onChange={setCampusFilter}
+                  options={[
+                    { value: 'ALL', label: 'All Schools' },
+                    { value: 'NIRAKAR_HS', label: 'Shri Nirakar Vidyalaya' },
+                    { value: 'TUDAL_HS', label: 'Tudal High School' },
+                    { value: 'ANGLE_HSS', label: 'S. S. Angle HSS' },
+                  ]}
+                  compact
+                />
+              </div>
 
               <div className="relative flex-1 sm:w-60">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
@@ -792,7 +796,7 @@ export const FacultyManagerPage: React.FC = () => {
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <a
-                            href={`http://localhost:5000/faculty/edit/${fac.id}?role=admin`}
+                            href={`${getPublicSiteUrl()}/faculty/edit/${fac.id}?role=admin`}
                             target="_blank"
                             rel="noreferrer"
                             className="px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
@@ -803,7 +807,7 @@ export const FacultyManagerPage: React.FC = () => {
                           </a>
 
                           <a
-                            href={`http://localhost:5000/faculty/${fac.id}`}
+                            href={`${getPublicSiteUrl()}/faculty/${fac.id}`}
                             target="_blank"
                             rel="noreferrer"
                             className="px-2.5 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"

@@ -31,10 +31,10 @@
     "pino": "^9.6.0",
     "pino-http": "^10.4.0",
     "razorpay": "^2.9.5",
-    "sharp": "^0.33.5",
+    "sharp": "^0.35.5",
     "socket.io": "^4.8.4",
     "tesseract.js": "^5.1.1",
-    "zod": "^3.24.2"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/compression": "^1.7.5",
@@ -48,6 +48,6 @@
     "supertest": "^7.0.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2",
-    "vitest": "^3.0.7"
+    "vitest": "^5.0.5"
   }
 }

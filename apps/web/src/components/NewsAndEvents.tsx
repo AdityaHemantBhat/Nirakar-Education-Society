@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { slugify } from '../utils/slugify.js';
+import { contentSlug } from '@nirakar/shared';
 import { decodeNoticeMeta } from '../utils/noticeMeta.js';
+import { EVENT_COVER_FALLBACK } from '../lib/content.js';
 import { 
   Calendar, 
   FileText, 
@@ -83,6 +84,7 @@ export interface NoticeItem {
   institutionCode: string;
   description: string;
   pdfUrl?: string | null;
+  pinned?: boolean;
   tapeColor?: 'amber' | 'sage' | 'lavender' | 'rose';
 }
 
@@ -172,165 +174,7 @@ const WashiTapeSticker: React.FC<{ color?: 'amber' | 'sage' | 'lavender' | 'rose
   );
 };
 
-const DEFAULT_FALLBACK_EVENTS: CampusEvent[] = [
-  {
-    id: 'e1',
-    title: 'Annual Inter-School Athletics & Sports Championship 2026',
-    dateStr: 'Wednesday, October 28, 2026',
-    rawStartDate: '2026-10-28T08:30:00',
-    rawEndDate: '2026-10-28T17:00:00',
-    day: '28',
-    month: 'OCT',
-    year: '2026',
-    weekday: 'Wednesday',
-    time: '08:30 AM – 05:00 PM',
-    location: 'Mashem Central Sports Pavilion & Athletics Field',
-    campus: 'Shri Nirakar High School (Mashem)',
-    institutionCode: 'NIRAKAR_HS',
-    category: 'Athletics & Sports',
-    coverImage: '/images/sports_champs.jpg',
-    photos: [
-      { url: '/images/sports_champs.jpg', caption: 'Volleyball state-level championship finals victory ceremony', altText: 'Students celebrating volleyball tournament win' },
-      { url: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1200&q=80', caption: '100m sprint sprint line-up at Mashem pavilion', altText: 'Runners on track' },
-      { url: 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?auto=format&fit=crop&w=1200&q=80', caption: 'Kabaddi tournament inter-school playoff finals', altText: 'Kabaddi match' },
-      { url: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1200&q=80', caption: 'Annual march-past parade with society brass band', altText: 'Parade ceremony' }
-    ],
-    documents: [
-      { url: '/documents/athletics_schedule_2026.pdf', title: 'Official Championship Rulebook & Event Schedule 2026', size: '1.8 MB' },
-      { url: '/documents/track_route_map.pdf', title: 'Pavilion Ground Track Layout & Spectator Guidelines', size: '820 KB' }
-    ],
-    videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-    description: 'Track and field sprint races, state-level volleyball finals, inter-school kabaddi championship, and march-past parade bringing together over 800 student athletes from Nirakar HS, Tudal HS, and S.S. Angle HSS across Canacona taluka.',
-    isUpcoming: true,
-  },
-  {
-    id: 'e2',
-    title: 'Goa Board Secondary & Higher Secondary Merit Felicitations',
-    dateStr: 'Thursday, November 12, 2026',
-    rawStartDate: '2026-11-12T10:00:00',
-    day: '12',
-    month: 'NOV',
-    year: '2026',
-    weekday: 'Thursday',
-    time: '10:00 AM – 01:30 PM',
-    location: 'Shree Nirakar Memorial Auditorium, Mashem Campus',
-    campus: 'Shri Nirakar High School (Mashem)',
-    institutionCode: 'NIRAKAR_HS',
-    category: 'Academic Honor',
-    coverImage: '/images/campuses/nirakar_high_school_mashem.png',
-    photos: [
-      { url: '/images/campuses/nirakar_high_school_mashem.png', caption: 'Shree Nirakar High School heritage front courtyard', altText: 'Mashem campus' },
-      { url: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80', caption: 'Honorary gold medal presentation to Goa Board toppers', altText: 'Award ceremony' }
-    ],
-    documents: [
-      { url: '/documents/merit_roll_2026.pdf', title: 'Goa Board SSC & HSSC Society Merit Roll 2026', size: '2.1 MB' }
-    ],
-    videoUrl: null,
-    description: 'Honoring distinction rankers, subject toppers, and our devoted mentor teachers who secured 100% results in the Goa Board examinations. Chief guest Shri Subhash Phal Dessai will address students.',
-    isUpcoming: true,
-  },
-  {
-    id: 'e3',
-    title: 'Grand Annual Alumni Reunion & Heritage Dialogue Assembly',
-    dateStr: 'Tuesday, December 22, 2026',
-    rawStartDate: '2026-12-22T16:00:00',
-    day: '22',
-    month: 'DEC',
-    year: '2026',
-    weekday: 'Tuesday',
-    time: '04:00 PM – 09:00 PM',
-    location: 'Society Central Open Amphitheater & Lawns, Mashem',
-    campus: 'Society Central',
-    institutionCode: 'NIRAKAR_HS',
-    category: 'Alumni Gathering',
-    coverImage: '/images/campuses/ss_angle_higher_secondary_mashem.png',
-    photos: [
-      { url: '/images/campuses/ss_angle_higher_secondary_mashem.png', caption: 'S.S. Angle HSS modern academic block', altText: 'Campus view' },
-      { url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80', caption: 'Golden jubilee alumni gathering and networking dialogue', altText: 'Alumni reunion' }
-    ],
-    documents: [
-      { url: '/documents/alumni_agenda_2026.pdf', title: '50-Year Alumni Council Charter & Project Allocations', size: '1.4 MB' }
-    ],
-    videoUrl: null,
-    description: 'Reconnecting classmates across five decades with authenticated directory verification, mentoring pledges for current rural students, and cultural performances by alumni artists.',
-    isUpcoming: true,
-  },
-  {
-    id: 'e4',
-    title: 'Annual Science, Mathematics & Robotics Taluka Exhibition',
-    dateStr: 'Friday, January 15, 2027',
-    rawStartDate: '2027-01-15T09:30:00',
-    day: '15',
-    month: 'JAN',
-    year: '2027',
-    weekday: 'Friday',
-    time: '09:30 AM – 04:30 PM',
-    location: 'S.S. Angle HSS Modern Laboratories Complex',
-    campus: 'S.S. Angle HSS (Dapot)',
-    institutionCode: 'ANGLE_HSS',
-    category: 'Science & Innovation',
-    coverImage: 'https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=1200&q=80',
-    photos: [
-      { url: 'https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=1200&q=80', caption: 'Student robotics models powered by solar micro-inverters', altText: 'Robotics project' }
-    ],
-    documents: [
-      { url: '/documents/science_fair_guidelines.pdf', title: 'Exhibition Project Guidelines & Evaluation Rubric', size: '1.2 MB' }
-    ],
-    videoUrl: null,
-    description: 'Featuring 60+ interactive working models created by secondary and higher secondary students on renewable coastal energy, organic cashew farming, and physics demonstrations.',
-    isUpcoming: true,
-  },
-  {
-    id: 'e5',
-    title: 'All-Goa Inter-Collegiate Fugdi, Dhalo & Natak Folk Festival',
-    dateStr: 'Saturday, February 06, 2027',
-    rawStartDate: '2027-02-06T15:00:00',
-    day: '06',
-    month: 'FEB',
-    year: '2027',
-    weekday: 'Saturday',
-    time: '03:00 PM – 09:30 PM',
-    location: 'Tudal High School Open Air Cultural Grounds, Gaondongrem',
-    campus: 'Tudal High School (Gaondongrem)',
-    institutionCode: 'TUDAL_HS',
-    category: 'Cultural Festival',
-    coverImage: '/images/campuses/tudal_high_school_gaodongrem.png',
-    photos: [
-      { url: '/images/campuses/tudal_high_school_gaodongrem.png', caption: 'Tudal High School nestled in the Western Ghats greenery', altText: 'Tudal school campus' }
-    ],
-    documents: [
-      { url: '/documents/cultural_guidelines.pdf', title: 'Folk Dance Protocols & Judging Criteria', size: '940 KB' }
-    ],
-    videoUrl: null,
-    description: 'Celebrating authentic Goan rural arts with traditional Fugdi, Dhalo, and one-act Konkani natak presentations by student troupes across South Goa.',
-    isUpcoming: true,
-  },
-  {
-    id: 'e6',
-    title: 'Directorate of Sports Goa State Volleyball Championship',
-    dateStr: 'Tuesday, March 10, 2027',
-    rawStartDate: '2027-03-10T08:00:00',
-    day: '10',
-    month: 'MAR',
-    year: '2027',
-    weekday: 'Tuesday',
-    time: '08:00 AM – 06:00 PM',
-    location: 'Mashem Central Sports Pavilion & Floodlit Court',
-    campus: 'Society Central',
-    institutionCode: 'NIRAKAR_HS',
-    category: 'Athletics & Sports',
-    coverImage: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?auto=format&fit=crop&w=1200&q=80',
-    photos: [
-      { url: 'https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?auto=format&fit=crop&w=1200&q=80', caption: 'State volleyball tournament quarterfinal match in progress', altText: 'Volleyball match' }
-    ],
-    documents: [
-      { url: '/documents/volleyball_brackets.pdf', title: 'Official Tournament Fixtures & Match Pools', size: '1.1 MB' }
-    ],
-    videoUrl: null,
-    description: 'Inter-district volleyball tournament organized under the aegis of Directorate of Sports and Youth Affairs, Goa with top school teams competing.',
-    isUpcoming: true,
-  }
-];
+
 
 function formatCampusEvent(ev: any): CampusEvent {
   const d = new Date(ev.startDate);
@@ -393,9 +237,13 @@ function formatCampusEvent(ev: any): CampusEvent {
       parsedPhotos = JSON.parse(ev.photos);
     } catch {}
   }
-  const primaryCover = ev.coverUrl || ev.image || (parsedPhotos[0]?.url) || '/images/sports_champs.jpg';
-  if (parsedPhotos.length === 0 && primaryCover) {
-    parsedPhotos = [{ url: primaryCover, caption: ev.title, altText: ev.title }];
+  /* The picture the office actually put on the record. The fallback is only
+     for the card; it is not a photograph of this gathering, so it does not
+     go into the gallery. */
+  const storedCover = ev.coverUrl || ev.image || (parsedPhotos[0]?.url) || '';
+  const primaryCover = storedCover || EVENT_COVER_FALLBACK;
+  if (parsedPhotos.length === 0 && storedCover) {
+    parsedPhotos = [{ url: storedCover, caption: ev.title, altText: ev.title }];
   }
 
   let parsedDocuments: EventDocument[] = [];
@@ -430,7 +278,7 @@ function formatCampusEvent(ev: any): CampusEvent {
     documents: parsedDocuments,
     videoUrl: ev.videoUrl || null,
     pdfUrl: ev.pdfUrl || (parsedDocuments[0]?.url) || null,
-    description: ev.description || 'Inter-school championship and academic gathering hosted by Shree Nirakar Education Society.',
+    description: ev.description || 'Inter-school championship and academic gathering hosted by Shri Nirakar Education Society.',
     isUpcoming: ev.isUpcoming ?? true,
   };
 }
@@ -495,11 +343,35 @@ export const NewsAndEvents: React.FC<NewsAndEventsProps> = ({
   // Notice board search & category filters
   const [noticeFilter, setNoticeFilter] = useState<'all' | 'exam' | 'admission' | 'scholarship'>('all');
   const [noticeSearch, setNoticeSearch] = useState('');
+  const mobileNoticeSliderRef = useRef<HTMLDivElement>(null);
+  const [mobileNoticeIndex, setMobileNoticeIndex] = useState(0);
 
-  // Process data with rich default fallback if list is small
+  const handleMobileNoticeScroll = () => {
+    if (mobileNoticeSliderRef.current) {
+      const { scrollLeft, clientWidth } = mobileNoticeSliderRef.current;
+      const index = Math.round(scrollLeft / clientWidth);
+      setMobileNoticeIndex(index);
+    }
+  };
+
+  const handleScrollNoticeMobile = (direction: 'prev' | 'next') => {
+    if (mobileNoticeSliderRef.current) {
+      const { clientWidth } = mobileNoticeSliderRef.current;
+      const targetIndex = direction === 'next'
+        ? Math.min(mobileNoticeIndex + 1, filteredNotices.length - 1)
+        : Math.max(mobileNoticeIndex - 1, 0);
+
+      mobileNoticeSliderRef.current.scrollTo({
+        left: targetIndex * clientWidth,
+        behavior: 'smooth',
+      });
+      setMobileNoticeIndex(targetIndex);
+    }
+  };
+
+  // Process the data the home page was given
   const upcomingEventsList: CampusEvent[] = useMemo(() => {
-    const parsed = (upcoming || []).map(formatCampusEvent);
-    return parsed.length > 0 ? parsed : DEFAULT_FALLBACK_EVENTS;
+    return (upcoming || []).map(formatCampusEvent);
   }, [upcoming]);
 
   const pastEventsList: CampusEvent[] = useMemo(() => {
@@ -551,7 +423,8 @@ export const NewsAndEvents: React.FC<NewsAndEventsProps> = ({
 
   const handleSlide = (direction: 'left' | 'right') => {
     if (sliderRef.current) {
-      const step = sliderRef.current.clientWidth / 3;
+      const isMobile = window.innerWidth < 640;
+      const step = isMobile ? sliderRef.current.clientWidth : sliderRef.current.clientWidth / 3;
       sliderRef.current.scrollBy({
         left: direction === 'left' ? -step : step,
         behavior: 'smooth'
@@ -566,28 +439,28 @@ export const NewsAndEvents: React.FC<NewsAndEventsProps> = ({
       {/* ===================================================================== */}
       {/* 1. CAMPUS EVENTS 3-IN-A-ROW SLIDER (CRISP & CLEAR, NO BLUR/FOG)       */}
       {/* ===================================================================== */}
-      <section className="relative w-full py-20 sm:py-24 border-b border-stone-200/80">
+      <section className="relative w-full py-14 sm:py-20 lg:py-24 border-b border-stone-200/80">
         <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 2xl:px-24">
 
           {/* Section Header with View All Link and Slider Nav Buttons */}
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8 sm:mb-10">
             <div>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100/80 backdrop-blur-md text-amber-900 text-xs font-mono font-bold uppercase tracking-wider mb-3.5 border border-amber-300/80 shadow-xs">
+              <div className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-amber-100/80 backdrop-blur-md text-amber-900 text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider mb-2.5 sm:mb-3.5 border border-amber-300/80 shadow-xs">
                 <span className="w-2 h-2 rounded-full bg-amber-600 animate-pulse" />
                 <span>Campus Life & Gathering Chronicles • 2026–2027</span>
               </div>
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-[#0b132b] tracking-tight">
+              <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-black text-[#0b132b] tracking-tight">
                 Campus Happenings & Gatherings
               </h2>
-              <p className="text-stone-600 text-sm sm:text-base font-sans mt-3 max-w-2xl leading-relaxed">
+              <p className="text-stone-600 text-xs sm:text-base font-sans mt-2.5 sm:mt-3 max-w-2xl leading-relaxed">
                 Live photographic dispatches from athletics championships, cultural festivals, academic honors, and student symposiums across Canacona.
               </p>
             </div>
 
             {/* Controls Toolbar: Campus Pills + Clean Prev/Next Arrow Buttons + View All */}
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center justify-between lg:justify-end gap-3">
               {/* Campus Pills */}
-              <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-white/70 backdrop-blur-md border border-stone-200 shadow-xs">
+              <div className="flex items-center gap-1 sm:gap-1.5 p-1 rounded-2xl bg-white/70 backdrop-blur-md border border-stone-200 shadow-xs overflow-x-auto max-w-full">
                 {[
                   { code: 'all', label: 'All Campuses' },
                   { code: 'NIRAKAR_HS', label: 'Nirakar HS' },
@@ -598,7 +471,7 @@ export const NewsAndEvents: React.FC<NewsAndEventsProps> = ({
                     key={c.code}
                     type="button"
                     onClick={() => setEventCampusFilter(c.code)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
+                    className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-mono font-bold transition-all cursor-pointer whitespace-nowrap ${
                       eventCampusFilter === c.code
                         ? 'bg-[#0b132b] text-white shadow-xs'
                         : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100/80'
@@ -609,44 +482,46 @@ export const NewsAndEvents: React.FC<NewsAndEventsProps> = ({
                 ))}
               </div>
 
-              {/* Clean Slider Navigation Arrow Buttons (NO blurry fog!) */}
-              <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/80 border border-stone-200 shadow-xs">
-                <button
-                  type="button"
-                  onClick={() => handleSlide('left')}
-                  disabled={!canScrollLeft}
-                  className={`p-2 rounded-xl transition-all cursor-pointer ${
-                    canScrollLeft 
-                      ? 'text-[#0b132b] hover:bg-stone-100' 
-                      : 'text-stone-300 cursor-not-allowed'
-                  }`}
-                  aria-label="Previous events"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSlide('right')}
-                  disabled={!canScrollRight}
-                  className={`p-2 rounded-xl transition-all cursor-pointer ${
-                    canScrollRight 
-                      ? 'text-[#0b132b] hover:bg-stone-100' 
-                      : 'text-stone-300 cursor-not-allowed'
-                  }`}
-                  aria-label="Next events"
-                >
-                  <ChevronRight size={18} />
-                </button>
-              </div>
+              <div className="flex items-center gap-2">
+                {/* Clean Slider Navigation Arrow Buttons (NO blurry fog!) */}
+                <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/80 border border-stone-200 shadow-xs">
+                  <button
+                    type="button"
+                    onClick={() => handleSlide('left')}
+                    disabled={!canScrollLeft}
+                    className={`p-1.5 sm:p-2 rounded-xl transition-all cursor-pointer ${
+                      canScrollLeft 
+                        ? 'text-[#0b132b] hover:bg-stone-100' 
+                        : 'text-stone-300 cursor-not-allowed'
+                    }`}
+                    aria-label="Previous events"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSlide('right')}
+                    disabled={!canScrollRight}
+                    className={`p-1.5 sm:p-2 rounded-xl transition-all cursor-pointer ${
+                      canScrollRight 
+                        ? 'text-[#0b132b] hover:bg-stone-100' 
+                        : 'text-stone-300 cursor-not-allowed'
+                    }`}
+                    aria-label="Next events"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
 
-              {/* View All Events Link button directly to /events dedicated page */}
-              <Link
-                to="/events"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-[#0b132b] hover:bg-amber-600 text-white text-xs font-mono font-bold uppercase tracking-wider transition-all shadow-sm hover:shadow-md shrink-0"
-              >
-                <span>View All Events</span>
-                <ArrowRight size={13} />
-              </Link>
+                {/* View All Events Link button directly to /events dedicated page */}
+                <Link
+                  to="/events"
+                  className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl bg-[#0b132b] hover:bg-amber-600 text-white text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-all shadow-sm hover:shadow-md shrink-0"
+                >
+                  <span>View All</span>
+                  <ArrowRight size={13} />
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -657,15 +532,13 @@ export const NewsAndEvents: React.FC<NewsAndEventsProps> = ({
             <div
               ref={sliderRef}
               onScroll={checkSliderScroll}
-              className="flex items-stretch gap-6 overflow-x-auto scroll-smooth scrollbar-none py-2 px-0.5"
-              style={{ scrollSnapType: 'x mandatory' }}
+              className="flex items-stretch gap-4 sm:gap-6 overflow-x-auto scroll-smooth scrollbar-none py-2 px-0.5 snap-x snap-mandatory"
             >
               {filteredEvents.map((event) => (
                 <Link
-                  to={`/events/${slugify(event.title)}`}
+                  to={`/events/${contentSlug(event.title)}`}
                   key={event.id}
-                  style={{ scrollSnapAlign: 'start' }}
-                  className="group relative flex-none w-[88vw] sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] bg-white/80 backdrop-blur-md rounded-3xl overflow-hidden border border-white/90 shadow-md hover:shadow-2xl hover:border-amber-400/80 transition-all duration-300 flex flex-col justify-between cursor-pointer block text-inherit no-underline"
+                  className="group relative shrink-0 w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] snap-center sm:snap-start bg-white/80 backdrop-blur-md rounded-2xl sm:rounded-3xl overflow-hidden border border-white/90 shadow-md hover:shadow-2xl hover:border-amber-400/80 transition-all duration-300 flex flex-col justify-between cursor-pointer block text-inherit no-underline"
                 >
                   <div>
                     {/* Media Container with Floating Indicators (NO tags or SN icons) */}
@@ -681,25 +554,25 @@ export const NewsAndEvents: React.FC<NewsAndEventsProps> = ({
                       <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/20 pointer-events-none" />
 
                       {/* Floating Glassmorphic Media Badges */}
-                      <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+                      <div className="absolute bottom-2.5 sm:bottom-3 left-2.5 sm:left-3 right-2.5 sm:right-3 flex items-center justify-between pointer-events-none">
                         <div className="flex items-center gap-1.5">
                           {event.photos.length > 1 && (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-mono font-bold bg-black/60 backdrop-blur-md text-white border border-white/20">
-                              <ImageIcon size={12} className="text-amber-400" />
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold bg-black/60 backdrop-blur-md text-white border border-white/20">
+                              <ImageIcon size={11} className="text-amber-400" />
                               <span>{event.photos.length} Photos</span>
                             </span>
                           )}
                           {event.videoUrl && (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-mono font-bold bg-red-900/75 backdrop-blur-md text-white border border-red-400/30">
-                              <Film size={12} className="text-red-300" />
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold bg-red-900/75 backdrop-blur-md text-white border border-red-400/30">
+                              <Film size={11} className="text-red-300" />
                               <span>Video</span>
                             </span>
                           )}
                         </div>
 
                         {event.documents.length > 0 && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-mono font-bold bg-amber-900/75 backdrop-blur-md text-amber-200 border border-amber-400/30">
-                            <FileText size={12} />
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-mono font-bold bg-amber-900/75 backdrop-blur-md text-amber-200 border border-amber-400/30">
+                            <FileText size={11} />
                             <span>{event.documents.length} PDF{event.documents.length > 1 ? 's' : ''}</span>
                           </span>
                         )}
@@ -714,21 +587,21 @@ export const NewsAndEvents: React.FC<NewsAndEventsProps> = ({
                     </div>
 
                     {/* Glassmorphic Card Body */}
-                    <div className="p-5 sm:p-6 space-y-3.5 -mt-1">
+                    <div className="p-4 sm:p-6 space-y-2.5 sm:space-y-3.5 -mt-1">
                       
                       {/* Date & Time pill */}
-                      <div className="flex items-center gap-2.5 text-xs font-mono text-amber-900">
-                        <span className="inline-flex items-center gap-1.5 font-bold bg-amber-50/90 px-2.5 py-1 rounded-lg border border-amber-200/80 shadow-xs">
+                      <div className="flex items-center gap-2 text-xs font-mono text-amber-900">
+                        <span className="inline-flex items-center gap-1.5 font-bold bg-amber-50/90 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg border border-amber-200/80 shadow-xs text-[11px] sm:text-xs">
                           <Calendar size={12} className="text-amber-600" />
                           <span>{event.day} {event.month} {event.year}</span>
                         </span>
-                        <span className="text-stone-500 text-[11px] truncate">
+                        <span className="text-stone-500 text-[10px] sm:text-[11px] truncate">
                           {event.time}
                         </span>
                       </div>
 
                       {/* Event Title in commanding serif */}
-                      <h3 className="font-serif text-lg sm:text-xl font-bold text-[#0b132b] group-hover:text-amber-700 transition-colors line-clamp-2 leading-snug">
+                      <h3 className="font-serif text-base sm:text-xl font-bold text-[#0b132b] group-hover:text-amber-700 transition-colors line-clamp-2 leading-snug">
                         {event.title}
                       </h3>
 
@@ -746,13 +619,13 @@ export const NewsAndEvents: React.FC<NewsAndEventsProps> = ({
                   </div>
 
                   {/* Glassmorphic Action Bar */}
-                  <div className="px-5 py-3.5 bg-white/40 backdrop-blur-sm border-t border-white/60 flex items-center justify-between text-xs font-mono font-bold">
+                  <div className="px-4 sm:px-5 py-3 sm:py-3.5 bg-white/40 backdrop-blur-sm border-t border-white/60 flex items-center justify-between text-xs font-mono font-bold">
                     <span className="text-[#0b132b] group-hover:text-amber-700 transition-colors flex items-center gap-1.5">
                       <span>View Event Post</span>
                       <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
                     </span>
 
-                    <span className="text-[11px] font-semibold text-stone-400">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-stone-400">
                       {event.isUpcoming ? 'Upcoming' : 'Concluded'}
                     </span>
                   </div>
@@ -761,7 +634,7 @@ export const NewsAndEvents: React.FC<NewsAndEventsProps> = ({
             </div>
 
             {/* Slider Bottom Archival Link Strip */}
-            <div className="mt-8 flex items-center justify-between text-xs font-mono text-stone-500 border-t border-stone-200/70 pt-4">
+            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:items-center justify-between text-xs font-mono text-stone-500 border-t border-stone-200/70 pt-3.5 sm:pt-4 gap-2">
               <span>Showing official campus events • Scroll or use arrows to browse</span>
               <Link
                 to="/events"
@@ -780,20 +653,20 @@ export const NewsAndEvents: React.FC<NewsAndEventsProps> = ({
       {/* ===================================================================== */}
       {/* 2. AUTHENTIC NOTICE BOARD (OPENS DEDICATED NOTICE DETAIL PAGE)        */}
       {/* ===================================================================== */}
-      <section className="relative w-full py-20 sm:py-24 bg-[#F2EEE6] border-b border-stone-300/80">
+      <section className="relative w-full py-14 sm:py-20 lg:py-24 bg-[#F2EEE6] border-b border-stone-300/80">
         <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 2xl:px-24">
 
           {/* Section Header with View All Link */}
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12 sm:mb-14">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8 sm:mb-14">
             <div>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#111b5e]/10 text-[#111b5e] text-xs font-mono font-bold uppercase tracking-wider mb-3.5 border border-[#111b5e]/20">
+              <div className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-[#111b5e]/10 text-[#111b5e] text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider mb-2.5 sm:mb-3.5 border border-[#111b5e]/20">
                 <ShieldCheck size={14} className="text-[#111b5e]" />
                 <span>Official Institutional Registry • Central Gazette</span>
               </div>
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-[#0b132b] tracking-tight">
+              <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-black text-[#0b132b] tracking-tight">
                 Directorate Circulars & Official Notices
               </h2>
-              <p className="text-stone-600 text-sm sm:text-base font-sans mt-3 max-w-2xl leading-relaxed">
+              <p className="text-stone-600 text-xs sm:text-base font-sans mt-2.5 sm:mt-3 max-w-2xl leading-relaxed">
                 Authenticated board examination schedules, admission guidelines, government scholarships, and administrative orders for students, parents, and faculty across Canacona.
               </p>
             </div>
@@ -801,7 +674,7 @@ export const NewsAndEvents: React.FC<NewsAndEventsProps> = ({
             {/* View All Notices Link button directly to /notices dedicated archive page */}
             <Link
               to="/notices"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-[#0b132b] hover:bg-amber-600 text-white text-xs font-mono font-bold uppercase tracking-wider transition-all shadow-sm hover:shadow-md shrink-0"
+              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-2xl bg-[#0b132b] hover:bg-amber-600 text-white text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider transition-all shadow-sm hover:shadow-md self-start lg:self-auto shrink-0"
             >
               <span>View All Notices</span>
               <ArrowRight size={13} />
@@ -809,14 +682,14 @@ export const NewsAndEvents: React.FC<NewsAndEventsProps> = ({
           </div>
 
           {/* REAL BULLETIN BOARD (Fine Linen / Cork Backing with Subtle Glassmorphism) */}
-          <div className="rounded-3xl bg-[#E8E1D3]/90 backdrop-blur-md p-4 sm:p-7 lg:p-9 shadow-xl border-4 border-[#C8BCAB]/90 relative overflow-hidden">
+          <div className="rounded-2xl sm:rounded-3xl bg-[#E8E1D3]/90 backdrop-blur-md p-3.5 sm:p-7 lg:p-9 shadow-xl border-2 sm:border-4 border-[#C8BCAB]/90 relative overflow-hidden">
             
             {/* Search & Category Filter Bar */}
-            <div className="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-white/70 shadow-sm mb-10 space-y-4">
-              <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            <div className="bg-white/80 backdrop-blur-md rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-white/70 shadow-sm mb-6 sm:mb-10 space-y-3 sm:space-y-4">
+              <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4">
                 
                 {/* Search Input */}
-                <div className="relative flex-1 max-w-md">
+                <div className="relative flex-1 max-w-full md:max-w-md">
                   <Search size={15} className="absolute left-3.5 top-3 text-stone-400" />
                   <input
                     type="text"
@@ -837,9 +710,9 @@ export const NewsAndEvents: React.FC<NewsAndEventsProps> = ({
                 </div>
 
                 {/* Category Filter Tabs */}
-                <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5">
+                <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto scrollbar-none pb-0.5 max-w-full">
                   {[
-                    { key: 'all', label: 'All Circulars' },
+                    { key: 'all', label: 'All' },
                     { key: 'exam', label: 'Board Exams' },
                     { key: 'admission', label: 'Admissions' },
                     { key: 'scholarship', label: 'Scholarships' },
@@ -850,7 +723,7 @@ export const NewsAndEvents: React.FC<NewsAndEventsProps> = ({
                         key={tab.key}
                         type="button"
                         onClick={() => setNoticeFilter(tab.key as any)}
-                        className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold tracking-wide uppercase transition-all shrink-0 cursor-pointer ${
+                        className={`px-3 sm:px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-mono font-bold tracking-wide uppercase transition-all shrink-0 cursor-pointer whitespace-nowrap ${
                           isTabActive
                             ? 'bg-[#0b132b] text-white shadow-xs'
                             : 'bg-stone-100/80 hover:bg-stone-200 text-stone-700 border border-stone-200/80'
@@ -867,79 +740,194 @@ export const NewsAndEvents: React.FC<NewsAndEventsProps> = ({
 
             {/* Pinned Memorandum Cards Grid (With Washi Tape Stickers & Subtle Glassmorphism) */}
             {filteredNotices.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 sm:gap-8 pt-2">
-                {filteredNotices.map((notice) => (
-                  <div
-                    key={notice.id}
-                    className="group bg-white/85 backdrop-blur-md rounded-2xl p-5 sm:p-6 border border-white/80 shadow-md hover:shadow-xl hover:border-amber-400/80 transition-all flex flex-col justify-between relative text-stone-900"
+              <>
+                {/* MOBILE ONLY (<sm): ONE-BY-ONE HORIZONTAL SWIPER WITH NO ENDLESS SCROLL */}
+                <div className="sm:hidden w-full select-none">
+                  <div 
+                    ref={mobileNoticeSliderRef}
+                    onScroll={handleMobileNoticeScroll}
+                    className="w-full flex items-stretch gap-4 overflow-x-auto scrollbar-none pt-4 pb-2 snap-x snap-mandatory"
                   >
-                    {/* AUTHENTIC WASHI TAPE STICKER */}
-                    <WashiTapeSticker color={notice.tapeColor} />
+                    {filteredNotices.map((notice) => (
+                      <div
+                        key={`mobile-notice-${notice.id}`}
+                        className="w-full shrink-0 snap-center group bg-white/95 backdrop-blur-md rounded-2xl p-4 border border-white/90 shadow-md flex flex-col justify-between relative text-stone-900"
+                      >
+                        {/* AUTHENTIC WASHI TAPE STICKER */}
+                        <WashiTapeSticker color={notice.tapeColor} />
 
-                    <div className="space-y-3 pt-2">
-                      {/* Reference Number & Urgent Stamp */}
-                      <div className="flex items-center justify-between text-[11px] pt-1">
-                        <span className="font-mono font-bold text-stone-500 tracking-wider">
-                          {notice.refNo}
-                        </span>
-
-                        <div className="flex items-center gap-1.5">
-                          {notice.urgent && (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-red-100 text-red-800 border border-red-200 animate-pulse">
-                              URGENT
+                        <div className="space-y-2.5 pt-2">
+                          {/* Reference Number & Urgent Stamp */}
+                          <div className="flex items-center justify-between text-[11px] pt-1">
+                            <span className="font-mono font-bold text-stone-500 tracking-wider">
+                              {notice.refNo}
                             </span>
+
+                            <div className="flex items-center gap-1.5">
+                              {notice.urgent && (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-red-100 text-red-800 border border-red-200 animate-pulse">
+                                  URGENT
+                                </span>
+                              )}
+                              <span className="text-stone-400 font-mono text-[11px]">
+                                {notice.date}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Notice Title linking directly to dedicated notice page */}
+                          <Link
+                            to={`/notices/${contentSlug(notice.title)}`}
+                            className="font-serif text-base font-bold text-[#0b132b] active:text-amber-700 line-clamp-2 leading-snug cursor-pointer block no-underline"
+                          >
+                            {notice.title}
+                          </Link>
+
+                          {/* Target Campus Badge */}
+                          <div className="inline-block text-[10px] font-mono text-amber-900 bg-amber-50/80 border border-amber-200/80 px-2 py-0.5 rounded-lg">
+                            {notice.target}
+                          </div>
+
+                          {/* Excerpt */}
+                          <p className="text-xs text-stone-600 font-sans leading-relaxed line-clamp-3">
+                            {notice.description}
+                          </p>
+                        </div>
+
+                        {/* Notice Card Action Footer */}
+                        <div className="pt-3 mt-3 border-t border-stone-200/60 flex items-center justify-between gap-2">
+                          <Link
+                            to={`/notices/${contentSlug(notice.title)}`}
+                            className="inline-flex items-center gap-1 text-xs font-mono font-bold text-[#0b132b] active:text-amber-700 cursor-pointer"
+                          >
+                            <span>Read Circular</span>
+                            <ChevronRight size={13} />
+                          </Link>
+
+                          {notice.pdfUrl && (
+                            <a
+                              href={notice.pdfUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              download
+                              className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-mono font-bold bg-[#0b132b] active:bg-stone-800 text-white transition-colors"
+                            >
+                              <Download size={11} />
+                              <span>PDF</span>
+                            </a>
                           )}
-                          <span className="text-stone-400 font-mono text-[11px]">
-                            {notice.date}
-                          </span>
                         </div>
                       </div>
+                    ))}
+                  </div>
 
-                      {/* Notice Title linking directly to dedicated notice page */}
-                      <Link
-                        to={`/notices/${slugify(notice.title)}`}
-                        className="font-serif text-base sm:text-lg font-bold text-[#0b132b] group-hover:text-amber-700 transition-colors line-clamp-2 leading-snug cursor-pointer block no-underline"
-                      >
-                        {notice.title}
-                      </Link>
+                  {/* Mobile Notice Stepper */}
+                  <div className="flex items-center justify-between pt-3 text-xs font-mono">
+                    <button
+                      type="button"
+                      onClick={() => handleScrollNoticeMobile('prev')}
+                      className="p-1.5 rounded-full border border-stone-300 bg-white/90 text-stone-700 hover:bg-stone-100 transition-colors cursor-pointer shadow-xs"
+                      aria-label="Previous Notice"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
 
-                      {/* Target Campus Badge */}
-                      <div className="inline-block text-[11px] font-mono text-amber-900 bg-amber-50/80 border border-amber-200/80 px-2.5 py-0.5 rounded-lg">
-                        {notice.target}
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-stone-700 text-xs font-serif font-bold">
+                        {mobileNoticeIndex + 1}
+                      </span>
+                      <span className="text-stone-400">/</span>
+                      <span className="text-stone-500 text-xs">
+                        {filteredNotices.length}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleScrollNoticeMobile('next')}
+                      className="p-1.5 rounded-full border border-stone-300 bg-white/90 text-stone-700 hover:bg-stone-100 transition-colors cursor-pointer shadow-xs"
+                      aria-label="Next Notice"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* TABLET & DESKTOP (sm:grid): 2 to 3 Columns (Untouched) */}
+                <div className="hidden sm:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 sm:gap-8 pt-2">
+                  {filteredNotices.map((notice) => (
+                    <div
+                      key={notice.id}
+                      className="group bg-white/85 backdrop-blur-md rounded-2xl p-5 sm:p-6 border border-white/80 shadow-md hover:shadow-xl hover:border-amber-400/80 transition-all flex flex-col justify-between relative text-stone-900"
+                    >
+                      {/* AUTHENTIC WASHI TAPE STICKER */}
+                      <WashiTapeSticker color={notice.tapeColor} />
+
+                      <div className="space-y-3 pt-2">
+                        {/* Reference Number & Urgent Stamp */}
+                        <div className="flex items-center justify-between text-[11px] pt-1">
+                          <span className="font-mono font-bold text-stone-500 tracking-wider">
+                            {notice.refNo}
+                          </span>
+
+                          <div className="flex items-center gap-1.5">
+                            {notice.urgent && (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-red-100 text-red-800 border border-red-200 animate-pulse">
+                                URGENT
+                              </span>
+                            )}
+                            <span className="text-stone-400 font-mono text-[11px]">
+                              {notice.date}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Notice Title linking directly to dedicated notice page */}
+                        <Link
+                          to={`/notices/${contentSlug(notice.title)}`}
+                          className="font-serif text-base sm:text-lg font-bold text-[#0b132b] group-hover:text-amber-700 transition-colors line-clamp-2 leading-snug cursor-pointer block no-underline"
+                        >
+                          {notice.title}
+                        </Link>
+
+                        {/* Target Campus Badge */}
+                        <div className="inline-block text-[11px] font-mono text-amber-900 bg-amber-50/80 border border-amber-200/80 px-2.5 py-0.5 rounded-lg">
+                          {notice.target}
+                        </div>
+
+                        {/* Excerpt */}
+                        <p className="text-xs text-stone-600 font-sans leading-relaxed line-clamp-3">
+                          {notice.description}
+                        </p>
                       </div>
 
-                      {/* Excerpt */}
-                      <p className="text-xs text-stone-600 font-sans leading-relaxed line-clamp-3">
-                        {notice.description}
-                      </p>
-                    </div>
-
-                    {/* Notice Card Action Footer */}
-                    <div className="pt-4 mt-4 border-t border-stone-200/60 flex items-center justify-between gap-2">
-                      <Link
-                        to={`/notices/${slugify(notice.title)}`}
-                        className="inline-flex items-center gap-1 text-xs font-mono font-bold text-[#0b132b] hover:text-amber-700 cursor-pointer"
-                      >
-                        <span>Read Circular</span>
-                        <ChevronRight size={13} />
-                      </Link>
-
-                      {notice.pdfUrl && (
-                        <a
-                          href={notice.pdfUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          download
-                          className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-mono font-bold bg-[#0b132b] hover:bg-stone-800 text-white transition-colors"
+                      {/* Notice Card Action Footer */}
+                      <div className="pt-4 mt-4 border-t border-stone-200/60 flex items-center justify-between gap-2">
+                        <Link
+                          to={`/notices/${contentSlug(notice.title)}`}
+                          className="inline-flex items-center gap-1 text-xs font-mono font-bold text-[#0b132b] hover:text-amber-700 cursor-pointer"
                         >
-                          <Download size={11} />
-                          <span>PDF</span>
-                        </a>
-                      )}
+                          <span>Read Circular</span>
+                          <ChevronRight size={13} />
+                        </Link>
+
+                        {notice.pdfUrl && (
+                          <a
+                            href={notice.pdfUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            download
+                            className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-mono font-bold bg-[#0b132b] hover:bg-stone-800 text-white transition-colors"
+                          >
+                            <Download size={11} />
+                            <span>PDF</span>
+                          </a>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </>
             ) : (
               <div className="py-16 text-center space-y-2 bg-white/60 backdrop-blur-sm rounded-2xl border border-stone-300">
                 <FileText size={32} className="text-stone-400 mx-auto" />
@@ -953,11 +941,11 @@ export const NewsAndEvents: React.FC<NewsAndEventsProps> = ({
             )}
 
             {/* Bottom Archival Link Bar */}
-            <div className="mt-8 pt-5 border-t border-stone-300/80 flex items-center justify-between text-xs font-mono text-stone-600">
+            <div className="mt-6 sm:mt-8 pt-4 sm:pt-5 border-t border-stone-300/80 flex flex-col sm:flex-row sm:items-center justify-between text-xs font-mono text-stone-600 gap-2 sm:gap-4">
               <span>Central Board Archive • All historical circulars cataloged</span>
               <Link
                 to="/notices"
-                className="font-bold text-[#0b132b] hover:text-amber-700 hover:underline flex items-center gap-1"
+                className="font-bold text-[#0b132b] hover:text-amber-700 hover:underline flex items-center gap-1 self-start sm:self-auto shrink-0"
               >
                 <span>View Full Past & Present Notices Archive</span>
                 <ChevronRight size={13} />

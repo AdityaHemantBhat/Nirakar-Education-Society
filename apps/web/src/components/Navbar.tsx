@@ -3,8 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
 import {
   ChevronDown,
-  Menu as MenuIcon,
-  X,
   ArrowRight,
   Phone,
   FileText,
@@ -25,11 +23,35 @@ import {
   Compass,
   Lock,
   UserPlus,
+  LogOut,
+  Search,
 } from 'lucide-react';
 import { MegaMenuPanels } from './MegaMenuPanels.js';
+import { MobileMenuDrawer } from './MobileMenuDrawer.js';
+import { CampusesMenu } from './CampusesMenu.js';
+import { GlobalSearch } from './GlobalSearch.js';
 import { useCurrentAuthUser } from '../hooks/useCurrentAuthUser.js';
+import { useAdmissionsSocket } from '../hooks/useAdmissionsSocket.js';
+import { useQuery } from '@tanstack/react-query';
 
 export const Navbar: React.FC = () => {
+  useAdmissionsSocket();
+  const { data: admissionsConfig } = useQuery({
+    queryKey: ['admissions_config'],
+    queryFn: async () => {
+      const response = await fetch('/api/v1/admissions/config');
+      if (!response.ok) throw new Error('Failed to load admissions announcement');
+      const json = await response.json();
+      return json.data as { announcementText?: string | null; announcementVisible?: boolean };
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
+  const announcementText =
+    admissionsConfig?.announcementVisible !== false && typeof admissionsConfig?.announcementText === 'string'
+      ? admissionsConfig.announcementText.trim()
+      : '';
   const authUser = useCurrentAuthUser();
   const facultyProfileHref = authUser?.facultyProfile?.id
     ? `/faculty/${authUser.facultyProfile.id}`
@@ -37,28 +59,26 @@ export const Navbar: React.FC = () => {
   const alumniProfileHref = `/alumni/${authUser?.alumniProfile?.username || authUser?.username || ''}`;
   const isFaculty = authUser?.role === 'FACULTY';
   const isAlumni = authUser?.role === 'ALUMNI';
+  const handleSignOut = async () => {
+    try {
+      await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'same-origin' });
+    } finally {
+      localStorage.removeItem('nirakar_auth_user');
+      window.dispatchEvent(new Event('nirakar:auth-changed'));
+      window.location.href = '/';
+    }
+  };
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [currentMenu, setCurrentMenu] = useState<string | null>(null);
   const [campusesOpen, setCampusesOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const headerRef = useRef<HTMLElement>(null);
   const megaMenuContainerRef = useRef<HTMLDivElement>(null);
   const megaMenuContentRef = useRef<HTMLDivElement>(null);
   const isOpenRef = useRef(false);
-
-  // Close mobile menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (mobileMenuOpen && headerRef.current && !headerRef.current.contains(event.target as Node)) {
-        setMobileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [mobileMenuOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -68,6 +88,18 @@ export const Navbar: React.FC = () => {
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Close the campuses panel when clicking outside of it
+  useEffect(() => {
+    if (!campusesOpen) return;
+    const handlePointerDown = (e: PointerEvent) => {
+      if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
+        setCampusesOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [campusesOpen]);
 
   const handleMouseEnter = (menuName: string) => {
     if (menuTimeoutRef.current) {
@@ -178,123 +210,107 @@ export const Navbar: React.FC = () => {
   return (
     <header
       ref={headerRef}
-      className={`sticky top-0 z-50 w-full bg-transparent font-sans transition-[filter,box-shadow] duration-300 ${
+      className={`navbar-lg-compact sticky top-0 z-50 w-full bg-transparent font-sans transition-[filter,box-shadow] duration-300 ${
         isScrolled ? 'drop-shadow-md' : ''
       }`}
     >
       {/* 1. TOP INSTITUTIONAL UTILITY BAR (Dark Navy Contrast) */}
-      <div className="bg-[#0b132b] text-stone-200 text-xs py-1.5 px-4 sm:px-8 lg:px-12 xl:px-16 border-b border-stone-800">
-        <div className="w-full flex items-center justify-between">
-          {/* Left: Campuses Quick Switcher */}
-          <div className="flex items-center space-x-6">
+      {/* 1. TOP INSTITUTIONAL UTILITY BAR (Dark Navy Contrast) */}
+      <div className="util-bar relative bg-[#0b132b] text-stone-200 text-xs py-1.5 px-2.5 sm:px-6 lg:px-12 xl:px-16 border-b border-stone-800">
+        <div className="w-full flex items-center justify-between gap-2 sm:gap-3 overflow-x-auto scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] touch-pan-x overscroll-x-contain py-0.5">
+          {/* Left: campus switcher and institutional identity */}
+          <div className="util-left flex min-w-0 items-center gap-2 sm:gap-4 shrink-0">
             <div className="relative">
               <button
                 onClick={() => setCampusesOpen(!campusesOpen)}
-                className="flex items-center space-x-1.5 text-accent-400 hover:text-white font-semibold py-0.5 transition-colors cursor-pointer"
+                className="flex items-center space-x-1 sm:space-x-1.5 whitespace-nowrap text-accent-400 hover:text-white font-semibold py-0.5 text-[11px] sm:text-xs transition-colors cursor-pointer shrink-0"
                 aria-expanded={campusesOpen}
               >
-                <Building2 size={12} className="text-accent-400" />
+                <Building2 size={13} className="text-accent-400 shrink-0" />
                 <span>Our 3 Campuses</span>
                 <ChevronDown
                   size={12}
                   className={`transition-transform duration-200 ${campusesOpen ? 'rotate-180' : ''}`}
                 />
               </button>
-
-              <AnimatePresence>
-                {campusesOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 8 }}
-                    className="absolute left-0 mt-2 w-84 bg-white text-stone-900 rounded-2xl shadow-2xl border border-stone-200 p-3 z-50"
-                  >
-                    <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2 px-2 font-serif">
-                      Institutions Under Society
-                    </div>
-                    <div className="space-y-1">
-                      <a
-                        href="/institutions/nirakar-high-school"
-                        className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-stone-50 transition-colors"
-                        onClick={() => setCampusesOpen(false)}
-                      >
-                        <div className="w-9 h-9 rounded-lg bg-brand-50 border border-brand-200 flex items-center justify-center text-[#111b5e] font-bold text-xs shrink-0 font-serif">
-                          NHS
-                        </div>
-                        <div>
-                          <div className="font-semibold text-xs text-stone-900">Shri Nirakar High School</div>
-                          <div className="text-[11px] text-stone-500">Mashem, Canacona • Estd. 1968</div>
-                        </div>
-                      </a>
-
-                      <a
-                        href="/institutions/tudal-high-school"
-                        className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-stone-50 transition-colors"
-                        onClick={() => setCampusesOpen(false)}
-                      >
-                        <div className="w-9 h-9 rounded-lg bg-accent-50 border border-accent-200 flex items-center justify-center text-accent-900 font-bold text-xs shrink-0 font-serif">
-                          THS
-                        </div>
-                        <div>
-                          <div className="font-semibold text-xs text-stone-900">Tudal High School</div>
-                          <div className="text-[11px] text-stone-500">Gaondongrem, Canacona • Estd. 1989</div>
-                        </div>
-                      </a>
-
-                      <a
-                        href="/institutions/angle-higher-secondary"
-                        className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-stone-50 transition-colors"
-                        onClick={() => setCampusesOpen(false)}
-                      >
-                        <div className="w-9 h-9 rounded-lg bg-brand-50 border border-brand-200 flex items-center justify-center text-[#111b5e] font-bold text-xs shrink-0 font-serif">
-                          SSA
-                        </div>
-                        <div>
-                          <div className="font-semibold text-xs text-stone-900">S. S. Angle Higher Secondary</div>
-                          <div className="text-[11px] text-stone-500">Arts, Science & Commerce Streams</div>
-                        </div>
-                      </a>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
 
-            <span className="text-stone-600 hidden md:inline">|</span>
-            <div className="hidden md:flex items-center space-x-2 text-stone-300">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span className="font-mono text-[11px]">Goa Board Recognized • SSC Index 08.006 • HSSC Index 08.06</span>
+            <span className="hidden h-3.5 w-px shrink-0 bg-white/20 lg:block" aria-hidden="true" />
+            <div className="util-accreditation hidden min-w-0 items-center gap-4 text-[10px] tracking-wide text-stone-300 lg:flex xl:gap-5">
+              <span className="flex items-center gap-1.5 whitespace-nowrap">
+                <MapPin size={12} className="shrink-0 text-accent-400" />
+                <span>Mashem, Canacona <span className="text-stone-500">·</span> Est. 1939</span>
+              </span>
+              <span className="flex items-center gap-1.5 whitespace-nowrap text-stone-400">
+                <Award size={12} className="shrink-0 text-accent-400" />
+                <span>Goa Board Recognized</span>
+              </span>
             </div>
           </div>
 
-          {/* Right: Quick Links */}
-          <div className="flex items-center space-x-4 lg:space-x-5 text-[11px] font-mono">
-            <a href="/notices" className="hover:text-accent-400 flex items-center space-x-1 transition-colors">
-              <FileText size={12} />
-              <span className="hidden sm:inline">Circulars & Notices</span>
-              <span className="sm:hidden">Notices</span>
+          {/* Right: Quick Links & Search (ALL visible and cleanly spaced on all screens) */}
+          <div className="util-right flex shrink-0 items-center gap-2 sm:gap-3 lg:gap-4 text-[11px] font-mono whitespace-nowrap pr-2 sm:pr-0">
+            {/* Search Pill */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="group inline-flex items-center gap-1 sm:gap-1.5 rounded-lg sm:rounded-xl bg-white/10 hover:bg-white/15 px-2 py-0.5 sm:px-2.5 sm:py-1 text-stone-200 hover:text-white border border-white/20 hover:border-amber-400/50 transition-all duration-200 cursor-pointer shadow-2xs shrink-0"
+              title="Search website records"
+              aria-label="Search website records"
+            >
+              <Search size={11} className="text-amber-400 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="font-sans text-[11px] font-medium tracking-normal text-stone-200 hidden sm:inline">Search records...</span>
+              <span className="font-sans text-[11px] font-medium tracking-normal text-stone-200 sm:hidden">Search</span>
+            </button>
+
+            <span className="text-stone-700/80">|</span>
+            <a href="/notices" className="hover:text-accent-400 flex items-center space-x-1 transition-colors shrink-0">
+              <FileText size={12} className="shrink-0" />
+              <span>Notices</span>
             </a>
-            <span className="text-stone-700 hidden sm:inline">|</span>
-            <a href="/faculty" className="hover:text-amber-400 flex items-center space-x-1 text-stone-200 transition-colors">
-              <GraduationCap size={12} className="text-amber-400" />
+
+            <span className="text-stone-700/80">|</span>
+            <a href="/faculty" className="hover:text-amber-400 flex items-center space-x-1 text-stone-200 transition-colors shrink-0">
+              <GraduationCap size={12} className="text-amber-400 shrink-0" />
               <span>Faculty</span>
             </a>
-            {(!authUser || isFaculty) && <>
-              <span className="text-stone-700">|</span>
-              <a href={isFaculty ? facultyProfileHref : '/faculty/login'} className="hover:text-amber-400 flex items-center space-x-1 text-amber-300 font-semibold transition-colors">
-                {isFaculty ? <GraduationCap size={12} className="text-amber-400" /> : <Lock size={12} className="text-amber-400" />}
-                <span>{isFaculty ? 'My Faculty Profile' : 'Faculty Portal'}</span>
-              </a>
-            </>}
-            {(!authUser || isAlumni) && <>
-              <span className="text-stone-700 hidden md:inline">|</span>
-              <a href={isAlumni ? alumniProfileHref : '/account/login'} className="hover:text-accent-400 hidden md:inline transition-colors">
-                <span>{isAlumni ? 'My Alumni Profile' : 'Alumni Portal'}</span>
-              </a>
-            </>}
+
+            {(!authUser || isFaculty) && (
+              <>
+                <span className="text-stone-700/80">|</span>
+                <a href={isFaculty ? facultyProfileHref : '/faculty/login'} className="hover:text-amber-400 flex items-center space-x-1 text-amber-300 font-semibold transition-colors shrink-0">
+                  {isFaculty ? <GraduationCap size={12} className="text-amber-400 shrink-0" /> : <Lock size={12} className="text-amber-400 shrink-0" />}
+                  <span>{isFaculty ? 'Profile' : 'Portal'}</span>
+                </a>
+              </>
+            )}
+
+            {(!authUser || isAlumni) && (
+              <>
+                <span className="text-stone-700/80">|</span>
+                <a href={isAlumni ? alumniProfileHref : '/account/login'} className="hover:text-accent-400 flex items-center space-x-1 transition-colors shrink-0">
+                  <span>{isAlumni ? 'Alumni Profile' : 'Alumni'}</span>
+                </a>
+                {isAlumni && (
+                  <button type="button" onClick={() => void handleSignOut()} className="inline-flex items-center gap-1 text-stone-200 transition-colors hover:text-amber-400 shrink-0" aria-label="Sign out of alumni account">
+                    <LogOut size={12} className="shrink-0" />
+                    <span>Sign out</span>
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </div>
+
+        <CampusesMenu open={campusesOpen} onClose={() => setCampusesOpen(false)} />
       </div>
+
+      {announcementText && (
+        <div className="relative z-40 w-full overflow-hidden border-b border-amber-500/40 bg-[#111b5e] py-2 text-amber-100 sm:py-2.5" role="status" aria-label="Admissions announcement">
+          <div className="admissions-announcement-marquee whitespace-nowrap px-4 text-[13px] font-semibold leading-5 sm:text-sm">
+            <span>{announcementText}</span>
+          </div>
+        </div>
+      )}
 
       {/* 2. MIDDLE CURVED HORIZON CONTAINER (Preserved Iconic Design) */}
       <div className="relative w-full bg-transparent z-40">
@@ -304,8 +320,54 @@ export const Navbar: React.FC = () => {
             isScrolled ? 'drop-shadow-lg' : 'drop-shadow-md'
           }`}
         >
+          {/* MOBILE / TABLET CURVE — soft, rounded cradle (lg and below only) */}
           <svg
-            className="w-full h-full"
+            className="w-full h-full lg:hidden"
+            viewBox="0 5 1440 72"
+            preserveAspectRatio="none"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              <linearGradient id="navCurveAccentMobile" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#111b5e" stopOpacity="0.2" />
+                <stop offset="25%" stopColor="#d97706" stopOpacity="0.9" />
+                <stop offset="50%" stopColor="#fbbf24" stopOpacity="1" />
+                <stop offset="75%" stopColor="#d97706" stopOpacity="0.9" />
+                <stop offset="100%" stopColor="#111b5e" stopOpacity="0.2" />
+              </linearGradient>
+            </defs>
+
+            {/* White nav surface with a smooth, rounded central dip cradling the emblem */}
+            <path
+              d="M 0,0
+                 L 1440,0
+                 L 1440,50
+                 C 1250,50 1030,52 880,58
+                 C 800,61 762,68 720,68
+                 C 678,68 640,61 560,58
+                 C 410,52 190,50 0,50
+                 Z"
+              fill="#ffffff"
+            />
+
+            {/* Matching soft gradient curve, rounded caps */}
+            <path
+              d="M 0,50
+                 C 190,50 410,52 560,58
+                 C 640,61 678,68 720,68
+                 C 762,68 800,61 880,58
+                 C 1030,52 1250,50 1440,50"
+              fill="none"
+              stroke="url(#navCurveAccentMobile)"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+          </svg>
+
+          {/* DESKTOP CURVE — untouched */}
+          <svg
+            className="nav-curve-desktop w-full h-full hidden lg:block"
             viewBox="0 0 1440 150"
             preserveAspectRatio="none"
             fill="none"
@@ -323,26 +385,74 @@ export const Navbar: React.FC = () => {
 
             {/* Seamless White Nav Bar Base */}
             <path
-              d="M 0,0 
-                 L 1440,0 
-                 L 1440,72 
-                 C 1240,72 1020,80 880,92 
-                 C 800,98 760,144 720,144 
-                 C 680,144 640,98 560,92 
-                 C 420,80 200,72 0,72 
+              className="nav-curve-fill"
+              d="M 0,0
+                 L 1440,0
+                 L 1440,72
+                 C 1240,72 1020,80 880,92
+                 C 800,98 760,144 720,144
+                 C 680,144 640,98 560,92
+                 C 420,80 200,72 0,72
                  Z"
               fill="#ffffff"
             />
 
             {/* Symmetrical Continuous Dual Curves */}
             <path
-              d="M 0,72 
-                 C 200,72 420,80 560,92 
-                 C 640,98 680,144 720,144 
-                 C 760,144 800,98 880,92 
+              className="nav-curve-stroke"
+              d="M 0,72
+                 C 200,72 420,80 560,92
+                 C 640,98 680,144 720,144
+                 C 760,144 800,98 880,92
                  C 1020,80 1240,72 1440,72"
               fill="none"
               stroke="url(#navCurveAccent)"
+              strokeWidth="3"
+            />
+          </svg>
+
+          {/* SHALLOWER COMPACT CURVE (1024–1279px) — the same cradle with a
+              flatter belly and shallower shoulders, so it clears the emblem
+              text on shorter desktop screens. */}
+          <svg
+            className="nav-curve-compact hidden w-full h-full"
+            viewBox="0 0 1440 150"
+            preserveAspectRatio="none"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              <linearGradient id="navCurveAccentCompact" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#111b5e" stopOpacity="0.2" />
+                <stop offset="25%" stopColor="#d97706" stopOpacity="0.9" />
+                <stop offset="50%" stopColor="#fbbf24" stopOpacity="1" />
+                <stop offset="75%" stopColor="#d97706" stopOpacity="0.9" />
+                <stop offset="100%" stopColor="#111b5e" stopOpacity="0.2" />
+              </linearGradient>
+            </defs>
+
+            {/* White nav surface — flat belly, gently eased shoulders */}
+            <path
+              d="M 0,0
+                 L 1440,0
+                 L 1440,78
+                 C 1240,78 1020,84 880,94
+                 C 800,99 762,122 720,122
+                 C 678,122 640,99 560,94
+                 C 420,84 200,78 0,78
+                 Z"
+              fill="#ffffff"
+            />
+
+            {/* Matching gold curve */}
+            <path
+              d="M 0,78
+                 C 200,78 420,84 560,94
+                 C 640,99 678,122 720,122
+                 C 762,122 800,99 880,94
+                 C 1020,84 1240,78 1440,78"
+              fill="none"
+              stroke="url(#navCurveAccentCompact)"
               strokeWidth="3"
             />
           </svg>
@@ -350,16 +460,16 @@ export const Navbar: React.FC = () => {
 
         {/* Content Container (Split Navigation & Centered Emblem) */}
         <div className="relative z-40 w-full px-4 sm:px-6 lg:px-10 xl:px-14">
-          <div className="flex items-start justify-between min-h-[72px] lg:min-h-[150px]">
+          <div className="nav-row flex items-center lg:items-start justify-between min-h-[72px] lg:min-h-[150px]">
             {/* LEFT SIDE MENU: Home, Society, Campuses, Academics (with Mega Menu) */}
-            <nav className="hidden lg:flex items-center space-x-1 flex-1 justify-start h-20 pt-1 z-50 relative">
+            <nav className="nav-rail nav-rail-left hidden lg:flex min-w-0 items-center space-x-1 flex-1 justify-start h-20 pt-1 z-50 relative">
               {/* 1. HOME BUTTON */}
               <a
                 href="/"
-                className="group relative inline-flex items-center text-xs xl:text-sm font-serif font-bold text-stone-700 hover:text-[#111b5e] px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200"
+                className="nav-link group relative inline-flex items-center whitespace-nowrap text-xs xl:text-sm font-serif font-bold text-stone-700 hover:text-[#111b5e] px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200"
               >
                 <span>Home</span>
-                <span className="absolute bottom-1 left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
+                <span className="absolute bottom-1 nav-underline left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
               </a>
 
               {/* 2. SOCIETY (Mega Menu Trigger) */}
@@ -370,7 +480,7 @@ export const Navbar: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setActiveMenu(activeMenu === 'society' ? null : 'society')}
-                  className={`group relative inline-flex items-center gap-1 text-xs xl:text-sm font-serif font-bold px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200 cursor-pointer ${
+                  className={`nav-link-btn group relative inline-flex items-center gap-1 whitespace-nowrap text-xs xl:text-sm font-serif font-bold px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200 cursor-pointer ${
                     activeMenu === 'society' ? 'text-[#111b5e]' : 'text-stone-700 hover:text-[#111b5e]'
                   }`}
                 >
@@ -382,7 +492,7 @@ export const Navbar: React.FC = () => {
                     }`}
                   />
                   <span
-                    className={`absolute bottom-1 left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] transition-transform duration-200 origin-left ${
+                    className={`absolute bottom-1 nav-underline left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] transition-transform duration-200 origin-left ${
                       activeMenu === 'society' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
                     }`}
                   />
@@ -397,7 +507,7 @@ export const Navbar: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setActiveMenu(activeMenu === 'campuses' ? null : 'campuses')}
-                  className={`group relative inline-flex items-center gap-1 text-xs xl:text-sm font-serif font-bold px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200 cursor-pointer ${
+                  className={`nav-link-btn group relative inline-flex items-center gap-1 whitespace-nowrap text-xs xl:text-sm font-serif font-bold px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200 cursor-pointer ${
                     activeMenu === 'campuses' ? 'text-[#111b5e]' : 'text-stone-700 hover:text-[#111b5e]'
                   }`}
                 >
@@ -409,7 +519,7 @@ export const Navbar: React.FC = () => {
                     }`}
                   />
                   <span
-                    className={`absolute bottom-1 left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] transition-transform duration-200 origin-left ${
+                    className={`absolute bottom-1 nav-underline left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] transition-transform duration-200 origin-left ${
                       activeMenu === 'campuses' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
                     }`}
                   />
@@ -424,7 +534,7 @@ export const Navbar: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setActiveMenu(activeMenu === 'academics' ? null : 'academics')}
-                  className={`group relative inline-flex items-center gap-1 text-xs xl:text-sm font-serif font-bold px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200 cursor-pointer ${
+                  className={`nav-link-btn group relative inline-flex items-center gap-1 whitespace-nowrap text-xs xl:text-sm font-serif font-bold px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200 cursor-pointer ${
                     activeMenu === 'academics' ? 'text-[#111b5e]' : 'text-stone-700 hover:text-[#111b5e]'
                   }`}
                 >
@@ -436,7 +546,7 @@ export const Navbar: React.FC = () => {
                     }`}
                   />
                   <span
-                    className={`absolute bottom-1 left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] transition-transform duration-200 origin-left ${
+                    className={`absolute bottom-1 nav-underline left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] transition-transform duration-200 origin-left ${
                       activeMenu === 'academics' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
                     }`}
                   />
@@ -451,7 +561,7 @@ export const Navbar: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setActiveMenu(activeMenu === 'faculty' ? null : 'faculty')}
-                  className={`group relative inline-flex items-center gap-1 text-xs xl:text-sm font-serif font-bold px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200 cursor-pointer ${
+                  className={`nav-link-btn group relative inline-flex items-center gap-1 whitespace-nowrap text-xs xl:text-sm font-serif font-bold px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200 cursor-pointer ${
                     activeMenu === 'faculty' ? 'text-[#111b5e]' : 'text-stone-700 hover:text-[#111b5e]'
                   }`}
                 >
@@ -463,7 +573,7 @@ export const Navbar: React.FC = () => {
                     }`}
                   />
                   <span
-                    className={`absolute bottom-1 left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] transition-transform duration-200 origin-left ${
+                    className={`absolute bottom-1 nav-underline left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] transition-transform duration-200 origin-left ${
                       activeMenu === 'faculty' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
                     }`}
                   />
@@ -471,34 +581,86 @@ export const Navbar: React.FC = () => {
               </div>
             </nav>
 
+            {/* LEFT (MOBILE/TABLET): Full institution name, vertically centred on the logo axis */}
+            <div className="lg:hidden flex items-center h-[72px] min-w-0 flex-1 justify-start pr-2 -translate-y-[15px]">
+              {/* PHONE — compact two-line name */}
+              <a
+                href="/"
+                className="sm:hidden min-w-0 max-w-[36vw] min-[400px]:max-w-[40vw] font-serif text-[10px] min-[400px]:text-[11px] font-bold uppercase text-[#111b5e] tracking-[0.06em] leading-[1.25] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#111b5e]/25 rounded-sm"
+                title="Shri Nirakar Education Society"
+              >
+                <span className="block">Shri Nirakar</span>
+                <span className="block">Education Society</span>
+              </a>
+
+              {/* TABLET — the full identity, as on desktop */}
+              <a
+                href="/"
+                className="hidden sm:block min-w-0 max-w-[46vw] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#111b5e]/25 rounded-sm"
+                title="Shri Nirakar Education Society"
+              >
+                <span className="block font-serif text-[11px] font-black uppercase tracking-[0.04em] leading-[1.2] text-[#111b5e]">
+                  Shri Nirakar Education Society
+                </span>
+                <span className="mt-0.5 block font-serif text-[10px] font-bold tracking-[0.03em] leading-none text-accent-700">
+                  Mashem, Canacona, South Goa • Estd. 1939
+                </span>
+              </a>
+            </div>
+
+            {/* CENTER (MOBILE/TABLET): Logo perfectly centered to the viewport */}
+            <div className="lg:hidden absolute left-1/2 -translate-x-1/2 top-[6px] sm:top-[-2px] z-50 flex flex-col items-center pointer-events-none">
+              <a
+                href="/"
+                className="pointer-events-auto flex flex-col items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#111b5e]/25 rounded-full"
+                aria-label="Shri Nirakar Education Society — Home"
+              >
+                <img
+                  src="/images/Logo.webp"
+                  alt="Shri Nirakar Education Society Emblem"
+                  className="h-12 sm:h-16 w-auto object-contain drop-shadow-[0_2px_6px_rgba(11,19,43,0.12)]"
+                />
+              </a>
+            </div>
+
             {/* CENTER LOGO & UNIVERSITY EMBLEM IN SVG CURVED CRADLE */}
-            <div className="flex flex-col items-center justify-center shrink-0 px-4 z-50 group relative pt-1 pb-2">
+            <div className="nav-emblem hidden lg:flex flex-col items-center justify-center shrink-0 px-2 z-50 group relative pt-1 pb-2">
               <a href="/" className="flex flex-col items-center text-center group">
                 <div className="relative group-hover:scale-105 transition-transform duration-300">
                   <img
                     src="/images/Logo.webp"
-                    alt="Shree Nirakar Education Society Emblem"
-                    className="h-14 sm:h-16 w-auto object-contain"
+                    alt="Shri Nirakar Education Society Emblem"
+                    className="nav-emblem-img h-14 sm:h-16 w-auto object-contain"
                   />
                 </div>
-                <span className="text-[11px] sm:text-xs font-serif font-black tracking-tight text-[#111b5e] mt-1 block leading-tight">
-                  SHREE NIRAKAR EDUCATION SOCIETY
+                <span className="nav-emblem-name text-[11px] sm:text-xs font-serif font-black tracking-tight text-[#111b5e] mt-1 block leading-tight">
+                  SHRI NIRAKAR EDUCATION SOCIETY
                 </span>
-                <span className="text-[9px] sm:text-[10px] text-accent-700 font-serif font-bold tracking-wider block mt-0.5 leading-none">
+                <span className="nav-emblem-sub text-[9px] sm:text-[10px] text-accent-700 font-serif font-bold tracking-wider block mt-0.5 leading-none">
                   Mashem, Canacona, South Goa • Estd. 1939
                 </span>
               </a>
             </div>
 
             {/* RIGHT SIDE MENU: Daily Magazine, Alumni, Notices, Contact, Join Alumni */}
-            <nav className="hidden lg:flex items-center space-x-1.5 flex-1 justify-end h-20 pt-1 z-50 relative">
+            <nav className="nav-rail nav-rail-right hidden lg:flex min-w-0 items-center space-x-1 flex-1 justify-end h-20 pt-1 z-50 relative">
               {/* Daily Magazine */}
               <a
                 href="/magazine"
-                className="group relative inline-flex items-center text-xs xl:text-sm font-serif font-bold text-stone-700 hover:text-[#111b5e] px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200"
+                className="nav-link group relative inline-flex items-center whitespace-nowrap text-xs xl:text-sm font-serif font-bold text-stone-700 hover:text-[#111b5e] px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200"
               >
-                <span>Daily Magazine</span>
-                <span className="absolute bottom-1 left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
+                <span className="hidden xl:inline">Daily Magazine</span>
+                <span className="xl:hidden">Magazine</span>
+                <span className="absolute bottom-1 nav-underline left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
+              </a>
+
+              {/* Digital Library */}
+              <a
+                href="/library"
+                className="nav-link group relative inline-flex items-center whitespace-nowrap text-xs xl:text-sm font-serif font-bold text-stone-700 hover:text-[#111b5e] px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200"
+              >
+                <span>Library</span>
+                <span className="absolute bottom-1 nav-underline left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
               </a>
 
               {/* Alumni Mega Menu Trigger */}
@@ -509,7 +671,7 @@ export const Navbar: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setActiveMenu(activeMenu === 'alumni' ? null : 'alumni')}
-                  className={`group relative inline-flex items-center gap-1 text-xs xl:text-sm font-serif font-bold px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200 cursor-pointer ${
+                  className={`nav-link-btn group relative inline-flex items-center gap-1 whitespace-nowrap text-xs xl:text-sm font-serif font-bold px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200 cursor-pointer ${
                     activeMenu === 'alumni' ? 'text-[#111b5e]' : 'text-stone-700 hover:text-[#111b5e]'
                   }`}
                 >
@@ -521,7 +683,7 @@ export const Navbar: React.FC = () => {
                     }`}
                   />
                   <span
-                    className={`absolute bottom-1 left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] transition-transform duration-200 origin-left ${
+                    className={`absolute bottom-1 nav-underline left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] transition-transform duration-200 origin-left ${
                       activeMenu === 'alumni' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
                     }`}
                   />
@@ -531,40 +693,61 @@ export const Navbar: React.FC = () => {
               {/* Notices */}
               <a
                 href="/notices"
-                className="group relative inline-flex items-center text-xs xl:text-sm font-serif font-bold text-stone-700 hover:text-[#111b5e] px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200"
+                className="nav-link group relative inline-flex items-center whitespace-nowrap text-xs xl:text-sm font-serif font-bold text-stone-700 hover:text-[#111b5e] px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200"
               >
                 <span>Notices</span>
-                <span className="absolute bottom-1 left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
+                <span className="absolute bottom-1 nav-underline left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
               </a>
 
               {/* Contact */}
               <a
                 href="/contact"
-                className="group relative inline-flex items-center text-xs xl:text-sm font-serif font-bold text-stone-700 hover:text-[#111b5e] px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200"
+                className="nav-link group relative inline-flex items-center whitespace-nowrap text-xs xl:text-sm font-serif font-bold text-stone-700 hover:text-[#111b5e] px-3.5 py-2 rounded-lg hover:bg-stone-50/80 transition-colors duration-200"
               >
                 <span>Contact</span>
-                <span className="absolute bottom-1 left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
+                <span className="absolute bottom-1 nav-underline left-3.5 right-3.5 h-[1.5px] bg-[#111b5e] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
               </a>
 
               {/* Join Alumni Action Pill */}
-              <div className="pl-2">
+              <div className="nav-cta-wrap pl-2">
                 <a
                   href={isAlumni ? alumniProfileHref : '/alumni/register'}
-                  className="bg-[#111b5e] hover:bg-[#0b132b] text-white font-serif font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-sm hover:shadow"
+                  className="nav-cta shrink-0 whitespace-nowrap bg-[#111b5e] hover:bg-[#0b132b] text-white font-serif font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-sm hover:shadow"
                 >
                   <span>{isAlumni ? 'My Profile' : 'Join Alumni'}</span>
                 </a>
               </div>
             </nav>
 
-            {/* Mobile Menu Button */}
-            <div className="lg:hidden flex items-center pt-3">
+            {/* Mobile / Tablet Menu Button — modern minimal burger, 44px touch target */}
+            <div className="lg:hidden flex items-center justify-end h-[72px] flex-1 pl-1 -translate-y-[15px]">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 text-stone-700 hover:text-[#111b5e]"
-                aria-label="Toggle navigation"
+                className="group relative inline-flex items-center justify-center w-11 h-11 rounded-xl text-[#111b5e] hover:bg-[#111b5e]/[0.06] active:bg-[#111b5e]/[0.10] active:scale-[0.96] transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#111b5e]/30 shrink-0"
+                aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                aria-expanded={mobileMenuOpen}
               >
-                {mobileMenuOpen ? <X size={26} /> : <MenuIcon size={26} />}
+                <span className="relative block w-[22px] h-[16px]">
+                  <motion.span
+                    animate={mobileMenuOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
+                    transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}
+                    className="absolute left-0 top-0 block h-[2px] w-[22px] rounded-full bg-current origin-center"
+                  />
+                  <motion.span
+                    animate={
+                      mobileMenuOpen
+                        ? { opacity: 0, scaleX: 0.2, x: 4 }
+                        : { opacity: 1, scaleX: 1, x: 0 }
+                    }
+                    transition={{ duration: 0.18, ease: 'easeInOut' }}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 block h-[2px] w-[14px] rounded-full bg-current origin-left"
+                  />
+                  <motion.span
+                    animate={mobileMenuOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
+                    transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}
+                    className="absolute left-0 bottom-0 block h-[2px] w-[22px] rounded-full bg-current origin-center"
+                  />
+                </span>
               </button>
             </div>
           </div>
@@ -575,7 +758,7 @@ export const Navbar: React.FC = () => {
         <div
           ref={megaMenuContainerRef}
           style={{ display: 'none', visibility: 'hidden', opacity: 0 }}
-          className="fixed left-0 right-0 top-[98px] lg:top-[100px] z-30 pointer-events-none will-change-transform max-h-[calc(100vh-116px)] overflow-y-auto lg:max-h-[none]"
+          className={`fixed left-0 right-0 z-30 pointer-events-none will-change-transform max-h-[calc(100vh-116px)] overflow-y-auto lg:max-h-[none] ${announcementText ? 'top-[142px] lg:top-[144px]' : 'top-[98px] lg:top-[100px]'}`}
           onMouseEnter={() => {
             if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
           }}
@@ -588,82 +771,18 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* 4. MOBILE DRAWER NAVIGATION */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="lg:hidden border-t border-stone-200 bg-white px-6 pt-3 pb-8 space-y-3 shadow-xl max-h-[80vh] overflow-y-auto"
-            >
-              <a
-                href="/"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block py-2 text-sm font-serif font-bold text-[#111b5e] border-b border-stone-100"
-              >
-                Home
-              </a>
-              <a href="/society" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-serif font-semibold text-stone-900 border-b border-stone-100">
-                About Society
-              </a>
-              <a href="/institutions" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-serif font-semibold text-stone-900 border-b border-stone-100">
-                Our 3 Campuses
-              </a>
+        {/* 4. MOBILE / TABLET FULL-SCREEN DRAWER (2026 premium sheet) */}
+        <MobileMenuDrawer
+          open={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+          isAlumni={isAlumni}
+          isFaculty={isFaculty}
+          hasAuthUser={!!authUser}
+          alumniProfileHref={alumniProfileHref}
+          facultyProfileHref={facultyProfileHref}
+        />
 
-              {/* Academics in Mobile */}
-              <div className="py-2 border-b border-stone-100">
-                <a href="/academics" onClick={() => setMobileMenuOpen(false)} className="block text-sm font-serif font-semibold text-stone-900 mb-1.5">
-                  Academics & Curricula
-                </a>
-                <div className="pl-3 space-y-1.5 text-xs text-stone-600">
-                  <a href="/batch-photos" onClick={() => setMobileMenuOpen(false)} className="block text-[#111b5e] font-bold">
-                    Batch Photos Archive (97 Photos)
-                  </a>
-                  <a href="/admissions" onClick={() => setMobileMenuOpen(false)} className="block text-stone-600 hover:text-stone-900">
-                    Online Admissions 2026-27
-                  </a>
-                  <a href="/academics" onClick={() => setMobileMenuOpen(false)} className="block text-stone-600 hover:text-stone-900">
-                    Programs & Science Labs
-                  </a>
-                </div>
-              </div>
-
-              <a href="/faculty" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-serif font-semibold text-amber-800 border-b border-stone-100 flex items-center justify-between">
-                <span>Faculty & Mentors Directory</span>
-                <span className="text-[10px] font-mono bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full font-bold">92+ Educators</span>
-              </a>
-              {(!authUser || isFaculty) && <a href={isFaculty ? facultyProfileHref : '/faculty/login'} onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-serif font-semibold text-stone-900 border-b border-stone-100 flex items-center justify-between">
-                <span>{isFaculty ? 'My Faculty Profile' : 'Faculty Portal'}</span>
-                <span className="text-[10px] font-mono text-stone-500">{isFaculty ? 'View / Edit Profile' : 'Login / Register'}</span>
-              </a>}
-              <a href="/magazine" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-serif font-semibold text-stone-900 border-b border-stone-100">
-                Daily Magazine
-              </a>
-              <a href="/alumni" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-serif font-semibold text-stone-900 border-b border-stone-100">
-                Alumni Sanctuary
-              </a>
-              <a href="/notices" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-serif font-semibold text-stone-900 border-b border-stone-100">
-                Notices & Circulars
-              </a>
-              <a href="/contact" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-serif font-semibold text-stone-900 border-b border-stone-100">
-                Contact & Helplines
-              </a>
-
-              <div className="pt-2 flex flex-col gap-2">
-                <a href={isAlumni ? alumniProfileHref : '/alumni/register'} onClick={() => setMobileMenuOpen(false)} className="w-full text-center bg-[#111b5e] text-white py-2.5 rounded-xl text-sm font-serif font-bold shadow-sm">
-                  {isAlumni ? 'My Alumni Profile' : 'Register as Alumni'}
-                </a>
-                {isAlumni && <a href="/alumni/dashboard" onClick={() => setMobileMenuOpen(false)} className="w-full text-center border border-stone-300 py-2 rounded-xl text-sm font-serif font-semibold text-stone-700">
-                  Manage My Profile
-                </a>}
-                {!authUser && <a href="/account/login" onClick={() => setMobileMenuOpen(false)} className="w-full text-center border border-stone-300 py-2 rounded-xl text-sm font-serif font-semibold text-stone-700">
-                  Alumni Login
-                </a>}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
       </div>
     </header>
   );
