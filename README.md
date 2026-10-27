@@ -89,7 +89,7 @@ Use Render for the API/database and two Cloudflare Pages projects for the browse
 - Root directory: repository root
 - Build command: `npm run build:pages:web`
 - Output directory: `apps/web/dist`
-- Environment variable: `VITE_API_URL=https://nirakar-api.onrender.com`
+- Environment variable: `API_URL=https://nirakar-api.onrender.com`
 - Environment variable: `VITE_RECAPTCHA_SITE_KEY=<public-site-key>`
 
 ### Admin Cloudflare Pages project
@@ -97,7 +97,7 @@ Use Render for the API/database and two Cloudflare Pages projects for the browse
 - Root directory: repository root
 - Build command: `npm run build:pages:admin`
 - Output directory: `apps/admin/dist`
-- Environment variables: `VITE_API_URL=https://nirakar-api.onrender.com`, `VITE_ADMIN_BASE_PATH=/`, and `VITE_RECAPTCHA_SITE_KEY=<public-site-key>`
+- Environment variables: `API_URL=https://nirakar-api.onrender.com`, `VITE_ADMIN_BASE_PATH=/`, and `VITE_RECAPTCHA_SITE_KEY=<public-site-key>`
 - The admin Pages project should use its own hostname, such as `admin.example.com`.
 
 Both Pages projects include an SPA fallback in `public/_redirects`. Add the final public and admin hostnames to Google reCAPTCHA, then verify `/healthz`, login/logout, uploads, PDFs, and Socket.IO updates after deployment.
