@@ -1,4 +1,4 @@
-const configuredOrigin = (import.meta.env.VITE_API_URL || '').trim();
+const configuredOrigin = (import.meta.env.API_URL || '').trim();
 
 /** The Render API origin used by the Cloudflare Pages build. */
 export const apiOrigin = configuredOrigin.replace(/\/+$/, '');
