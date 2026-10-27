@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ShieldAlert } from 'lucide-react';
-import { AuthCaptchaNotice, useAuthCaptcha } from '../components/AuthCaptcha.js';
+import { AuthCaptchaNotice, useAuthCaptcha } from '../../components/AuthCaptcha.js';
 
 export const AdminLoginPage: React.FC = () => {
   const navigate = useNavigate();
