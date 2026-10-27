@@ -91,6 +91,12 @@ const FacultyDashboardPage = lazy(() =>
 const FacultyEditPage = lazy(() =>
   import('./pages/FacultyEditPage.js').then((m) => ({ default: m.FacultyEditPage }))
 );
+const AdminLoginPage = lazy(() =>
+  import('./pages/admin/AdminLoginPage.js').then((m) => ({ default: m.AdminLoginPage }))
+);
+const AdminDashboardPage = lazy(() =>
+  import('./pages/admin/AdminDashboard.tsx').then((m) => ({ default: m.AdminDashboard }))
+);
 const AdminConsolePage = lazy(() =>
   import('./pages/AdminConsolePage.js').then((m) => ({ default: m.AdminConsolePage }))
 );
@@ -227,6 +233,8 @@ function AppContent() {
 
               {/* Administrative Governance & Verification Console */}
               <Route path="/admin" element={<AdminConsolePage />} />
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
 
               {/* Designed Fallback */}
               <Route
