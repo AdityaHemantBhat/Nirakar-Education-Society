@@ -1,1 +1,1 @@
-{"version":2,"outputDirectory":"apps/web/dist"}
+{"version":2,"rewrites":[{"source":"/api/(.*)","destination":"https://nirakar-education-society.onrender.com/api/$1"}]}
